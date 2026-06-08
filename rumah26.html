@@ -1,0 +1,95 @@
+<!-- Tambahkan fungsi editTeks di dalam tag <script> -->
+<script>
+  // ... [SEMUA KODE SEBELUMNYA TETAP SAMA] ...
+
+  // ─── EDIT TEKS SECARA IN-LINE ─────────────────────────────
+  function editTeks(valueDiv) {
+    if (valueDiv.tagName !== 'DIV') return;
+
+    const originalText = valueDiv.textContent;
+    const textarea = document.createElement('textarea');
+    textarea.value = originalText;
+    textarea.rows = Math.max(1, Math.ceil(originalText.length / 50));
+    textarea.style.width = '100%';
+    textarea.style.fontFamily = 'monospace';
+    textarea.style.fontSize = '0.95em';
+    textarea.style.padding = '8px';
+    textarea.style.border = '1px solid #ccc';
+    textarea.style.borderRadius = '6px';
+    textarea.style.background = '#fff9c4';
+    textarea.style.outline = 'none';
+
+    valueDiv.innerHTML = '';
+    valueDiv.appendChild(textarea);
+    textarea.focus();
+
+    function saveEdit() {
+      const newText = textarea.value.trim();
+      valueDiv.innerHTML = newText || '--';
+      // Opsional: simpan ke window.lastResult jika ingin persistensi lebih lanjut
+    }
+
+    textarea.addEventListener('blur', saveEdit);
+    textarea.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        saveEdit();
+        textarea.blur();
+      }
+    });
+  }
+
+  // ─── TAMPILKAN ───────────────────────────────────────────
+  function displayResults(freqMap, notCaught, input) {
+    const container = document.getElementById('resultsContainer');
+    container.innerHTML = '';
+
+    window.lastResult = { freqMap, notCaught, input, market: document.getElementById('market').value };
+
+    const notCaughtText = notCaught.length > 0 ? notCaught.join('*') : '--';
+    const notCaughtSection = document.createElement('div');
+    notCaughtSection.className = 'section';
+    notCaughtSection.innerHTML = `
+      <h2>❌ 2D Tidak Terjaring</h2>
+      <div class="value not-caught">${notCaughtText}</div>
+      <button class="copy-btn" onclick="salinTeks('${notCaughtText.replace(/'/g, "\\'")}', this)">📋 Salin</button>
+      <button class="copy-btn" onclick="editTeks(this.previousElementSibling)">✏️ Edit</button>
+    `;
+    container.appendChild(notCaughtSection);
+
+    if (Object.keys(freqMap).length === 0) {
+      container.innerHTML += '<div class="section"><h2>🎯 Tidak ada 2D yang terjaring</h2></div>';
+      return;
+    }
+
+    const sortedFreq = Object.keys(freqMap).map(Number).sort((a, b) => a - b);
+    for (const freq of sortedFreq) {
+      const list = freqMap[freq].sort();
+      const text = list.join('*');
+      let className = 'freq-1';
+      if (freq === 2) className = 'freq-2';
+      else if (freq === 3) className = 'freq-3';
+      else if (freq === 4) className = 'freq-4';
+      else if (freq === 5) className = 'freq-5';
+      else if (freq === 6) className = 'freq-6';
+      else if (freq === 7) className = 'freq-7';
+      else if (freq === 8) className = 'freq-8';
+      else if (freq === 9) className = 'freq-9';
+      else if (freq === 10) className = 'freq-10';
+
+      const section = document.createElement('div');
+      section.className = 'section';
+      // Escape single quote untuk inline JS
+      const safeText = text.replace(/'/g, "\\'");
+      section.innerHTML = `
+        <h2>🎯 Terjaring ${freq}x</h2>
+        <div class="value ${className}">${text}</div>
+        <button class="copy-btn" onclick="salinTeks('${safeText}', this)">📋 Salin</button>
+        <button class="copy-btn" onclick="editTeks(this.previousElementSibling)">✏️ Edit</button>
+      `;
+      container.appendChild(section);
+    }
+  }
+
+  // ... [SISA KODE SETELAHNYA TETAP SAMA] ...
+</script>
