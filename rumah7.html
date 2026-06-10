@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -84,7 +85,7 @@
       background: #e3a800;
     }
     .copy-btn {
-      margin-top: 6px;
+      margin-top: 0;
       padding: 6px 10px;
       font-size: 0.9em;
       background: #f1f3f4;
@@ -97,6 +98,40 @@
     .copy-btn:hover {
       background: #e8eaed;
     }
+    
+    /* --- STYLE TAMBAHAN UNTUK FITUR EDIT --- */
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .edit-btn {
+      padding: 6px 10px;
+      font-size: 0.9em;
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+      border-radius: 4px;
+      cursor: pointer;
+      width: auto;
+    }
+    .edit-btn:hover {
+      background: #ffe69c;
+    }
+    .edit-btn.editing {
+      background: #d1e7dd;
+      color: #0f5132;
+      border-color: #badbcc;
+    }
+    .value[contenteditable="true"] {
+      background: #fff;
+      border: 1px solid #0d6efd;
+      outline: none;
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25);
+      cursor: text;
+    }
+    /* --------------------------------------- */
+
     .results {
       background: white;
       border-radius: 10px;
@@ -526,9 +561,15 @@
       return { freqMap, notCaught, input: curr };
     }
 
-    // ─── SALIN TEKS ───────────────────────────────────────────
-    function salinTeks(teks, btn) {
+    // ─── SALIN TEKS (DIPERBARUI) ───────────────────────────────────────────
+    function salinTeks(btn) {
+      const section = btn.closest('.section');
+      const valueDiv = section ? section.querySelector('.value') : null;
+      if (!valueDiv) return;
+      
+      const teks = valueDiv.innerText.trim();
       if (!teks) return;
+
       if (navigator.clipboard) {
         navigator.clipboard.writeText(teks).then(() => {
           const original = btn.textContent;
@@ -547,7 +588,39 @@
       }
     }
 
-    // ─── TAMPILKAN ───────────────────────────────────────────
+    // ─── EDIT TEKS (FITUR BARU) ────────────────────────────────────────────
+    function toggleEdit(btn) {
+      const section = btn.closest('.section');
+      const valueDiv = section ? section.querySelector('.value') : null;
+      if (!valueDiv) return;
+
+      const isEditing = valueDiv.getAttribute('contenteditable') === 'true';
+      
+      if (isEditing) {
+        // Selesai Edit
+        valueDiv.setAttribute('contenteditable', 'false');
+        // Bersihkan format bawaan contenteditable (seperti <br> atau spasi berlebih)
+        valueDiv.innerText = valueDiv.innerText.trim().replace(/\n/g, '');
+        btn.textContent = '✏️ Edit';
+        btn.classList.remove('editing');
+      } else {
+        // Mulai Edit
+        valueDiv.setAttribute('contenteditable', 'true');
+        valueDiv.focus();
+        // Pindahkan kursor ke akhir teks
+        const range = document.createRange();
+        range.selectNodeContents(valueDiv);
+        range.collapse(false);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        
+        btn.textContent = '💾 Selesai';
+        btn.classList.add('editing');
+      }
+    }
+
+    // ─── TAMPILKAN (DIPERBARUI) ───────────────────────────────────────────
     function displayResults(freqMap, notCaught, input) {
       const container = document.getElementById('resultsContainer');
       container.innerHTML = '';
@@ -560,7 +633,10 @@
       notCaughtSection.innerHTML = `
         <h2>❌ 2D Tidak Terjaring</h2>
         <div class="value not-caught">${notCaughtText}</div>
-        <button class="copy-btn" onclick="salinTeks('${notCaughtText}', this)">📋 Salin</button>
+        <div class="action-buttons">
+          <button class="copy-btn" onclick="salinTeks(this)">📋 Salin</button>
+          <button class="edit-btn" onclick="toggleEdit(this)">✏️ Edit</button>
+        </div>
       `;
       container.appendChild(notCaughtSection);
 
@@ -589,13 +665,16 @@
         section.innerHTML = `
           <h2>🎯 Terjaring ${freq}x</h2>
           <div class="value ${className}">${text}</div>
-          <button class="copy-btn" onclick="salinTeks('${text}', this)">📋 Salin</button>
+          <div class="action-buttons">
+            <button class="copy-btn" onclick="salinTeks(this)">📋 Salin</button>
+            <button class="edit-btn" onclick="toggleEdit(this)">✏️ Edit</button>
+          </div>
         `;
         container.appendChild(section);
       }
     }
 
-    // ─── SIMPAN KE FIREBASE ───────────────────────────────────
+    // ─── SIMPAN KE FIREBASE (DIPERBARUI AGAR MEMBACA HASIL EDIT) ──────────
     function simpanKeFirebase() {
       const statusEl = document.getElementById('save-status');
       statusEl.className = 'error';
@@ -607,12 +686,28 @@
         return;
       }
 
-      const { input, market, notCaught, freqMap } = window.lastResult;
-      const sortedFreq = Object.keys(freqMap).map(Number).sort((a, b) => a - b);
+      const { input, market } = window.lastResult;
       const sections = {};
-      sections.notCaught = notCaught.length > 0 ? notCaught.join('*') : '--';
-      sortedFreq.forEach(freq => {
-        sections[`terjaring_${freq}x`] = freqMap[freq].sort().join('*');
+      
+      // Ambil data langsung dari DOM untuk menghargai hasil edit user
+      const container = document.getElementById('resultsContainer');
+      const sectionDivs = container.querySelectorAll('.section');
+      
+      sectionDivs.forEach(sec => {
+        const h2 = sec.querySelector('h2');
+        const valueDiv = sec.querySelector('.value');
+        if (h2 && valueDiv) {
+          const title = h2.innerText;
+          const text = valueDiv.innerText.trim().replace(/\n/g, '');
+          if (title.includes('Tidak Terjaring')) {
+            sections.notCaught = text || '--';
+          } else if (title.includes('Terjaring')) {
+            const match = title.match(/Terjaring\s+(\d+)x/);
+            if (match) {
+              sections[`terjaring_${match[1]}x`] = text;
+            }
+          }
+        }
       });
 
       const data = {
@@ -623,7 +718,7 @@
         fitur: "rumah7"
       };
 
-      // Simpan ke path: rumah7 (atau tetap fitur10? Saya ubah ke rumah7)
+      // Simpan ke path: rumah7
       database.ref('rumah7').push(data)
         .then(() => {
           statusEl.textContent = '✅ Berhasil disimpan ke cloud!';
