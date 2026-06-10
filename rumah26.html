@@ -1,95 +1,779 @@
-<!-- Tambahkan fungsi editTeks di dalam tag <script> -->
-<script>
-  // ... [SEMUA KODE SEBELUMNYA TETAP SAMA] ...
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generator Togel - 10 Kontrol (B s/d Y)</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 16px;
+      background: #f8f9fa;
+      color: #212529;
+    }
+    .container {
+      max-width: 100%;
+    }
+    .back-home {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .back-home a {
+      display: inline-block;
+      padding: 8px 16px;
+      background-color: #3498db;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .back-home a:hover {
+      background-color: #2980b9;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.5em;
+      margin: 0 0 20px;
+      color: #1a365d;
+    }
+    .input-section, .market-section {
+      margin-bottom: 16px;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1.1em;
+      box-sizing: border-box;
+    }
+    input {
+      text-align: center;
+    }
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .buttons button {
+      flex: 1;
+      min-width: 120px;
+      padding: 12px;
+      font-size: 1em;
+    }
+    #generateBtn {
+      background: #1a73e8;
+    }
+    #generateBtn:hover {
+      background: #0d5bb8;
+    }
+    #saveBtn {
+      background: #34a853;
+    }
+    #saveBtn:hover {
+      background: #2d8e49;
+    }
+    #loadBtn {
+      background: #fbbc04;
+      color: #202124;
+    }
+    #loadBtn:hover {
+      background: #e3a800;
+    }
+    .copy-btn {
+      margin-top: 0;
+      padding: 6px 10px;
+      font-size: 0.9em;
+      background: #f1f3f4;
+      color: #5f6368;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      cursor: pointer;
+      width: auto;
+    }
+    .copy-btn:hover {
+      background: #e8eaed;
+    }
+    
+    /* --- STYLE TAMBAHAN UNTUK FITUR EDIT --- */
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .edit-btn {
+      padding: 6px 10px;
+      font-size: 0.9em;
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+      border-radius: 4px;
+      cursor: pointer;
+      width: auto;
+    }
+    .edit-btn:hover {
+      background: #ffe69c;
+    }
+    .edit-btn.editing {
+      background: #d1e7dd;
+      color: #0f5132;
+      border-color: #badbcc;
+    }
+    .value[contenteditable="true"] {
+      background: #fff;
+      border: 1px solid #0d6efd;
+      outline: none;
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25);
+      cursor: text;
+    }
+    /* --------------------------------------- */
 
-  // ─── EDIT TEKS SECARA IN-LINE ─────────────────────────────
-  function editTeks(valueDiv) {
-    if (valueDiv.tagName !== 'DIV') return;
+    .results {
+      background: white;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-top: 16px;
+      font-family: monospace;
+      font-size: 0.95em;
+      line-height: 1.6;
+    }
+    .section {
+      margin-bottom: 16px;
+    }
+    .section h2 {
+      margin: 0 0 10px;
+      font-size: 1.2em;
+      color: #1a365d;
+    }
+    .value {
+      word-break: break-all;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      border: 1px dashed #ddd;
+    }
+    .freq-1 { color: #107c10; background-color: #e6f4ea; }
+    .freq-2 { color: #8b5cf6; background-color: #f0e6ff; }
+    .freq-3 { color: #dc2626; background-color: #fee2e2; }
+    .freq-4 { color: #0891b2; background-color: #ecfeff; }
+    .freq-5 { color: #7c2d12; background-color: #ffefeb; }
+    .freq-6 { color: #5d1a9b; background-color: #f3e8ff; }
+    .freq-7 { color: #065f46; background-color: #d1fae5; }
+    .freq-8 { color: #842f00; background-color: #ffedd5; }
+    .freq-9 { color: #115e59; background-color: #ccfbf1; }
+    .freq-10 { color: #591c0f; background-color: #fde8e0; }
+    .not-caught { color: #c5221f; background-color: #fce8e6; }
+    .error, #save-status {
+      color: #d93025;
+      text-align: center;
+      font-weight: bold;
+      margin-top: 12px;
+      padding: 10px;
+      background: #fce8e6;
+      border-radius: 6px;
+      display: none;
+    }
+    #save-status.success {
+      color: #107c10;
+      background: #e6f4ea;
+      display: block;
+    }
+    #save-status.error {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="back-home">
+      <a href="index.html">← Kembali ke Beranda</a>
+    </div>
 
-    const originalText = valueDiv.textContent;
-    const textarea = document.createElement('textarea');
-    textarea.value = originalText;
-    textarea.rows = Math.max(1, Math.ceil(originalText.length / 50));
-    textarea.style.width = '100%';
-    textarea.style.fontFamily = 'monospace';
-    textarea.style.fontSize = '0.95em';
-    textarea.style.padding = '8px';
-    textarea.style.border = '1px solid #ccc';
-    textarea.style.borderRadius = '6px';
-    textarea.style.background = '#fff9c4';
-    textarea.style.outline = 'none';
+    <h1>🔢 Generator Togel (B s/d Y)</h1>
 
-    valueDiv.innerHTML = '';
-    valueDiv.appendChild(textarea);
-    textarea.focus();
+    <!-- Pilih Market -->
+    <div class="market-section">
+      <select id="market">
+        <option value="">-- Pilih Market --</option>
+        <option value="Cambodia">Cambodia</option>
+        <option value="Sidney">Sidney</option>
+        <option value="China">China</option>
+        <option value="Japan">Japan</option>
+        <option value="SGP">SGP</option>
+        <option value="Taiwan">Taiwan</option>
+        <option value="Hongkong">Hongkong</option>
+        <option value="Nusa">Nusa</option>
+      </select>
+    </div>
 
-    function saveEdit() {
-      const newText = textarea.value.trim();
-      valueDiv.innerHTML = newText || '--';
-      // Opsional: simpan ke window.lastResult jika ingin persistensi lebih lanjut
+    <div class="input-section">
+      <input type="text" id="currResult" placeholder="Masukkan Result Sekarang (4D)" maxlength="4" />
+    </div>
+
+    <div class="buttons">
+      <button id="loadBtn">↺ Muat dari Rumah1</button>
+      <button id="generateBtn">Generate 2D</button>
+      <button id="saveBtn">💾 Simpan ke Cloud</button>
+    </div>
+
+    <div id="error" class="error"></div>
+    <div id="save-status"></div>
+
+    <div class="results" id="resultsContainer">
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+  <script>
+    // ─── KONFIGURASI FIREBASE (proyek: SABAR) ─────────────
+    const firebaseConfig = {
+      apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
+      authDomain: "sabar-2e686.firebaseapp.com",
+      databaseURL: "https://sabar-2e686-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "sabar-2e686",
+      storageBucket: "sabar-2e686.firebasestorage.app",
+      messagingSenderId: "985183830784",
+      appId: "1:985183830784:web:fae21bdb94c1f0103769e5"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const database = firebase.database();
+
+    const MARKETS = ["Cambodia", "Sidney", "China", "Japan", "SGP", "Taiwan", "Hongkong", "Nusa"];
+
+    // ─── MUAT DARI RUMAH1 ─────────────────────────────────
+    async function loadFromRumah1(market) {
+      if (!market || !MARKETS.includes(market)) {
+        alert("Pilih market terlebih dahulu!");
+        return;
+      }
+
+      try {
+        const snapshot = await database.ref(`rumah1/${market}`)
+          .orderByChild("timestamp")
+          .limitToLast(1)
+          .once("value");
+
+        if (!snapshot.exists()) {
+          alert(`ℹ️ Tidak ada data di rumah1 untuk market ${market}.`);
+          return;
+        }
+
+        const data = snapshot.val();
+        const entries = Object.values(data);
+        const latest = entries[entries.length - 1]; // entri terbaru
+
+        if (!latest || !latest.res || !/^\d{4}$/.test(latest.res)) {
+          alert("⚠️ Data 'res' tidak valid di rumah1.");
+          return;
+        }
+
+        document.getElementById('currResult').value = latest.res;
+        document.getElementById('market').value = market;
+        localStorage.setItem('lastMarket', market);
+
+      } catch (err) {
+        console.error("Gagal muat dari rumah1:", err);
+        alert("❌ Gagal memuat data: " + (err.message || "Cek koneksi"));
+      }
     }
 
-    textarea.addEventListener('blur', saveEdit);
-    textarea.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        saveEdit();
-        textarea.blur();
+    // ─── [SEMUA DATA KONTROL B–Y SAMA SEPERTI ASLI] ─────────────
+    const KONTROL_B = {
+      1: ["1", "2", "6", "7", "8", "9"],
+      2: ["0", "2", "3", "7", "8", "9"],
+      3: ["0", "1", "3", "4", "8", "9"],
+      4: ["0", "1", "2", "4", "5", "9"],
+      5: ["0", "1", "2", "3", "5", "6"],
+      6: ["1", "2", "3", "4", "6", "7"],
+      7: ["2", "3", "4", "5", "7", "8"],
+      8: ["3", "4", "5", "6", "8", "9"],
+      9: ["0", "4", "5", "6", "7", "9"],
+      0: ["1", "2", "3", "4", "5", "6"]
+    };
+
+    const KONTROL_C = {
+      0: ["3", "4", "5", "6", "8", "9"],
+      1: ["0", "2", "3", "4", "6", "9"],
+      2: ["1", "2", "3", "5", "6", "8"],
+      3: ["0", "1", "2", "3", "4", "9"],
+      4: ["1", "2", "3", "6", "8", "9"],
+      5: ["0", "1", "2", "3", "4", "5", "9"],
+      6: ["0", "2", "3", "5", "6", "9"],
+      7: ["0", "1", "2", "3", "8", "9"],
+      8: ["2", "3", "4", "6", "7", "9"],
+      9: ["1", "2", "3", "4", "5", "6"]
+    };
+
+    const KONTROL_D = KONTROL_B;
+
+    const KONTROL_G = {
+      0: ["0", "1", "2", "7", "8", "9"],
+      1: ["0", "1", "2", "3", "8", "9"],
+      2: ["0", "1", "2", "3", "4", "9"],
+      3: ["0", "1", "2", "3", "4", "5"],
+      4: ["1", "2", "3", "4", "5", "6"],
+      5: ["2", "3", "4", "5", "6", "7"],
+      6: ["3", "4", "5", "6", "7", "8"],
+      7: ["4", "5", "6", "7", "8", "9"],
+      8: ["5", "6", "7", "8", "9", "0"],
+      9: ["6", "7", "8", "9", "0", "1"]
+    };
+
+    const KONTROL_H = {
+      0: ["0", "1", "2", "5", "6", "7"],
+      1: ["1", "2", "3", "6", "7", "8"],
+      2: ["2", "3", "4", "7", "8", "9"],
+      3: ["0", "3", "4", "5", "8", "9"],
+      4: ["0", "2", "4", "5", "6", "9"],
+      5: ["0", "1", "2", "5", "6", "7"],
+      6: ["1", "2", "3", "6", "7", "8"],
+      7: ["2", "3", "4", "7", "8", "9"],
+      8: ["0", "3", "4", "5", "8", "9"],
+      9: ["0", "1", "4", "5", "6", "9"]
+    };
+
+    const KONTROL_I = {
+      0: ["0", "2", "3", "5", "6", "7"],
+      1: ["0", "3", "4", "6", "7", "9"],
+      2: ["0", "1", "5", "6", "7", "8"],
+      3: ["2", "5", "6", "7", "8", "9"],
+      4: ["0", "2", "3", "5", "6", "7"],
+      5: ["0", "1", "4", "7", "8", "9"],
+      6: ["0", "1", "2", "7", "8", "9"],
+      7: ["0", "1", "2", "3", "6", "9"],
+      8: ["0", "1", "2", "3", "4", "5"],
+      9: ["0", "3", "4", "5", "7", "8"]
+    };
+
+    const KONTROL_J = {
+      0: ["4", "5", "6", "7", "8", "9"],
+      1: ["5", "6", "7", "8", "9", "0"],
+      2: ["6", "7", "8", "9", "0", "1"],
+      3: ["7", "8", "9", "0", "1", "2"],
+      4: ["8", "9", "0", "1", "2", "3"],
+      5: ["9", "0", "1", "2", "3", "4"],
+      6: ["0", "1", "2", "3", "4", "5"],
+      7: ["1", "2", "3", "4", "5", "6"],
+      8: ["2", "3", "4", "5", "6", "7"],
+      9: ["3", "4", "5", "6", "7", "8"]
+    };
+
+    const KONTROL_K = {
+      0: ["0", "3", "4", "5", "6", "9"],
+      1: ["0", "1", "4", "5", "6", "7"],
+      2: ["1", "2", "5", "6", "7", "8"],
+      3: ["2", "3", "6", "7", "8", "9"],
+      4: ["0", "3", "4", "7", "8", "9"],
+      5: ["0", "1", "4", "5", "8", "9"],
+      6: ["0", "1", "2", "5", "6", "9"],
+      7: ["0", "1", "2", "3", "6", "7"],
+      8: ["1", "2", "3", "4", "7", "8"],
+      9: ["2", "3", "4", "5", "8", "9"]
+    };
+
+    const KONTROL_R = {
+      0: ["5", "6", "7", "8", "9", "0"],
+      1: ["1", "2", "3", "4", "5", "6"],
+      2: ["7", "8", "9", "0", "1", "2"],
+      3: ["3", "4", "5", "6", "7", "8"],
+      4: ["9", "0", "1", "2", "3", "4"],
+      5: ["5", "6", "7", "8", "9", "0"],
+      6: ["1", "2", "3", "4", "5", "6"],
+      7: ["7", "8", "9", "0", "1", "2"],
+      8: ["3", "4", "5", "6", "7", "8"],
+      9: ["9", "0", "1", "2", "3", "4"]
+    };
+
+    const KONTROL_Y = {
+      0: ["8", "9", "0", "1", "2", "3"],
+      1: ["9", "0", "1", "2", "3", "4"],
+      2: ["0", "1", "2", "3", "4", "5"],
+      3: ["1", "2", "3", "4", "5", "6"],
+      4: ["2", "3", "4", "5", "6", "7"],
+      5: ["3", "4", "5", "6", "7", "8"],
+      6: ["4", "5", "6", "7", "8", "9"],
+      7: ["5", "6", "7", "8", "9", "0"],
+      8: ["6", "7", "8", "9", "0", "1"],
+      9: ["7", "8", "9", "0", "1", "2"]
+    };
+
+    // ─── FUNGSI BANTUAN ─────────────────────────────────────
+    function digitalRoot(n) {
+      let s = n;
+      while (s >= 10) {
+        s = String(s).split('').reduce((a, b) => parseInt(a) + parseInt(b), 0);
+      }
+      return s;
+    }
+
+    function getInverseDigits(allowed) {
+      const all = ["0","1","2","3","4","5","6","7","8","9"];
+      return all.filter(d => !allowed.includes(d));
+    }
+
+    function generateAll2DFromDigits(digits) {
+      const unique = [...new Set(digits)];
+      const combos = [];
+      for (const a of unique) {
+        for (const b of unique) {
+          combos.push(a + b);
+        }
+      }
+      return new Set(combos);
+    }
+
+    function getAll2D() {
+      return Array.from({length: 100}, (_, i) => i.toString().padStart(2, '0'));
+    }
+
+    // ─── KONTROL FUNGSI ──────────────────────────────────────
+    function get2DSetFromB(curr) {
+      const as = parseInt(curr[0]);
+      const ekor = parseInt(curr[3]);
+      const dasar = digitalRoot(as + ekor);
+      const allowed = KONTROL_B[dasar] || [];
+      const inverse = getInverseDigits(allowed);
+      return generateAll2DFromDigits(inverse);
+    }
+
+    function get2DSetFromC(curr) {
+      const kepala = curr[2];
+      const allowed = KONTROL_C[kepala] || [];
+      const inverse = getInverseDigits(allowed);
+      return generateAll2DFromDigits(inverse);
+    }
+
+    function get2DSetFromD(curr) {
+      const kop = parseInt(curr[1]);
+      const kepala = parseInt(curr[2]);
+      const dasar = digitalRoot(kop + kepala);
+      const allowed = KONTROL_D[dasar] || [];
+      const inverse = getInverseDigits(allowed);
+      return generateAll2DFromDigits(inverse);
+    }
+
+    function get2DSetFromG(curr) {
+      const kop = parseInt(curr[1]);
+      const kepala = parseInt(curr[2]);
+      const dasar = (kop + kepala) % 10;
+      const allowed = KONTROL_G[dasar] || [];
+      const inverse = getInverseDigits(allowed);
+      return generateAll2DFromDigits(inverse);
+    }
+
+    function get2DSetFromH(curr) {
+      const kepala = curr[2];
+      const allowed = KONTROL_H[kepala] || [];
+      const inverse = getInverseDigits(allowed);
+      return generateAll2DFromDigits(inverse);
+    }
+
+    function get2DSetFromI(curr) {
+      const ekor = curr[3];
+      const allowed = KONTROL_I[ekor] || [];
+      const inverse = getInverseDigits(allowed);
+      return generateAll2DFromDigits(inverse);
+    }
+
+    function get2DSetFromJ(curr) {
+      const as = parseInt(curr[0]);
+      const ekor = parseInt(curr[3]);
+      const dasar = (as + ekor) % 10;
+      const allowed = KONTROL_J[dasar] || [];
+      const inverse = getInverseDigits(allowed);
+      return generateAll2DFromDigits(inverse);
+    }
+
+    function get2DSetFromK(curr) {
+      const kepala = parseInt(curr[2]);
+      const ekor = parseInt(curr[3]);
+      const dasar = (kepala + ekor) % 10;
+      const allowed = KONTROL_K[dasar] || [];
+      const inverse = getInverseDigits(allowed);
+      return generateAll2DFromDigits(inverse);
+    }
+
+    function get2DSetFromR(curr) {
+      const ekor = curr[3];
+      const allowed = KONTROL_R[ekor] || [];
+      const inverse = getInverseDigits(allowed);
+      return generateAll2DFromDigits(inverse);
+    }
+
+    function get2DSetFromY(curr) {
+      const kop = parseInt(curr[1]);
+      const ekor = parseInt(curr[3]);
+      const dasar = (kop + ekor) % 10;
+      const allowed = KONTROL_Y[dasar] || [];
+      const inverse = getInverseDigits(allowed);
+      return generateAll2DFromDigits(inverse);
+    }
+
+    // ─── HITUNG SEMUA ────────────────────────────────────────
+    function calculateAll(curr) {
+      const setB = get2DSetFromB(curr);
+      const setC = get2DSetFromC(curr);
+      const setD = get2DSetFromD(curr);
+      const setG = get2DSetFromG(curr);
+      const setH = get2DSetFromH(curr);
+      const setI = get2DSetFromI(curr);
+      const setJ = get2DSetFromJ(curr);
+      const setK = get2DSetFromK(curr);
+      const setR = get2DSetFromR(curr);
+      const setY = get2DSetFromY(curr);
+
+      const all2d = getAll2D();
+      const freqMap = {};
+      const notCaught = [];
+
+      for (const twoDigit of all2d) {
+        let count = 0;
+        if (setB.has(twoDigit)) count++;
+        if (setC.has(twoDigit)) count++;
+        if (setD.has(twoDigit)) count++;
+        if (setG.has(twoDigit)) count++;
+        if (setH.has(twoDigit)) count++;
+        if (setI.has(twoDigit)) count++;
+        if (setJ.has(twoDigit)) count++;
+        if (setK.has(twoDigit)) count++;
+        if (setR.has(twoDigit)) count++;
+        if (setY.has(twoDigit)) count++;
+
+        if (count > 0) {
+          if (!freqMap[count]) freqMap[count] = [];
+          freqMap[count].push(twoDigit);
+        } else {
+          notCaught.push(twoDigit);
+        }
+      }
+
+      return { freqMap, notCaught, input: curr };
+    }
+
+    // ─── SALIN TEKS (DIPERBARUI) ───────────────────────────────────────────
+    function salinTeks(btn) {
+      const section = btn.closest('.section');
+      const valueDiv = section ? section.querySelector('.value') : null;
+      if (!valueDiv) return;
+      
+      const teks = valueDiv.innerText.trim();
+      if (!teks) return;
+
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(teks).then(() => {
+          const original = btn.textContent;
+          btn.textContent = '✅ Tersalin!';
+          setTimeout(() => btn.textContent = original, 1500);
+        });
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = teks;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        btn.textContent = '✅';
+        setTimeout(() => btn.textContent = '📋 Salin', 1000);
+      }
+    }
+
+    // ─── EDIT TEKS (FITUR BARU) ────────────────────────────────────────────
+    function toggleEdit(btn) {
+      const section = btn.closest('.section');
+      const valueDiv = section ? section.querySelector('.value') : null;
+      if (!valueDiv) return;
+
+      const isEditing = valueDiv.getAttribute('contenteditable') === 'true';
+      
+      if (isEditing) {
+        // Selesai Edit
+        valueDiv.setAttribute('contenteditable', 'false');
+        // Bersihkan format bawaan contenteditable (seperti <br> atau spasi berlebih)
+        valueDiv.innerText = valueDiv.innerText.trim().replace(/\n/g, '');
+        btn.textContent = '✏️ Edit';
+        btn.classList.remove('editing');
+      } else {
+        // Mulai Edit
+        valueDiv.setAttribute('contenteditable', 'true');
+        valueDiv.focus();
+        // Pindahkan kursor ke akhir teks
+        const range = document.createRange();
+        range.selectNodeContents(valueDiv);
+        range.collapse(false);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        
+        btn.textContent = '💾 Selesai';
+        btn.classList.add('editing');
+      }
+    }
+
+    // ─── TAMPILKAN (DIPERBARUI) ───────────────────────────────────────────
+    function displayResults(freqMap, notCaught, input) {
+      const container = document.getElementById('resultsContainer');
+      container.innerHTML = '';
+
+      window.lastResult = { freqMap, notCaught, input, market: document.getElementById('market').value };
+
+      const notCaughtText = notCaught.length > 0 ? notCaught.join('*') : '--';
+      const notCaughtSection = document.createElement('div');
+      notCaughtSection.className = 'section';
+      notCaughtSection.innerHTML = `
+        <h2>❌ 2D Tidak Terjaring</h2>
+        <div class="value not-caught">${notCaughtText}</div>
+        <div class="action-buttons">
+          <button class="copy-btn" onclick="salinTeks(this)">📋 Salin</button>
+          <button class="edit-btn" onclick="toggleEdit(this)">✏️ Edit</button>
+        </div>
+      `;
+      container.appendChild(notCaughtSection);
+
+      if (Object.keys(freqMap).length === 0) {
+        container.innerHTML += '<div class="section"><h2>🎯 Tidak ada 2D yang terjaring</h2></div>';
+        return;
+      }
+
+      const sortedFreq = Object.keys(freqMap).map(Number).sort((a, b) => a - b);
+      for (const freq of sortedFreq) {
+        const list = freqMap[freq].sort();
+        const text = list.join('*');
+        let className = 'freq-1';
+        if (freq === 2) className = 'freq-2';
+        else if (freq === 3) className = 'freq-3';
+        else if (freq === 4) className = 'freq-4';
+        else if (freq === 5) className = 'freq-5';
+        else if (freq === 6) className = 'freq-6';
+        else if (freq === 7) className = 'freq-7';
+        else if (freq === 8) className = 'freq-8';
+        else if (freq === 9) className = 'freq-9';
+        else if (freq === 10) className = 'freq-10';
+
+        const section = document.createElement('div');
+        section.className = 'section';
+        section.innerHTML = `
+          <h2>🎯 Terjaring ${freq}x</h2>
+          <div class="value ${className}">${text}</div>
+          <div class="action-buttons">
+            <button class="copy-btn" onclick="salinTeks(this)">📋 Salin</button>
+            <button class="edit-btn" onclick="toggleEdit(this)">✏️ Edit</button>
+          </div>
+        `;
+        container.appendChild(section);
+      }
+    }
+
+    // ─── SIMPAN KE FIREBASE (DIPERBARUI AGAR MEMBACA HASIL EDIT) ──────────
+    function simpanKeFirebase() {
+      const statusEl = document.getElementById('save-status');
+      statusEl.className = 'error';
+      statusEl.style.display = 'none';
+
+      if (!window.lastResult) {
+        statusEl.textContent = '⚠️ Belum ada hasil untuk disimpan.';
+        statusEl.style.display = 'block';
+        return;
+      }
+
+      const { input, market } = window.lastResult;
+      const sections = {};
+      
+      // Ambil data langsung dari DOM untuk menghargai hasil edit user
+      const container = document.getElementById('resultsContainer');
+      const sectionDivs = container.querySelectorAll('.section');
+      
+      sectionDivs.forEach(sec => {
+        const h2 = sec.querySelector('h2');
+        const valueDiv = sec.querySelector('.value');
+        if (h2 && valueDiv) {
+          const title = h2.innerText;
+          const text = valueDiv.innerText.trim().replace(/\n/g, '');
+          if (title.includes('Tidak Terjaring')) {
+            sections.notCaught = text || '--';
+          } else if (title.includes('Terjaring')) {
+            const match = title.match(/Terjaring\s+(\d+)x/);
+            if (match) {
+              sections[`terjaring_${match[1]}x`] = text;
+            }
+          }
+        }
+      });
+
+      const data = {
+        input: input,
+        market: market,
+        hasil: sections,
+        timestamp: firebase.database.ServerValue.TIMESTAMP,
+        fitur: "rumah7"
+      };
+
+      // Simpan ke path: rumah7
+      database.ref('rumah7').push(data)
+        .then(() => {
+          statusEl.textContent = '✅ Berhasil disimpan ke cloud!';
+          statusEl.className = 'success';
+          statusEl.style.display = 'block';
+        })
+        .catch(err => {
+          statusEl.textContent = '❌ Gagal simpan: ' + err.message;
+          statusEl.className = 'error';
+          statusEl.style.display = 'block';
+        });
+    }
+
+    // ─── INISIALISASI ───────────────────────────────────────
+    document.getElementById('generateBtn').addEventListener('click', () => {
+      const input = document.getElementById('currResult').value.trim();
+      const errorEl = document.getElementById('error');
+      errorEl.style.display = 'none';
+
+      if (!/^\d{4}$/.test(input)) {
+        errorEl.textContent = '⚠️ Masukkan 4 digit angka';
+        errorEl.style.display = 'block';
+        document.getElementById('resultsContainer').innerHTML = '';
+        delete window.lastResult;
+        return;
+      }
+
+      try {
+        const result = calculateAll(input);
+        displayResults(result.freqMap, result.notCaught, input);
+      } catch (e) {
+        errorEl.textContent = 'Terjadi kesalahan saat memproses.';
+        errorEl.style.display = 'block';
+        delete window.lastResult;
       }
     });
-  }
 
-  // ─── TAMPILKAN ───────────────────────────────────────────
-  function displayResults(freqMap, notCaught, input) {
-    const container = document.getElementById('resultsContainer');
-    container.innerHTML = '';
+    document.getElementById('saveBtn').addEventListener('click', simpanKeFirebase);
+    document.getElementById('loadBtn').addEventListener('click', () => {
+      const market = document.getElementById('market').value;
+      loadFromRumah1(market);
+    });
 
-    window.lastResult = { freqMap, notCaught, input, market: document.getElementById('market').value };
+    document.getElementById('currResult').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('generateBtn').click();
+      }
+    });
 
-    const notCaughtText = notCaught.length > 0 ? notCaught.join('*') : '--';
-    const notCaughtSection = document.createElement('div');
-    notCaughtSection.className = 'section';
-    notCaughtSection.innerHTML = `
-      <h2>❌ 2D Tidak Terjaring</h2>
-      <div class="value not-caught">${notCaughtText}</div>
-      <button class="copy-btn" onclick="salinTeks('${notCaughtText.replace(/'/g, "\\'")}', this)">📋 Salin</button>
-      <button class="copy-btn" onclick="editTeks(this.previousElementSibling)">✏️ Edit</button>
-    `;
-    container.appendChild(notCaughtSection);
-
-    if (Object.keys(freqMap).length === 0) {
-      container.innerHTML += '<div class="section"><h2>🎯 Tidak ada 2D yang terjaring</h2></div>';
-      return;
-    }
-
-    const sortedFreq = Object.keys(freqMap).map(Number).sort((a, b) => a - b);
-    for (const freq of sortedFreq) {
-      const list = freqMap[freq].sort();
-      const text = list.join('*');
-      let className = 'freq-1';
-      if (freq === 2) className = 'freq-2';
-      else if (freq === 3) className = 'freq-3';
-      else if (freq === 4) className = 'freq-4';
-      else if (freq === 5) className = 'freq-5';
-      else if (freq === 6) className = 'freq-6';
-      else if (freq === 7) className = 'freq-7';
-      else if (freq === 8) className = 'freq-8';
-      else if (freq === 9) className = 'freq-9';
-      else if (freq === 10) className = 'freq-10';
-
-      const section = document.createElement('div');
-      section.className = 'section';
-      // Escape single quote untuk inline JS
-      const safeText = text.replace(/'/g, "\\'");
-      section.innerHTML = `
-        <h2>🎯 Terjaring ${freq}x</h2>
-        <div class="value ${className}">${text}</div>
-        <button class="copy-btn" onclick="salinTeks('${safeText}', this)">📋 Salin</button>
-        <button class="copy-btn" onclick="editTeks(this.previousElementSibling)">✏️ Edit</button>
-      `;
-      container.appendChild(section);
-    }
-  }
-
-  // ... [SISA KODE SETELAHNYA TETAP SAMA] ...
-</script>
+    // Auto-load lastMarket saat halaman dibuka
+    window.addEventListener('load', () => {
+      const lastMarket = localStorage.getItem('lastMarket');
+      if (lastMarket && MARKETS.includes(lastMarket)) {
+        document.getElementById('market').value = lastMarket;
+      }
+    });
+  </script>
+</body>
+</html>
