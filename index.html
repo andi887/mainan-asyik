@@ -126,6 +126,58 @@
         grid-template-columns: 1fr;
       }
       h1 {
+        font-size: 1.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Rumah Utama</h1>
+
+    <label for="period">Pilih Periode / Market</label>
+    <select id="period">
+      <option value="">-- Pilih Market --</option>
+      <option value="Cambodia">Cambodia</option>
+      <option value="Sidney">Sidney</option>
+      <option value="China">China</option>
+       <option value="SGP">SGP</option>
+      <option value="Japan">Japan</option>
+      <option value="Taiwan">Taiwan</option>
+      <option value="Hongkong">Hongkong</option>
+    </select>
+
+    <div id="status"></div>
+
+    <button id="savePeriod">Simpan Periode Aktif</button>
+    <button id="resetBtn">Beranda</button>
+
+    <div id="childHouses">
+      <h2>Anak Rumah</h2>
+      <div class="house-grid" id="houseList"></div>
+    </div>
+  </div>
+
+  <script>
+    const houseNames = {
+      1: 'data statistik',
+      2: 'dasar',
+      3: 'kamar',
+      4: 'jalur',
+      5: 'kontrol',
+      6: 'besar/kecil',
+      7: 'rampa40',
+      8: 'kalkulator',
+      9: 'filter',
+      10: 'lemari',
+      11: 'rata muncul',
+      12: 'ranjang',
+      13: 'tv',
+      14: 'ganjil/genap',
+      15: 'T@RD@L',
+      16: 'beting show',
+      17: 'pustaka',
+      18: 'jarak lemah',
       19: 'RES HARIAN',
       20: 'KHUSUS NYA',
       21: 'tabel',
