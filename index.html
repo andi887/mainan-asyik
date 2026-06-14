@@ -3,253 +3,663 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Rumah Utama</title>
+  <title>rumah1</title>
   <style>
     * {
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      box-sizing: border-box;
     }
-
     body {
-      background: #f0f2f5;
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      color: #333;
       padding: 16px;
-      min-height: 100vh;
+      line-height: 1.5;
     }
-
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 24px;
-      color: #2c3e50;
-      font-size: 1.8rem;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 12px;
-      font-weight: bold;
-      color: #374151;
-    }
-
-    select, button {
-      width: 100%;
-      padding: 16px;
-      margin-bottom: 18px;
-      border: 1px solid #d1d5db;
-      border-radius: 12px;
-      font-size: 16px; /* Penting untuk mencegah zoom otomatis di iOS */
-      outline: none;
-    }
-
-    button {
-      background: #4CAF50;
+    .back-btn {
+      display: inline-block;
+      margin-bottom: 16px;
+      padding: 10px 20px;
+      background: #2ecc71;
       color: white;
-      border: none;
-      cursor: pointer;
+      text-decoration: none;
+      border-radius: 8px;
       font-weight: bold;
-      transition: background 0.2s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-
-    button:hover {
-      background: #45a049;
+    .back-btn:hover {
+      background: #27ae60;
     }
-
-    #resetBtn {
-      background: #f44336;
+    .feature-label {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #2c3e50;
+      font-size: 1.3em;
     }
-
-    #resetBtn:hover {
-      background: #d32f2f;
+    #market-status {
+      text-align: center;
+      font-weight: bold;
+      color: #4CAF50;
+      margin-bottom: 10px;
     }
-
+    .table-container {
+      overflow-x: auto;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      background: white;
+      padding: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      border: 1px solid #ccc;
+    }
+    table {
+      width: 100%;
+      min-width: 920px;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+      font-size: 0.9em;
+    }
+    th {
+      background-color: #f2f2f9;
+      position: sticky;
+      top: 0;
+    }
+    input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center;
+      border: 1px solid transparent;
+      outline: none;
+      padding: 6px;
+      transition: border-color 0.3s;
+    }
+    input[type="text"]:focus {
+      border-color: #2196F3;
+      background-color: #f9f9f9;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 8px 14px;
+      font-size: 0.9em;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.1s;
+    }
+    button:active {
+      transform: scale(0.98);
+    }
+    .add-row-btn { background-color: #FF9800; color: white; }
+    .save-firebase-btn { background-color: #4CAF50; color: white; }
+    .delete-btn {
+      background-color: #f44336;
+      color: white;
+      padding: 4px 8px;
+      font-size: 0.8em;
+    }
+    .input-error { color: red; font-weight: bold; }
     #status {
       text-align: center;
-      min-height: 24px;
+      margin: 8px 0;
+      min-height: 20px;
       font-weight: bold;
-      margin-bottom: 12px;
-      color: #10b981;
     }
-    .error { color: #ef4444; }
-
-    #childHouses {
-      display: none;
-      margin-top: 32px;
-    }
-
-    #childHouses h2 {
-      margin-bottom: 20px;
-      color: #2c3e50;
-      text-align: center;
-    }
-
-    .house-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 16px;
-    }
-
-    .house-btn {
-      padding: 16px 12px;
-      background: #2196F3;
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-size: 14px;
-      text-align: center;
-      cursor: pointer;
-      text-decoration: none;
-      display: block;
-      line-height: 1.4;
-      min-height: 60px;
-      transition: background 0.2s;
-    }
-
-    .house-btn:hover {
-      background: #1976D2;
-    }
-
-    @media (max-width: 480px) {
-      .container {
-        padding: 20px 16px;
-      }
-      .house-grid {
-        grid-template-columns: 1fr;
-      }
-      h1 {
-        font-size: 1.6rem;
-      }
+    .success { color: #4CAF50; }
+    .error { color: #f44336; }
+    @media (max-width: 600px) {
+      .controls { flex-direction: column; align-items: center; }
+      button { width: 100%; max-width: 200px; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Rumah Utama</h1>
+  <a href="index.html" class="back-btn">← Kembali ke Beranda</a>
+  <div class="feature-label">rumah1</div>
+  <div id="market-status"></div>
+  <div id="status"></div>
 
-    <label for="period">Pilih Periode / Market</label>
-    <select id="period">
-      <option value="">-- Pilih Market --</option>
-      <option value="Cambodia">Cambodia</option>
-      <option value="Sidney">Sidney</option>
-      <option value="China">China</option>
-       <option value="SGP">SGP</option>
-      <option value="Japan">Japan</option>
-      <option value="Taiwan">Taiwan</option>
-      <option value="Hongkong">Hongkong</option>
-    </select>
-
-    <div id="status"></div>
-
-    <button id="savePeriod">Simpan Periode Aktif</button>
-    <button id="resetBtn">Beranda</button>
-
-    <div id="childHouses">
-      <h2>Anak Rumah</h2>
-      <div class="house-grid" id="houseList"></div>
-    </div>
+  <div class="controls">
+    <button class="add-row-btn" id="add-row">Tambah Baris</button>
+    <button class="save-firebase-btn" id="save-firebase">Simpan ke Firebase</button>
   </div>
 
+  <div class="table-container">
+    <table id="rumah1-table">
+      <thead>
+        <tr>
+          <th>tgl</th>
+          <th>res</th>
+          <th>B</th>
+          <th>C</th>
+          <th>D</th>
+          <th>G</th>
+          <th>H</th>
+          <th>I</th>
+          <th>J</th>
+          <th>K</th>
+          <th>R</th>
+          <th>Y</th>
+          <th>A</th>
+          <th>M</th>
+          <th>N</th>
+          <th>L</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Data akan dimuat di sini -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Firebase Dependencies (Compat Mode) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="./config-firebase.js"></script>
+
   <script>
-    const houseNames = {
-      1: 'data statistik',
-      2: 'dasar',
-      3: 'kamar',
-      4: 'jalur',
-      5: 'kontrol',
-      6: 'besar/kecil',
-      7: 'rampa40',
-      8: 'kalkulator',
-      9: 'filter',
-      10: 'lemari',
-      11: 'rata muncul',
-      12: 'ranjang',
-      13: 'tv',
-      14: 'ganjil/genap',
-      15: 'T@RD@L',
-      16: 'beting show',
-      17: 'pustaka',
-      18: 'jarak lemah',
-      19: 'RES HARIAN',
-      20: 'KHUSUS NYA',
-      21: 'tabel',
-      22: 'sketsa bil',
-      23: 'BBFS',
-      24: 'percobaan',
-      25: 'coming soon',
-      26: 'coming soon',
-      27: 'coming soon',
-      28: 'pindahan data'
-    };
+    // === KONSTANTA KONTROL ===
+    const KONTROL_B = {1:["1","2","6","7","8","9"],2:["0","2","3","7","8","9"],3:["0","1","3","4","8","9"],4:["0","1","2","4","5","9"],5:["0","1","2","3","5","6"],6:["1","2","3","4","6","7"],7:["2","3","4","5","7","8"],8:["3","4","5","6","8","9"],9:["0","4","5","6","7","9"],0:["1","2","3","4","5","6"]};
+    const KONTROL_C = {0:["3","4","5","6","8","9"],1:["0","2","3","4","6","9"],2:["1","2","3","5","6","8"],3:["0","1","2","3","4","9"],4:["1","2","3","6","8","9"],5:["0","1","2","3","4","5","9"],6:["0","2","3","5","6","9"],7:["0","1","2","3","8","9"],8:["2","3","4","6","7","9"],9:["1","2","3","4","5","6"]};
+    const KONTROL_G = {0:["0","1","2","7","8","9"],1:["0","1","2","3","8","9"],2:["0","1","2","3","4","9"],3:["0","1","2","3","4","5"],4:["1","2","3","4","5","6"],5:["2","3","4","5","6","7"],6:["3","4","5","6","7","8"],7:["4","5","6","7","8","9"],8:["5","6","7","8","9","0"],9:["6","7","8","9","0","1"]};
+    const KONTROL_H = {0:["0","1","2","5","6","7"],1:["1","2","3","6","7","8"],2:["2","3","4","7","8","9"],3:["0","3","4","5","8","9"],4:["0","2","4","5","6","9"],5:["0","1","2","5","6","7"],6:["1","2","3","6","7","8"],7:["2","3","4","7","8","9"],8:["0","3","4","5","8","9"],9:["0","1","4","5","6","9"]};
+    const KONTROL_I = {0:["0","2","3","5","6","7"],1:["0","3","4","6","7","9"],2:["0","1","5","6","7","8"],3:["2","5","6","7","8","9"],4:["0","2","3","5","6","7"],5:["0","1","4","7","8","9"],6:["0","1","2","7","8","9"],7:["0","1","2","3","6","9"],8:["0","1","2","3","4","5"],9:["0","3","4","5","7","8"]};
+    const KONTROL_J = {0:["4","5","6","7","8","9"],1:["5","6","7","8","9","0"],2:["6","7","8","9","0","1"],3:["7","8","9","0","1","2"],4:["8","9","0","1","2","3"],5:["9","0","1","2","3","4"],6:["0","1","2","3","4","5"],7:["1","2","3","4","5","6"],8:["2","3","4","5","6","7"],9:["3","4","5","6","7","8"]};
+    const KONTROL_K = {0:["0","3","4","5","6","9"],1:["0","1","4","5","6","7"],2:["1","2","5","6","7","8"],3:["2","3","6","7","8","9"],4:["0","3","4","7","8","9"],5:["0","1","4","5","8","9"],6:["0","1","2","5","6","9"],7:["0","1","2","3","6","7"],8:["1","2","3","4","7","8"],9:["2","3","4","5","8","9"]};
+    const KONTROL_R = {0:["5","6","7","8","9","0"],1:["1","2","3","4","5","6"],2:["7","8","9","0","1","2"],3:["3","4","5","6","7","8"],4:["9","0","1","2","3","4"],5:["5","6","7","8","9","0"],6:["1","2","3","4","5","6"],7:["7","8","9","0","1","2"],8:["3","4","5","6","7","8"],9:["9","0","1","2","3","4"]};
+    const KONTROL_Y = {0:["8","9","0","1","2","3"],1:["9","0","1","2","3","4"],2:["0","1","2","3","4","5"],3:["1","2","3","4","5","6"],4:["2","3","4","5","6","7"],5:["3","4","5","6","7","8"],6:["4","5","6","7","8","9"],7:["5","6","7","8","9","0"],8:["6","7","8","9","0","1"],9:["7","8","9","0","1","2"]};
+    const KONTROL_A = {1:["0","1","3","6","7"],2:["1","2","3","7","8"],3:["2","3","4","8","9"],4:["0","3","4","5","9"],5:["0","1","4","5","6"],6:["1","2","5","6","7"],7:["2","3","6","7","8"],8:["3","4","7","8","9"],9:["0","4","5","8","9"]};
+    const KONTROL_M = {0:["9","0","1","2","3"],1:["8","9","0","1","2"],2:["3","4","5","6","7"],3:["3","4","5","6","7"],4:["5","6","7","8","9"],5:["0","1","2","3","4"],6:["7","8","9","0","1"],7:["2","3","4","5","6"],8:["1","2","3","4","5"],9:["4","5","6","7","8"]};
+    const KONTROL_N = {0:["1","4","6","9"],1:["0","2","5","7"],2:["1","3","6","8"],3:["2","4","7","9"],4:["0","3","5","8"],5:["6","4","1","9"],6:["7","5","0","2"],7:["8","6","3","1"],8:["9","7","4","2"],9:["0","8","5","3"]};
 
-    let activeMarket = null;
-    const statusEl = document.getElementById('status');
-
-    // === MUAT MARKET AKTIF SAAT HALAMAN DIMUAT ===
-    document.addEventListener('DOMContentLoaded', () => {
-      const savedMarket = localStorage.getItem('marketAktif');
-      if (savedMarket) {
-        document.getElementById('period').value = savedMarket;
-        activeMarket = savedMarket;
-        statusEl.textContent = `✅ Market aktif: ${savedMarket}`;
-        renderChildHouses();
+    // === FUNGSI PERHITUNGAN (100% UTUH SESUAI ASLI) ===
+    function calculateKontrolB(resSourceValue, resTargetValue) {
+      if (!/^\d+$/.test(resSourceValue) || resSourceValue.length < 2 || !/^\d+$/.test(resTargetValue) || resTargetValue.length < 2) {
+        return { value: "", isError: false };
       }
-    });
+      const twoDigitsSource = resSourceValue.slice(-2);
+      const d1s = twoDigitsSource[0];
+      const d2s = twoDigitsSource[1];
+      const sum = parseInt(d1s) + parseInt(d2s);
+      let dasar = (sum === 10) ? 1 : (sum % 10);
+      const kontrolList = KONTROL_B[dasar];
+      if (!kontrolList) return { value: "", isError: false };
+      const twoDigitsTarget = resTargetValue.slice(-2);
+      const d1t = twoDigitsTarget[0];
+      const d2t = twoDigitsTarget[1];
+      const resultDigits = [];
+      [d1t, d2t].forEach(digit => {
+        if (kontrolList.includes(digit)) resultDigits.push(digit);
+      });
+      if (resultDigits.length > 0) return { value: resultDigits.join(''), isError: false };
+      else return { value: "X", isError: true };
+    }
 
-    // === SIMPAN MARKET KE LOCALSTORAGE ===
-    document.getElementById('savePeriod').addEventListener('click', () => {
-      const selected = document.getElementById('period').value;
-      if (!selected) {
-        statusEl.textContent = '⚠️ Pilih market terlebih dahulu.';
-        statusEl.className = 'error';
+    function calculateKontrolC(resSourceValue, resTargetValue) {
+      const kepalaSource = resSourceValue[2];
+      const kontrolList = KONTROL_C[kepalaSource];
+      if (!kontrolList) return { value: "", isError: false };
+      const twoDigitsTarget = resTargetValue.slice(-2);
+      const d1t = twoDigitsTarget[0];
+      const d2t = twoDigitsTarget[1];
+      const resultDigits = [];
+      [d1t, d2t].forEach(digit => {
+        if (kontrolList.includes(digit)) resultDigits.push(digit);
+      });
+      if (resultDigits.length > 0) return { value: resultDigits.join(''), isError: false };
+      else return { value: "X", isError: true };
+    }
+
+    function calculateKontrolD(resSourceValue, resTargetValue) {
+      if (!/^\d+$/.test(resSourceValue) || resSourceValue.length < 3 || !/^\d+$/.test(resTargetValue) || resTargetValue.length < 2) {
+        return { value: "", isError: false };
+      }
+      const kop = resSourceValue[1];
+      const kepala = resSourceValue[2];
+      const sum = parseInt(kop) + parseInt(kepala);
+      let dasar = (sum === 10) ? 1 : (sum % 10);
+      const kontrolList = KONTROL_B[dasar];
+      if (!kontrolList) return { value: "", isError: false };
+      const twoDigitsTarget = resTargetValue.slice(-2);
+      const d1t = twoDigitsTarget[0];
+      const d2t = twoDigitsTarget[1];
+      const resultDigits = [];
+      [d1t, d2t].forEach(digit => {
+        if (kontrolList.includes(digit)) resultDigits.push(digit);
+      });
+      if (resultDigits.length > 0) return { value: resultDigits.join(''), isError: false };
+      else return { value: "X", isError: true };
+    }
+
+    function calculateKontrolG(resSourceValue, resTargetValue) {
+      if (!/^\d+$/.test(resSourceValue) || resSourceValue.length < 3 || !/^\d+$/.test(resTargetValue) || resTargetValue.length < 2) {
+        return { value: "", isError: false };
+      }
+      const kop = resSourceValue[1];
+      const kepala = resSourceValue[2];
+      const sum = parseInt(kop) + parseInt(kepala);
+      let dasar = (sum === 10) ? 1 : (sum % 10);
+      const kontrolList = KONTROL_G[dasar];
+      if (!kontrolList) return { value: "", isError: false };
+      const twoDigitsTarget = resTargetValue.slice(-2);
+      const d1t = twoDigitsTarget[0];
+      const d2t = twoDigitsTarget[1];
+      const resultDigits = [];
+      [d1t, d2t].forEach(digit => {
+        if (kontrolList.includes(digit)) resultDigits.push(digit);
+      });
+      if (resultDigits.length > 0) return { value: resultDigits.join(''), isError: false };
+      else return { value: "X", isError: true };
+    }
+
+    function calculateKontrolH(resSourceValue, resTargetValue) {
+      if (!/^\d+$/.test(resSourceValue) || resSourceValue.length < 3 || !/^\d+$/.test(resTargetValue) || resTargetValue.length < 2) {
+        return { value: "", isError: false };
+      }
+      const kepalaSource = resSourceValue[2];
+      const kontrolList = KONTROL_H[kepalaSource];
+      if (!kontrolList) return { value: "", isError: false };
+      const twoDigitsTarget = resTargetValue.slice(-2);
+      const d1t = twoDigitsTarget[0];
+      const d2t = twoDigitsTarget[1];
+      const resultDigits = [];
+      [d1t, d2t].forEach(digit => {
+        if (kontrolList.includes(digit)) resultDigits.push(digit);
+      });
+      if (resultDigits.length > 0) return { value: resultDigits.join(''), isError: false };
+      else return { value: "X", isError: true };
+    }
+
+    function calculateKontrolI(resSourceValue, resTargetValue) {
+      if (!/^\d+$/.test(resSourceValue) || resSourceValue.length < 1 || !/^\d+$/.test(resTargetValue) || resTargetValue.length < 2) {
+        return { value: "", isError: false };
+      }
+      const ekorSource = resSourceValue[resSourceValue.length - 1];
+      const kontrolList = KONTROL_I[ekorSource];
+      if (!kontrolList) return { value: "", isError: false };
+      const twoDigitsTarget = resTargetValue.slice(-2);
+      const d1t = twoDigitsTarget[0];
+      const d2t = twoDigitsTarget[1];
+      const resultDigits = [];
+      [d1t, d2t].forEach(digit => {
+        if (kontrolList.includes(digit)) resultDigits.push(digit);
+      });
+      if (resultDigits.length > 0) return { value: resultDigits.join(''), isError: false };
+      else return { value: "X", isError: true };
+    }
+
+    function calculateKontrolJ(resSourceValue, resTargetValue) {
+      if (!/^\d+$/.test(resSourceValue) || resSourceValue.length < 2 || !/^\d+$/.test(resTargetValue) || resTargetValue.length < 2) {
+        return { value: "", isError: false };
+      }
+      const as = parseInt(resSourceValue[0]);
+      const ekor = parseInt(resSourceValue[resSourceValue.length - 1]);
+      const dasar = (as + ekor) % 10;
+      const kontrolList = KONTROL_J[dasar];
+      if (!kontrolList) return { value: "", isError: false };
+      const twoDigitsTarget = resTargetValue.slice(-2);
+      const d1t = twoDigitsTarget[0];
+      const d2t = twoDigitsTarget[1];
+      const resultDigits = [];
+      [d1t, d2t].forEach(digit => {
+        if (kontrolList.includes(digit)) resultDigits.push(digit);
+      });
+      if (resultDigits.length > 0) return { value: resultDigits.join(''), isError: false };
+      else return { value: "X", isError: true };
+    }
+
+    function calculateKontrolK(resSourceValue, resTargetValue) {
+      if (!/^\d+$/.test(resSourceValue) || resSourceValue.length < 3 || !/^\d+$/.test(resTargetValue) || resTargetValue.length < 2) {
+        return { value: "", isError: false };
+      }
+      const kepala = parseInt(resSourceValue[2]);
+      const ekor = parseInt(resSourceValue[resSourceValue.length - 1]);
+      const dasar = (kepala + ekor) % 10;
+      const kontrolList = KONTROL_K[dasar];
+      if (!kontrolList) return { value: "", isError: false };
+      const twoDigitsTarget = resTargetValue.slice(-2);
+      const d1t = twoDigitsTarget[0];
+      const d2t = twoDigitsTarget[1];
+      const resultDigits = [];
+      [d1t, d2t].forEach(digit => {
+        if (kontrolList.includes(digit)) resultDigits.push(digit);
+      });
+      if (resultDigits.length > 0) return { value: resultDigits.join(''), isError: false };
+      else return { value: "X", isError: true };
+    }
+
+    function calculateKontrolR(resSourceValue, resTargetValue) {
+      if (!/^\d+$/.test(resSourceValue) || resSourceValue.length < 1 || !/^\d+$/.test(resTargetValue) || resTargetValue.length < 2) {
+        return { value: "", isError: false };
+      }
+      const ekorSource = resSourceValue[resSourceValue.length - 1];
+      const kontrolList = KONTROL_R[ekorSource];
+      if (!kontrolList) return { value: "", isError: false };
+      const twoDigitsTarget = resTargetValue.slice(-2);
+      const d1t = twoDigitsTarget[0];
+      const d2t = twoDigitsTarget[1];
+      const resultDigits = [];
+      [d1t, d2t].forEach(digit => {
+        if (kontrolList.includes(digit)) resultDigits.push(digit);
+      });
+      if (resultDigits.length > 0) return { value: resultDigits.join(''), isError: false };
+      else return { value: "X", isError: true };
+    }
+
+    function calculateKontrolY(resSourceValue, resTargetValue) {
+      if (!/^\d+$/.test(resSourceValue) || resSourceValue.length < 2 || !/^\d+$/.test(resTargetValue) || resTargetValue.length < 2) {
+        return { value: "", isError: false };
+      }
+      const kop = parseInt(resSourceValue[1]);
+      const ekor = parseInt(resSourceValue[resSourceValue.length - 1]);
+      const dasar = (kop + ekor) % 10;
+      const kontrolList = KONTROL_Y[dasar];
+      if (!kontrolList) return { value: "", isError: false };
+      const twoDigitsTarget = resTargetValue.slice(-2);
+      const d1t = twoDigitsTarget[0];
+      const d2t = twoDigitsTarget[1];
+      const resultDigits = [];
+      [d1t, d2t].forEach(digit => {
+        if (kontrolList.includes(digit)) resultDigits.push(digit);
+      });
+      if (resultDigits.length > 0) return { value: resultDigits.join(''), isError: false };
+      else return { value: "X", isError: true };
+    }
+
+    function calculateKontrolA(resSourceValue, resTargetValue) {
+      if (!/^\d+$/.test(resSourceValue) || resSourceValue.length < 3 || !/^\d+$/.test(resTargetValue) || resTargetValue.length < 2) {
+        return { value: "", isError: false };
+      }
+      const kepala = parseInt(resSourceValue[2]);
+      const ekor = parseInt(resSourceValue[resSourceValue.length - 1]);
+      let dasar = kepala + ekor;
+      while (dasar >= 10) dasar = Math.floor(dasar / 10) + (dasar % 10);
+      const kontrolList = KONTROL_A[dasar];
+      if (!kontrolList) return { value: "", isError: false };
+      const twoDigitsTarget = resTargetValue.slice(-2);
+      const d1t = twoDigitsTarget[0];
+      const d2t = twoDigitsTarget[1];
+      const resultDigits = [];
+      [d1t, d2t].forEach(digit => {
+        if (kontrolList.includes(digit)) resultDigits.push(digit);
+      });
+      if (resultDigits.length > 0) return { value: resultDigits.join(''), isError: false };
+      else return { value: "X", isError: true };
+    }
+
+    function calculateKontrolM(resSourceValue, resTargetValue) {
+      if (!/^\d+$/.test(resSourceValue) || resSourceValue.length < 1 || !/^\d+$/.test(resTargetValue) || resTargetValue.length < 2) {
+        return { value: "", isError: false };
+      }
+      const ekorSource = resSourceValue[resSourceValue.length - 1];
+      const kontrolList = KONTROL_M[ekorSource];
+      if (!kontrolList) return { value: "", isError: false };
+      const twoDigitsTarget = resTargetValue.slice(-2);
+      const d1t = twoDigitsTarget[0];
+      const d2t = twoDigitsTarget[1];
+      const resultDigits = [];
+      [d1t, d2t].forEach(digit => {
+        if (kontrolList.includes(digit)) resultDigits.push(digit);
+      });
+      if (resultDigits.length > 0) return { value: resultDigits.join(''), isError: false };
+      else return { value: "X", isError: true };
+    }
+
+    function calculateKontrolN(resSourceValue, resTargetValue) {
+      if (!/^\d+$/.test(resSourceValue) || resSourceValue.length < 3 || !/^\d+$/.test(resTargetValue) || resTargetValue.length < 2) {
+        return { value: "", isError: false };
+      }
+      const kepala = parseInt(resSourceValue[2]);
+      const ekor = parseInt(resSourceValue[resSourceValue.length - 1]);
+      const dasar = Math.abs(kepala - ekor);
+      const kontrolList = KONTROL_N[dasar];
+      if (!kontrolList) return { value: "", isError: false };
+      const twoDigitsTarget = resTargetValue.slice(-2);
+      const d1t = twoDigitsTarget[0];
+      const d2t = twoDigitsTarget[1];
+      const resultDigits = [];
+      [d1t, d2t].forEach(digit => {
+        if (kontrolList.includes(digit)) resultDigits.push(digit);
+      });
+      if (resultDigits.length > 0) return { value: resultDigits.join(''), isError: false };
+      else return { value: "X", isError: true };
+    }
+
+    // === UTILITAS ===
+    function formatTanggalInput(inputElement) {
+      inputElement.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 4) value = value.slice(0, 4);
+        if (value.length >= 2) {
+          value = value.slice(0, 2) + '/' + value.slice(2);
+        }
+        e.target.value = value;
+      });
+    }
+
+    function showStatus(msg, isSuccess = true) {
+      const statusEl = document.getElementById('status');
+      statusEl.textContent = msg;
+      statusEl.className = isSuccess ? 'success' : 'error';
+      setTimeout(() => statusEl.textContent = '', 3000);
+    }
+
+    // === LOGIKA TABEL (DIPERBAIKI: SEMUA BARIS CARI SUMBER DI BAWAH) ===
+    function calculateRow(targetRow) {
+      const tbody = targetRow.parentElement;
+      const allRows = Array.from(tbody.querySelectorAll('tr'));
+      const targetIndex = allRows.indexOf(targetRow);
+      if (targetIndex === -1) return;
+
+      const inputs = targetRow.querySelectorAll('td input');
+      if (inputs.length < 16) return;
+
+      const resTargetValue = inputs[1]?.value || '';
+
+      // 1. LOGIKA: Jika res adalah '----', isi otomatis dengan huruf kolom
+      if (resTargetValue === '----') {
+        const letterMap = {
+          2: 'B', 3: 'C', 4: 'D', 5: 'G', 6: 'H', 7: 'I',
+          8: 'J', 9: 'K', 10: 'R', 11: 'Y', 12: 'A', 13: 'M', 14: 'N', 15: 'L'
+        };
+        for (const [index, letter] of Object.entries(letterMap)) {
+          if (inputs[index]) {
+            inputs[index].value = letter;
+            inputs[index].classList.remove('input-error');
+          }
+        }
         return;
       }
-      activeMarket = selected;
-      localStorage.setItem('marketAktif', selected);
-      statusEl.textContent = `✅ Market aktif: ${selected}`;
-      statusEl.className = '';
-      renderChildHouses();
-    });
 
-    // === RESET (BERSIHKAN PEMILIHAN) ===
-    document.getElementById('resetBtn').addEventListener('click', () => {
-      activeMarket = null;
-      localStorage.removeItem('marketAktif');
-      document.getElementById('period').value = '';
-      document.getElementById('childHouses').style.display = 'none';
-      statusEl.textContent = '';
-    });
-
-    // === RENDER DAFTAR "ANAK RUMAH" ===
-    function renderChildHouses() {
-      const container = document.getElementById('houseList');
-      container.innerHTML = '';
-
-      for (const num in houseNames) {
-        const a = document.createElement('a');
-        a.href = `rumah${num}.html?market=${encodeURIComponent(activeMarket)}`;
-        a.className = 'house-btn';
-        a.textContent = `Rumah${num}\n(${houseNames[num]})`;
-        a.style.whiteSpace = 'pre-line';
-        container.appendChild(a);
+      // 2. SEMUA BARIS CARI SUMBER DI BAWAH (index lebih besar)
+      let sourceRow = null;
+      for (let i = targetIndex + 1; i < allRows.length; i++) {
+        const nextInputs = allRows[i].querySelectorAll('td input');
+        const nextRes = nextInputs[1]?.value || '';
+        if (nextRes !== '----' && nextRes !== '') {
+          sourceRow = allRows[i];
+          break;
+        }
       }
 
-      document.getElementById('childHouses').style.display = 'block';
+      // Jika tidak ada sumber valid, hentikan
+      if (!sourceRow) return;
+
+      const resSourceValue = sourceRow.querySelectorAll('td input')[1]?.value || '';
+      if (!resSourceValue) return;
+
+      // 3. JALANKAN PERHITUNGAN KONTROL
+      const funcs = [
+        null, null,
+        calculateKontrolB, calculateKontrolC, calculateKontrolD, calculateKontrolG,
+        calculateKontrolH, calculateKontrolI, calculateKontrolJ, calculateKontrolK,
+        calculateKontrolR, calculateKontrolY, calculateKontrolA, calculateKontrolM,
+        calculateKontrolN
+      ];
+
+      for (let i = 2; i <= 14; i++) {
+        if (funcs[i]) {
+          const result = funcs[i](resSourceValue, resTargetValue);
+          inputs[i].value = result.value;
+          inputs[i].classList.toggle('input-error', result.isError);
+        }
+      }
     }
+
+    // DIPERBAIKI: Recalculate SEMUA baris setiap kali ada perubahan
+    function recalculateAll() {
+      const tbody = document.querySelector('#rumah1-table tbody');
+      const allRows = Array.from(tbody.querySelectorAll('tr'));
+      for (let i = 0; i < allRows.length; i++) {
+        calculateRow(allRows[i]);
+      }
+    }
+
+    function createRow() {
+      const tr = document.createElement("tr");
+      for (let i = 0; i < 16; i++) {
+        const td = document.createElement("td");
+        const input = document.createElement("input");
+        input.type = "text";
+        input.setAttribute('autocomplete', 'off');
+        if (i === 0) {
+          input.maxLength = 5;
+          input.placeholder = "DD/MM";
+          formatTanggalInput(input);
+        } else if (i === 1) {
+          input.placeholder = "4D / ----";
+        }
+        td.appendChild(input);
+        tr.appendChild(td);
+      }
+
+      const actionTd = document.createElement("td");
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "Hapus";
+      deleteBtn.className = "delete-btn";
+      deleteBtn.addEventListener('click', function () {
+        if (confirm("Hapus baris ini?")) {
+          const row = this.closest('tr');
+          row.remove();
+          recalculateAll(); // DIPERBAIKI: recalculate semua setelah hapus
+          saveDataToFirebase();
+        }
+      });
+      actionTd.appendChild(deleteBtn);
+      tr.appendChild(actionTd);
+
+      tr.addEventListener('input', () => {
+        recalculateAll(); // DIPERBAIKI: recalculate semua saat input
+      });
+
+      return tr;
+    }
+
+    // === FIREBASE DENGAN MARKET (100% UTUH) ===
+    let currentMarket = null;
+
+    function getFirebasePath() {
+      return `rumah1/${currentMarket}/data`;
+    }
+
+    function saveDataToFirebase() {
+      if (!currentMarket) {
+        showStatus("⚠️ Tidak ada market aktif. Kembali ke beranda untuk pilih.", false);
+        return;
+      }
+      try {
+        const table = document.getElementById('rumah1-table');
+        const rows = Array.from(table.querySelectorAll("tbody tr"));
+        const data = rows.map(row => Array.from(row.querySelectorAll("input")).map(inp => inp.value));
+        const db = firebase.database();
+        db.ref(getFirebasePath()).set(data)
+          .then(() => showStatus("✓ Data disimpan ke Firebase", true))
+          .catch(err => {
+            console.error("Firebase save error:", err);
+            showStatus("✗ Gagal simpan ke Firebase", false);
+          });
+      } catch (error) {
+        console.error("Save error:", error);
+        showStatus("✗ Error saat menyimpan", false);
+      }
+    }
+
+    async function loadDataFromFirebase() {
+      if (!currentMarket) {
+        document.querySelector('#rumah1-table tbody').appendChild(createRow());
+        return;
+      }
+      try {
+        const db = firebase.database();
+        const snapshot = await db.ref(getFirebasePath()).once('value');
+        const tbody = document.querySelector('#rumah1-table tbody');
+        tbody.innerHTML = "";
+
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          data.forEach(rowData => {
+            let safeRowData = [...rowData];
+            if (rowData.length === 15) safeRowData = ["", ...rowData];
+            while (safeRowData.length < 16) safeRowData.push("");
+            if (safeRowData.length > 16) safeRowData = safeRowData.slice(0, 16);
+
+            const tr = createRow();
+            const inputs = tr.querySelectorAll("input");
+            safeRowData.forEach((val, i) => {
+              if (inputs[i]) inputs[i].value = val;
+            });
+            tbody.appendChild(tr);
+          });
+          recalculateAll(); // DIPERBAIKI: recalculate semua setelah load
+        } else {
+          tbody.appendChild(createRow());
+        }
+      } catch (error) {
+        console.error("Load error:", error);
+        showStatus("✗ Gagal memuat data", false);
+        document.querySelector('#rumah1-table tbody').appendChild(createRow());
+      }
+    }
+
+    // === INISIALISASI UTAMA (100% UTUH) ===
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof firebase === 'undefined' || !firebase.apps.length) {
+        showStatus("⚠️ Firebase tidak dimuat", false);
+        return;
+      }
+
+      currentMarket = localStorage.getItem('marketAktif');
+      const marketStatusEl = document.getElementById('market-status');
+      if (currentMarket) {
+        marketStatusEl.textContent = `📊 Market aktif: ${currentMarket}`;
+      } else {
+        marketStatusEl.textContent = "⚠️ Tidak ada market aktif. Kembali ke beranda untuk pilih.";
+        marketStatusEl.style.color = "#f44336";
+      }
+
+      loadDataFromFirebase();
+
+      document.getElementById('add-row').addEventListener('click', () => {
+        const tbody = document.querySelector('#rumah1-table tbody');
+        const newRow = createRow();
+        tbody.insertBefore(newRow, tbody.firstChild);
+      });
+
+      document.getElementById('save-firebase').addEventListener('click', saveDataToFirebase);
+    });
   </script>
 </body>
 </html>
-
-
-
-
-
-
