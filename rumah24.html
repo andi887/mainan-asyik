@@ -89,7 +89,7 @@
       gap: 10px;
       justify-content: center;
       flex-wrap: wrap;
-      margin-bottom: 10px; /* Diubah dari margin-top agar jarak ke tabel di bawahnya rapi */
+      margin-bottom: 10px;
     }
     button {
       padding: 8px 14px;
@@ -131,7 +131,6 @@
   <div id="market-status"></div>
   <div id="status"></div>
 
-  <!-- Tombol dipindahkan ke atas -->
   <div class="controls">
     <button class="add-row-btn" id="add-row">Tambah Baris</button>
     <button class="save-firebase-btn" id="save-firebase">Simpan ke Firebase</button>
@@ -458,12 +457,12 @@
       setTimeout(() => statusEl.textContent = '', 3000);
     }
 
-    // === LOGIKA TABEL (DIPERBARUI DENGAN LOGIKA ----) ===
+    // === LOGIKA TABEL (DIPERBARUI: SUPPORT ARAH ATAS & BAWAH) ===
     function calculateRow(targetRow) {
       const tbody = targetRow.parentElement;
       const allRows = Array.from(tbody.querySelectorAll('tr'));
       const targetIndex = allRows.indexOf(targetRow);
-      if (targetIndex === 0) return;
+      if (targetIndex === -1) return;
 
       const inputs = targetRow.querySelectorAll('td input');
       if (inputs.length < 16) return;
@@ -482,28 +481,42 @@
             inputs[index].classList.remove('input-error');
           }
         }
-        return; // Hentikan eksekusi lebih lanjut untuk baris ini
+        return;
       }
 
-      // 2. LOGIKA BARU: Cari baris sumber sebelumnya yang BUKAN '----'
+      // 2. CARI SUMBER BERDASARKAN POSISI
       let sourceRow = null;
-      for (let i = targetIndex - 1; i >= 0; i--) {
-        const prevInputs = allRows[i].querySelectorAll('td input');
-        const prevRes = prevInputs[1]?.value || '';
-        // Abaikan baris yang res-nya '----' atau kosong, cari yang punya nilai angka
-        if (prevRes !== '----' && prevRes !== '') {
-          sourceRow = allRows[i];
-          break;
+
+      // Jika baris ini di paling atas → cari ke BAWAH
+      if (targetIndex === 0) {
+        for (let i = targetIndex + 1; i < allRows.length; i++) {
+          const nextInputs = allRows[i].querySelectorAll('td input');
+          const nextRes = nextInputs[1]?.value || '';
+          if (nextRes !== '----' && nextRes !== '') {
+            sourceRow = allRows[i];
+            break;
+          }
+        }
+      } 
+      // Jika bukan di paling atas → cari ke ATAS (logika lama)
+      else {
+        for (let i = targetIndex - 1; i >= 0; i--) {
+          const prevInputs = allRows[i].querySelectorAll('td input');
+          const prevRes = prevInputs[1]?.value || '';
+          if (prevRes !== '----' && prevRes !== '') {
+            sourceRow = allRows[i];
+            break;
+          }
         }
       }
 
-      // Jika tidak ada baris sumber valid, hentikan perhitungan
+      // Jika tidak ada sumber valid, hentikan
       if (!sourceRow) return;
 
       const resSourceValue = sourceRow.querySelectorAll('td input')[1]?.value || '';
       if (!resSourceValue) return;
 
-      // 3. LOGIKA LAMA (100% UTUH): Jalankan perhitungan kontrol
+      // 3. JALANKAN PERHITUNGAN KONTROL
       const funcs = [
         null, null,
         calculateKontrolB, calculateKontrolC, calculateKontrolD, calculateKontrolG,
@@ -661,7 +674,6 @@
       document.getElementById('add-row').addEventListener('click', () => {
         const tbody = document.querySelector('#rumah1-table tbody');
         const newRow = createRow();
-        // BARIS BARU SEKARANG DISISIPKAN DI PALING ATAS
         tbody.insertBefore(newRow, tbody.firstChild);
       });
 
