@@ -465,54 +465,39 @@
         return div;
       }
 
-      // === Fungsi Baru: Muat 5 result terbaru dari rumah1/{market} ===
+      // === ✅ REVISI: Muat 5 result terbaru dari rumah1/{market}/data ===
       async function loadResultsFromRumah1(market) {
         if (!market || !MARKETS.includes(market)) return;
 
         try {
-          const snapshot = await database.ref(`rumah1/${market}`)
-            .orderByChild("tgl") // atau "timestamp" jika pakai timestamp
-            .limitToLast(5)
-            .once("value");
-
-          if (!snapshot.exists()) {
-            alert(`ℹ️ Belum ada data di rumah1 untuk market ${market}.`);
-            return;
-          }
-
+          const snapshot = await database.ref(`rumah1/${market}/data`).once('value');
           const data = snapshot.val();
-          const entries = Object.values(data);
-          // Urutkan dari tertua ke terbaru (asumsi `tgl` format YYYY-MM-DD atau timestamp)
-          entries.sort((a, b) => {
-            if (typeof a.tgl === 'string' && typeof b.tgl === 'string') {
-              return new Date(a.tgl) - new Date(b.tgl);
-            }
-            return (a.tgl || 0) - (b.tgl || 0);
-          });
-
-          // Ambil 5 terbaru → kita perlu 5 terakhir, tapi tampilkan dari tertua → terbaru
-          const last5 = entries.slice(-5);
-          if (last5.length < 5) {
-            alert(`ℹ️ Hanya tersedia ${last5.length} data di rumah1 untuk ${market} (butuh 5).`);
+          
+          if (!Array.isArray(data) || data.length < 5) {
+            alert(`ℹ️ Data rumah1 untuk ${market} kurang dari 5 baris.`);
             return;
           }
 
-          // Ekstrak kolom 'res' (harus 4 digit)
-          const results = last5.map(e => (e.res || "").toString().padStart(4, '0'));
-          if (results.some(r => !isValid4D(r))) {
-            alert("⚠️ Beberapa data 'res' di rumah1 tidak valid (bukan 4 digit).");
+          const validRows = data.filter(row => row && row[1] && /^\d{4}$/.test(row[1]));
+          if (validRows.length < 5) {
+            alert(`ℹ️ Kurang dari 5 result valid di rumah1 untuk ${market}.`);
             return;
           }
+
+          // ✅ Data terbaru di index 0, ambil 5 data pertama
+          // Lalu reverse agar urutan dari tertua (r1) ke terbaru (r5)
+          const last5 = validRows.slice(0, 5).reverse();
+          const results = last5.map(row => row[1]);
 
           // Isi input dari tertua → terbaru
           inputs.forEach((input, i) => {
             input.value = results[i] || '';
           });
 
-          // Auto-hitung opsional? Kita biarkan user tekan "Hitung" sendiri.
           selectedMarket = market;
           marketSelect.value = market;
           localStorage.setItem('lastMarket', market);
+          alert(`✅ 5 result terakhir dari rumah1 dimuat untuk ${market}.`);
 
         } catch (err) {
           console.error("Gagal muat data dari rumah1:", err);
