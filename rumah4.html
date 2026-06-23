@@ -315,7 +315,8 @@
           showStatus("ℹ️ Tidak ada result valid di rumah1.", "error");
           return;
         }
-        const lastRes = validRows[validRows.length - 1][1];
+        // ✅ REVISI: Ambil index 0 karena data terbaru sekarang berada di awal array
+        const lastRes = validRows[0][1];
         document.getElementById('input4D').value = lastRes;
         showStatus("✅ Result terakhir dari rumah1 dimuat.", "success");
       } catch (err) {
