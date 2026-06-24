@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Control Center - Admin</title>
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  
+  <script src="./config-firebase.js"></script>
+  <link rel="stylesheet" href="./css/control-center.css">
+</head>
+<body>
+  <div class="top-bar">
+    <h1>Control Center <span class="highlight">ADMIN</span></h1>
+  </div>
+
+  <div class="container">
+    <!-- Tombol Kembali -->
+    <button id="backBtn" class="btn-back">← Kembali ke Beranda</button>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>⚙️ Pengaturan Situs</h2>
+        <span class="badge">ADMIN ONLY</span>
+      </div>
+
+      <div class="info-box">
+        <p> Tambahkan beberapa pengumuman. Setiap pengumuman akan tampil bergantian di halaman login. Durasi tampil diacak antara 6-12 detik.</p>
+      </div>
+
+      <button id="addAnnouncementBtn" class="btn-add">➕ Tambah Pengumuman Baru</button>
+
+      <div id="announcementsContainer"></div>
+
+      <div class="button-group">
+        <button id="saveAnnouncementsBtn" class="btn-save"> Simpan Pengumuman</button>
+        <button id="previewBtn" class="btn-preview">️ Preview</button>
+      </div>
+
+      <div id="statusMsg" class="status-msg"></div>
+    </div>
+  </div>
+
+  <script src="./js/control-center.js"></script>
+</body>
+</html>
