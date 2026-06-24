@@ -16,6 +16,14 @@ function checkAuth() {
   document.getElementById('userName').textContent = currentUser.displayName || currentUser.email;
   document.getElementById('userRole').textContent = currentUser.role || 'user';
   
+  // ✅ Tampilkan tombol Control Center HANYA untuk admin
+  const adminBtn = document.getElementById('adminBtn');
+  if (currentUser.role === 'admin') {
+    adminBtn.style.display = 'block';
+  } else {
+    adminBtn.style.display = 'none';
+  }
+  
   return true;
 }
 
@@ -59,7 +67,6 @@ async function handleLogout() {
 // === AUTH STATE LISTENER ===
 auth.onAuthStateChanged((user) => {
   if (!user) {
-    // User tidak terautentikasi di Firebase, redirect ke login
     console.log('⚠️ Firebase auth state: not logged in');
     window.location.href = './pageawal.html';
   }
@@ -102,9 +109,18 @@ const houseNames = {
 let activeMarket = null;
 const statusEl = document.getElementById('status');
 
+// === ✅ BARU: Event Listener Tombol Admin ===
+document.getElementById('adminBtn').addEventListener('click', () => {
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  if (currentUser.role === 'admin') {
+    window.location.href = './control-center.html';
+  } else {
+    alert(' Akses ditolak! Hanya admin yang bisa masuk.');
+  }
+});
+
 // === MUAT MARKET AKTIF SAAT HALAMAN DIMUAT ===
 document.addEventListener('DOMContentLoaded', () => {
-  // Cek autentikasi dulu
   if (!checkAuth()) return;
   
   const savedMarket = localStorage.getItem('marketAktif');
@@ -131,7 +147,7 @@ document.getElementById('savePeriod').addEventListener('click', () => {
   renderChildHouses();
 });
 
-// === RESET (BERSIHKAN PEMILIHAN) ===
+// === RESET ===
 document.getElementById('resetBtn').addEventListener('click', () => {
   activeMarket = null;
   localStorage.removeItem('marketAktif');
