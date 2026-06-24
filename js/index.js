@@ -98,7 +98,8 @@ const houseNames = {
   27: 'mau dihapus2',
   28: 'mau dihapus1',
   29: 'mau di lempar',
-  30: 'masuk'
+  30: 'masuk',
+  31: 'control-center'
 };
 
 let activeMarket = null;
