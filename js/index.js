@@ -16,12 +16,12 @@ function checkAuth() {
   document.getElementById('userName').textContent = currentUser.displayName || currentUser.email;
   document.getElementById('userRole').textContent = currentUser.role || 'user';
   
-  // ✅ Tampilkan tombol Control Center HANYA untuk admin
-  const adminBtn = document.getElementById('adminBtn');
+  // ✅ Tampilkan section Pilih Layanan HANYA untuk admin
+  const layananSection = document.getElementById('layananSection');
   if (currentUser.role === 'admin') {
-    adminBtn.style.display = 'block';
+    layananSection.style.display = 'block';
   } else {
-    adminBtn.style.display = 'none';
+    layananSection.style.display = 'none';
   }
   
   return true;
@@ -35,7 +35,6 @@ async function handleLogout() {
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
     const deviceId = localStorage.getItem('deviceId');
     
-    // Hapus session di RTDB
     if (currentUser.uid && deviceId) {
       try {
         const sessionRef = rtdb.ref(`sessions/${currentUser.uid}/${deviceId}`);
@@ -45,21 +44,17 @@ async function handleLogout() {
       }
     }
     
-    // Sign out dari Firebase
     await auth.signOut();
     
-    // Hapus semua data dari localStorage
     localStorage.removeItem('currentUser');
     localStorage.removeItem('userRole');
     localStorage.removeItem('deviceId');
     localStorage.removeItem('marketAktif');
     
     console.log('✅ Logout berhasil');
-    
-    // Redirect ke pageawal.html
     window.location.href = './pageawal.html';
   } catch (error) {
-    console.error('❌ Logout error:', error);
+    console.error(' Logout error:', error);
     alert('Gagal logout: ' + error.message);
   }
 }
@@ -109,15 +104,166 @@ const houseNames = {
 let activeMarket = null;
 const statusEl = document.getElementById('status');
 
-// === ✅ BARU: Event Listener Tombol Admin ===
-document.getElementById('adminBtn').addEventListener('click', () => {
-  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-  if (currentUser.role === 'admin') {
-    window.location.href = './control-center.html';
-  } else {
-    alert(' Akses ditolak! Hanya admin yang bisa masuk.');
+// === ✅ BARU: LOGIC PILIH LAYANAN ===
+
+// Simpan layanan yang dipilih
+document.getElementById('saveLayananBtn').addEventListener('click', () => {
+  const layanan = document.getElementById('layananSelect').value;
+  const statusEl = document.getElementById('layananStatus');
+  
+  if (!layanan) {
+    statusEl.textContent = '⚠️ Pilih layanan terlebih dahulu!';
+    statusEl.className = 'status-error';
+    statusEl.style.display = 'block';
+    return;
+  }
+  
+  if (layanan === 'control-center') {
+    document.getElementById('controlCenterPanel').style.display = 'block';
+    statusEl.textContent = '✅ Layanan "🛡️ Control Center (Admin)" berhasil disimpan dan ditampilkan.';
+    statusEl.className = 'status-success';
+    statusEl.style.display = 'block';
+    
+    // Load existing announcements
+    loadAnnouncements();
+    
+    // Scroll ke panel
+    document.getElementById('controlCenterPanel').scrollIntoView({ behavior: 'smooth' });
   }
 });
+
+// Reset layanan
+document.getElementById('resetLayananBtn').addEventListener('click', () => {
+  document.getElementById('layananSelect').value = '';
+  document.getElementById('controlCenterPanel').style.display = 'none';
+  document.getElementById('layananStatus').style.display = 'none';
+});
+
+// === ✅ BARU: LOGIC CONTROL CENTER ===
+
+// Tambah pengumuman baru
+function addAnnouncementCard(title = '', content = '', index = 0) {
+  const container = document.getElementById('announcementsContainer');
+  const card = document.createElement('div');
+  card.className = 'announcement-card';
+  card.innerHTML = `
+    <h4>Pengumuman #${index + 1}</h4>
+    <button type="button" class="remove-announcement" onclick="removeAnnouncement(this)">✕</button>
+    <label>Judul Pengumuman</label>
+    <input type="text" class="announcement-title" placeholder="Contoh:  Jadwal libur" value="${title}">
+    <label>Isi Pengumuman</label>
+    <textarea class="announcement-content" placeholder="Masukkan isi pengumuman...">${content}</textarea>
+  `;
+  container.appendChild(card);
+}
+
+// Hapus pengumuman
+window.removeAnnouncement = function(btn) {
+  const card = btn.closest('.announcement-card');
+  card.remove();
+  updateAnnouncementNumbers();
+};
+
+// Update nomor pengumuman
+function updateAnnouncementNumbers() {
+  const cards = document.querySelectorAll('.announcement-card');
+  cards.forEach((card, index) => {
+    const h4 = card.querySelector('h4');
+    h4.textContent = `Pengumuman #${index + 1}`;
+  });
+}
+
+// Tambah pengumuman baru (tombol)
+document.getElementById('addAnnouncementBtn').addEventListener('click', () => {
+  const cards = document.querySelectorAll('.announcement-card');
+  addAnnouncementCard('', '', cards.length);
+});
+
+// Simpan pengumuman
+document.getElementById('saveAnnouncementsBtn').addEventListener('click', async () => {
+  const cards = document.querySelectorAll('.announcement-card');
+  const announcements = [];
+  
+  cards.forEach(card => {
+    const title = card.querySelector('.announcement-title').value.trim();
+    const content = card.querySelector('.announcement-content').value.trim();
+    
+    if (title && content) {
+      announcements.push({ title, content });
+    }
+  });
+  
+  const statusEl = document.getElementById('announcementStatus');
+  
+  if (announcements.length === 0) {
+    statusEl.textContent = '⚠️ Tambahkan minimal 1 pengumuman!';
+    statusEl.className = 'status-error';
+    statusEl.style.display = 'block';
+    return;
+  }
+  
+  try {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    
+    await rtdb.ref('infoBox').set({
+      announcements: announcements,
+      updatedAt: Date.now(),
+      updatedBy: currentUser.uid || 'unknown'
+    });
+    
+    statusEl.textContent = `✅ ${announcements.length} pengumuman berhasil disimpan!`;
+    statusEl.className = 'status-success';
+    statusEl.style.display = 'block';
+    
+    setTimeout(() => {
+      statusEl.style.display = 'none';
+    }, 5000);
+    
+  } catch (error) {
+    console.error('❌ Gagal simpan pengumuman:', error);
+    statusEl.textContent = '❌ Gagal menyimpan: ' + error.message;
+    statusEl.className = 'status-error';
+    statusEl.style.display = 'block';
+  }
+});
+
+// Preview pengumuman
+document.getElementById('previewBtn').addEventListener('click', () => {
+  const cards = document.querySelectorAll('.announcement-card');
+  let preview = '📋 PREVIEW PENGUMUMAN:\n\n';
+  
+  cards.forEach((card, index) => {
+    const title = card.querySelector('.announcement-title').value.trim();
+    const content = card.querySelector('.announcement-content').value.trim();
+    
+    if (title && content) {
+      preview += `${index + 1}. ${title}\n   ${content}\n\n`;
+    }
+  });
+  
+  if (preview === '📋 PREVIEW PENGUMUMAN:\n\n') {
+    alert('Tidak ada pengumuman untuk di-preview.');
+  } else {
+    alert(preview);
+  }
+});
+
+// Load pengumuman yang sudah ada
+async function loadAnnouncements() {
+  try {
+    const snapshot = await rtdb.ref('infoBox').once('value');
+    const data = snapshot.val();
+    
+    if (data && data.announcements) {
+      document.getElementById('announcementsContainer').innerHTML = '';
+      data.announcements.forEach((announcement, index) => {
+        addAnnouncementCard(announcement.title, announcement.content, index);
+      });
+    }
+  } catch (error) {
+    console.error('❌ Gagal load pengumuman:', error);
+  }
+}
 
 // === MUAT MARKET AKTIF SAAT HALAMAN DIMUAT ===
 document.addEventListener('DOMContentLoaded', () => {
