@@ -150,7 +150,6 @@
       background: #7B1FA2;
     }
     
-    /* === STYLE FITUR EDIT BARU === */
     .edit-btn {
       background: #FF9800;
       color: white;
@@ -197,13 +196,12 @@
     }
   </style>
 
-  <!-- 🔥 Firebase SDK (Modular) - DIPERBAIKI: Tambah Auth -->
+  <!-- 🔥 Firebase SDK (Modular) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getDatabase } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    // 🔐 Ganti ke proyek SABAR
     const firebaseConfig = {
       apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
       authDomain: "sabar-2e686.firebaseapp.com",
@@ -220,21 +218,23 @@
       window.db = getDatabase(app);
       window.auth = getAuth(app);
       
-      // ✅ PERBAIKAN UTAMA: Setup auth listener di sini, bukan di DOMContentLoaded
-      // Ini memastikan listener terpasang SECEPAT MUNGKIN setelah Firebase diinisialisasi
-      onAuthStateChanged(window.auth, (user) => {
+      // ✅ PERBAIKAN UTAMA: Gunakan authStateReady() untuk menunggu sesi pulih
+      window.auth.authStateReady().then(() => {
+        const user = window.auth.currentUser;
         if (user) {
           console.log('✅ [rumah9] User login terdeteksi:', user.email);
           window.authReady = true;
           window.currentUser = user;
-          
-          // Dispatch custom event untuk memberitahu script biasa
-          window.dispatchEvent(new CustomEvent('authReady'));
         } else {
           console.log('⚠️ [rumah9] User belum login!');
           window.authReady = false;
           window.currentUser = null;
         }
+        // Beri tahu script biasa bahwa auth sudah siap
+        window.dispatchEvent(new CustomEvent('authReady'));
+      }).catch(err => {
+        console.error('Auth error:', err);
+        window.authReady = false;
       });
     }
   </script>
@@ -260,7 +260,7 @@
     let panelCount = 0;
     const allPanels = new Map();
     
-    // ✅ Flag untuk tracking auth status
+    // Inisialisasi flag
     window.authReady = false;
     window.currentUser = null;
 
@@ -363,25 +363,20 @@
 
       const twinSet = getTwinNumbers();
 
-      // B. Ekor Lemah
       const ekorList = parseDigitParts(B_input);
       const ekorLemahSet = new Set();
       ekorList.forEach(d => { for (let i = 0; i <= 9; i++) ekorLemahSet.add(i + '' + d); });
 
-      // C. Kepala Lemah
       const kepalaList = parseDigitParts(C_input);
       const kepalaLemahSet = new Set();
       kepalaList.forEach(d => { for (let i = 0; i <= 9; i++) kepalaLemahSet.add(d + '' + i); });
 
-      // D. Jarak Lemah
       const jarakLemahSet = new Set(parseRange(D_input));
 
-      // E. Shio Lemah
       const shioList = parseShioParts(E_input);
       const shioLemahSet = new Set();
       shioList.forEach(shio => { getShioNumbers(shio).forEach(num => shioLemahSet.add(num)); });
 
-      // F. Dasar Lemah
       const dasarList = parseDasarParts(F_input);
       const dasarLemahSet = new Set();
       for (let i = 0; i <= 99; i++) {
@@ -392,17 +387,14 @@
         }
       }
 
-      // G. 2D Lemah
       const duaDLemahSet = parse2DLemah(G_input);
 
-      // A. Angka Kontrol
       let versions = [];
       if (A_input.trim()) {
         versions = A_input.split('/').map(v => v.trim().replace(/\D/g, '')).filter(v => v.length > 0);
       }
       const versionDigitSets = versions.map(ver => new Set(ver.split('')));
 
-      // HITUNG HIT
       const hitCount = {};
       const allNumbers = Array.from({length: 100}, (_, i) => i.toString().padStart(2, '0'));
 
@@ -420,7 +412,6 @@
         hitCount[num] = count;
       }
 
-      // KLASIFIKASI
       const angkaBersih = [];
       const angkaKhusus = [];
       const outGroups = {};
@@ -504,7 +495,6 @@
           const data = allPanels.get(oldKey);
           allPanels.delete(oldKey);
           allPanels.set(newMarket, data);
-          // ✅ PERBAIKAN: Hanya load jika auth ready
           if (window.authReady) {
             loadFromFirebase(newMarket, panelId);
           }
@@ -514,15 +504,13 @@
       document.getElementById('panels-container').appendChild(el);
       allPanels.set(market, { el, panelId });
       
-      // ✅ PERBAIKAN: Hanya load jika auth ready
       if (window.authReady) {
         loadFromFirebase(market, panelId);
       }
     }
 
-    // === FIREBASE: LOAD & SAVE PER MARKET (PATH: rumah9) ===
+    // === FIREBASE: LOAD & SAVE PER MARKET ===
     async function loadFromFirebase(market, panelId) {
-      // ✅ PERBAIKAN: Cek auth sebelum load
       if (!window.authReady) {
         console.warn('⚠️ Auth belum ready, menunda load untuk', market);
         return;
@@ -562,12 +550,11 @@
       };
     }
 
-    // === RENDER OUTPUT (DENGAN FITUR EDIT) ===
+    // === RENDER OUTPUT ===
     function renderOutput(panelId, result) {
       const { angkaBersih, angkaKhusus, outGroups } = result;
       let html = '';
 
-      // Helper untuk membuat struktur HTML hasil yang bisa diedit
       function createSectionHTML(title, displayText, sectionId) {
         return `<div class="section">
           <div class="title">${title}</div>
@@ -580,23 +567,19 @@
         </div>`;
       }
 
-      // Angka Bersih
       angkaBersih.sort();
       const bersihText = angkaBersih.length ? angkaBersih.join('*') : '-';
       html += createSectionHTML(`✅ Angka Bersih (${angkaBersih.length} lines)`, bersihText + '#', 'bersih');
 
-      // Angka Khusus
       angkaKhusus.sort();
       const khususText = angkaKhusus.length ? angkaKhusus.join('*') : '-';
       html += createSectionHTML(`🌟 Angka Khusus (${angkaKhusus.length} lines)`, khususText + '#', 'khusus');
 
-      // Out 1x
       const out1x = outGroups[1] || [];
       out1x.sort();
       const out1xText = out1x.length ? out1x.join('*') : '-';
       html += createSectionHTML(`⚠️ Out 1x (${out1x.length} lines)`, out1xText + '#', 'out1');
 
-      // Out 2x, 3x, ...
       const maxHit = Math.max(...Object.keys(outGroups).map(Number).filter(k => k !== 1), 0);
       for (let hit = 2; hit <= maxHit; hit++) {
         const list = outGroups[hit] || [];
@@ -606,7 +589,6 @@
         html += createSectionHTML(`⚠️ Out ${hit}x (${list.length} lines)`, text + '#', `out${hit}`);
       }
 
-      // Rangkuman
       const summaryText = bersihText + '#' + '+' + out1xText + '#' + '+' + khususText + '#';
       html += createSectionHTML(`📋 Rangkuman`, summaryText, 'rangkuman');
 
@@ -616,7 +598,6 @@
     // === HANDLER GLOBAL ===
     window.copyToClipboard = copyToClipboard;
 
-    // Handler untuk Toggle Edit
     window.toggleEdit = (boxId) => {
       const box = document.getElementById(boxId);
       if (!box) return;
@@ -625,23 +606,20 @@
       const editBtn = box.querySelector('.edit-btn');
       
       if (resDiv.style.display !== 'none') {
-        // Masuk mode edit
         editArea.value = resDiv.textContent;
         resDiv.style.display = 'none';
         editArea.style.display = 'block';
         editBtn.textContent = 'Selesai';
-        editBtn.style.background = '#4CAF50'; // Hijau
+        editBtn.style.background = '#4CAF50';
       } else {
-        // Keluar mode edit
         resDiv.textContent = editArea.value;
         resDiv.style.display = 'block';
         editArea.style.display = 'none';
         editBtn.textContent = 'Edit';
-        editBtn.style.background = '#FF9800'; // Oranye
+        editBtn.style.background = '#FF9800';
       }
     };
 
-    // Handler untuk Salin (mengambil teks asli atau teks yang sedang diedit)
     window.copyResult = (boxId) => {
       const box = document.getElementById(boxId);
       if (!box) return;
@@ -657,7 +635,6 @@
       
       copyToClipboard(textToCopy);
       
-      // Feedback visual tombol salin
       const copyBtn = box.querySelector('.copy-btn');
       const originalText = copyBtn.textContent;
       copyBtn.textContent = 'Tersalin!';
@@ -675,7 +652,6 @@
     };
 
     window.handleSave = async (panelId) => {
-      // ✅ PERBAIKAN: Cek auth sebelum save
       if (!window.authReady) {
         const statusEl = document.getElementById(`status-${panelId}`);
         showMessage(statusEl, "⚠️ Auth belum ready, silakan tunggu...", true);
@@ -709,7 +685,6 @@
     };
 
     window.handleClear = async (panelId) => {
-      // ✅ PERBAIKAN: Cek auth sebelum clear
       if (!window.authReady) {
         const statusEl = document.getElementById(`status-${panelId}`);
         showMessage(statusEl, "⚠️ Auth belum ready, silakan tunggu...", true);
@@ -731,7 +706,7 @@
         showMessage(statusEl, "✅ Data di cloud dihapus", false);
       } catch (e) {
         const statusEl = document.getElementById(`status-${panelId}`);
-        showMessage(statusEl, "ℹ️ Input lokal dihapus", false);
+        showMessage(statusEl, "️ Input lokal dihapus", false);
       }
     };
 
@@ -747,18 +722,15 @@
     };
 
     // ============================================
-    // ✅ PERBAIKAN UTAMA: Gunakan custom event untuk sinkronisasi
+    // ✅ PERBAIKAN UTAMA: Gunakan custom event + fallback
     // ============================================
     document.addEventListener('DOMContentLoaded', () => {
       // Tunggu custom event 'authReady' dari script module
       window.addEventListener('authReady', () => {
         console.log('🎉 Auth ready event diterima, membuat panel...');
-        
-        // Buat panel pertama jika belum ada
         if (allPanels.size === 0) {
           createPanel('cambodia');
         } else {
-          // Reload data untuk panel yang sudah ada
           allPanels.forEach((data, market) => {
             loadFromFirebase(market, data.panelId);
           });
