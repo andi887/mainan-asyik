@@ -152,7 +152,7 @@
     }
     select {
       appearance: none;
-      background-image: url("image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 12px center;
       background-size: 16px;
@@ -250,11 +250,13 @@
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <!-- ✅ PERBAIKAN 1: Tambah Firebase Auth -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="./config-firebase.js"></script>
 
   <script>
-    // === FUNGSI BANTU ===
+    // === FUNGSI BANTUAN ===
     function hitungDasar2D(duaD) {
       let total = duaD < 10 ? duaD : Math.floor(duaD / 10) + (duaD % 10);
       while (total >= 10) total = Math.floor(total / 10) + (total % 10);
@@ -303,8 +305,8 @@
       if (!teks || teks === '-' || teks.includes('Klik "Cari"')) return showStatus("ℹ️ Tidak ada data.", true);
       if (navigator.clipboard) {
         navigator.clipboard.writeText(teks).then(() => {
-          showStatus("✅ Disalin!", false);
-        }).catch(() => showStatus("❌ Gagal salin.", true));
+          showStatus("✅ Disalin!", true);
+        }).catch(() => showStatus("❌ Gagal salin.", "error"));
       }
     }
 
@@ -356,7 +358,6 @@
           showStatus("ℹ️ Kurang dari 2 result valid di rumah1.", "error");
           return;
         }
-        // ✅ REVISI: Data terbaru sekarang di index 0, data kedua terbaru di index 1
         const curr = validRows[0][1];
         const prev = validRows[1][1];
         document.getElementById('resultSebelum').value = prev;
@@ -412,7 +413,6 @@
         marketSelect.value = marketAktif;
         selectedMarket = marketAktif;
         marketStatusEl.textContent = `📊 Market aktif: ${marketAktif}`;
-        loadSavedData(database, marketAktif);
       } else {
         marketStatusEl.textContent = "⚠️ Tidak ada market aktif.";
         marketStatusEl.style.color = "#ef4444";
@@ -423,7 +423,8 @@
         if (selectedMarket) {
           localStorage.setItem('marketAktif', selectedMarket);
           marketStatusEl.textContent = `📊 Market aktif: ${selectedMarket}`;
-          loadSavedData(database, selectedMarket);
+          // ✅ PERBAIKAN 2: loadSavedData sekarang dipanggil setelah cek login (lihat bawah)
+          triggerLoadSavedData();
         } else {
           marketStatusEl.textContent = "⚠️ Pilih market terlebih dahulu.";
           document.getElementById('savedList').innerHTML = '<h3>Data Tersimpan</h3><p><em>Pilih market untuk memuat data.</em></p>';
@@ -515,6 +516,32 @@
             showStatus("🗑️ Dihapus.", "success");
           })
           .catch(err => showStatus("❌ Gagal hapus.", "error"));
+      });
+
+      // ============================================
+      // ✅ PERBAIKAN 3: AUTH CHECK - Tunggu login sebelum load data
+      // ============================================
+      let authReady = false;
+      
+      function triggerLoadSavedData() {
+        if (authReady && selectedMarket) {
+          loadSavedData(database, selectedMarket);
+        }
+      }
+
+      firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+          console.log('✅ [rumah2] User login terdeteksi:', user.email);
+          authReady = true;
+          // Load data awal jika market sudah dipilih
+          if (selectedMarket) {
+            loadSavedData(database, selectedMarket);
+          }
+        } else {
+          console.log('⚠️ [rumah2] User belum login!');
+          showStatus("❌ Akses ditolak. Silakan login terlebih dahulu.", "error");
+          authReady = false;
+        }
       });
     });
   </script>
