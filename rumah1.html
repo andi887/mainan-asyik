@@ -634,13 +634,14 @@
       }
     }
 
-    // === INISIALISASI UTAMA (100% UTUH) ===
+    // === INISIALISASI UTAMA (DIPERBAIKI DENGAN AUTH CHECK) ===
     document.addEventListener("DOMContentLoaded", () => {
       if (typeof firebase === 'undefined' || !firebase.apps.length) {
         showStatus("⚠️ Firebase tidak dimuat", false);
         return;
       }
 
+      // ✅ CEK MARKET DULU
       currentMarket = localStorage.getItem('marketAktif');
       const marketStatusEl = document.getElementById('market-status');
       if (currentMarket) {
@@ -650,8 +651,7 @@
         marketStatusEl.style.color = "#f44336";
       }
 
-      loadDataFromFirebase();
-
+      // ✅ SETUP TOMBOL
       document.getElementById('add-row').addEventListener('click', () => {
         const tbody = document.querySelector('#rumah1-table tbody');
         const newRow = createRow();
@@ -659,6 +659,22 @@
       });
 
       document.getElementById('save-firebase').addEventListener('click', saveDataToFirebase);
+
+      // ✅ PENTING: Tunggu status login sebelum load data
+      firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+          console.log('✅ User login terdeteksi:', user.email);
+          console.log('📥 Memulai load data dari Firebase...');
+          loadDataFromFirebase();
+        } else {
+          console.log('⚠️ User belum login!');
+          showStatus("❌ Akses ditolak. Silakan login terlebih dahulu di pageawal.html", false);
+          // Opsional: Redirect ke halaman login setelah 3 detik
+          // setTimeout(() => {
+          //   window.location.href = './pageawal.html';
+          // }, 3000);
+        }
+      });
     });
   </script>
 </body>
