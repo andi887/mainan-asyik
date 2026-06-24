@@ -395,6 +395,9 @@
     const auth = firebase.auth();
     const rtdb = firebase.database();
 
+    // ✅ FLAG untuk mencegah double redirect
+    let isRedirecting = false;
+
     // === CAPTCHA GENERATOR ===
     let currentCaptcha = '';
 
@@ -454,6 +457,17 @@
       }
     }
 
+    // === SAFE REDIRECT FUNCTION ===
+    function safeRedirect(url) {
+      if (isRedirecting) {
+        console.log('⚠️ Redirect already in progress, skipping...');
+        return;
+      }
+      isRedirecting = true;
+      console.log('🔄 Redirecting to:', url);
+      window.location.href = url;
+    }
+
     // === HANDLE LOGIN ===
     async function handleLogin(email, password, captcha) {
       // Validasi Captcha
@@ -487,9 +501,8 @@
         localStorage.setItem('deviceId', deviceId);
         await registerSession(user.uid, deviceId);
         
-        // ✅ HAPUS REDIRECT MANUAL DI SINI
-        // Redirect akan ditangani oleh onAuthStateChanged listener
-        // Tidak perlu window.location.href = './index.html' di sini
+        // ✅ REDIRECT dengan flag protection
+        safeRedirect('./index.html');
         
         return user;
         
@@ -552,14 +565,13 @@
       try {
         await handleLogin(email, password, captcha);
         successMsg.textContent = '✅ Login berhasil! Mengalihkan...';
-        // ✅ TIDAK PERLU REDIRECT DI SINI
-        // onAuthStateChanged akan otomatis redirect
       } catch (error) {
         errorMsg.textContent = '❌ ' + error.message;
         submitBtn.disabled = false;
         submitBtn.textContent = 'Sign In';
         refreshCaptcha();
         loading.classList.remove('active');
+        isRedirecting = false; // Reset flag jika error
       }
     });
 
@@ -578,11 +590,19 @@
     window.addEventListener('DOMContentLoaded', () => {
       generateCaptcha();
       
-      // ✅ SINGLE POINT OF REDIRECT - Hanya di sini
+      // ✅ CEK INITIAL STATE - Jika sudah login, redirect sekali saja
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+      if (currentUser) {
+        console.log('🔐 User already logged in, redirecting...');
+        safeRedirect('./index.html');
+        return; // Stop execution, tidak perlu setup listener
+      }
+      
+      // ✅ AUTH STATE LISTENER - Hanya untuk auto-login
       auth.onAuthStateChanged((user) => {
-        if (user) {
-          console.log('🔐 User logged in, redirecting to index.html');
-          window.location.href = './index.html';
+        if (user && !isRedirecting) {
+          console.log('🔐 Auth state changed, user logged in');
+          safeRedirect('./index.html');
         }
       });
     });
