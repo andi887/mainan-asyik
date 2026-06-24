@@ -17,6 +17,9 @@ function checkAuth() {
     return false;
   }
   
+  console.log('👤 User login:', currentUser.email);
+  console.log('🏷️ Role:', currentUser.role);
+  
   // Tampilkan info user
   document.getElementById('userName').textContent = currentUser.displayName || currentUser.email;
   document.getElementById('userRole').textContent = currentUser.role || 'user';
@@ -166,6 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // === SIMPAN MARKET / CONTROL CENTER ===
 document.getElementById('savePeriod').addEventListener('click', () => {
   const selected = document.getElementById('period').value;
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
   
   if (!selected) {
     statusEl.textContent = '⚠️ Pilih market/layanan terlebih dahulu.';
@@ -175,6 +179,12 @@ document.getElementById('savePeriod').addEventListener('click', () => {
   
   // ✅ Jika yang dipilih adalah "control-center"
   if (selected === 'control-center') {
+    // Validasi: hanya admin yang bisa akses
+    if (currentUser.role !== 'admin') {
+      alert('⛔ Akses ditolak! Hanya admin yang bisa menggunakan Control Center.');
+      return;
+    }
+    
     // Tampilkan panel Control Center
     document.getElementById('controlCenterPanel').style.display = 'block';
     statusEl.textContent = '✅ Control Centre aktif! Silakan kelola pengumuman.';
@@ -237,6 +247,13 @@ document.getElementById('addAnnouncementBtn').addEventListener('click', () => {
 
 // === EVENT LISTENER: SIMPAN PENGUMUMAN ===
 document.getElementById('saveAnnouncementsBtn').addEventListener('click', async () => {
+  // Validasi: hanya admin yang bisa simpan
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  if (currentUser.role !== 'admin') {
+    alert('⛔ Akses ditolak! Hanya admin yang bisa menyimpan pengumuman.');
+    return;
+  }
+  
   const cards = document.querySelectorAll('.announcement-card');
   const announcements = [];
   
@@ -258,12 +275,10 @@ document.getElementById('saveAnnouncementsBtn').addEventListener('click', async 
   }
   
   try {
-    const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    
     await rtdb.ref('infoBox').set({
       announcements: announcements,
       updatedAt: Date.now(),
-      updatedBy: user.uid || 'unknown'
+      updatedBy: currentUser.uid || 'unknown'
     });
     
     statusEl.textContent = `✅ ${announcements.length} pengumuman berhasil disimpan!`;
