@@ -13,7 +13,7 @@
   <!-- Load config-firebase.js eksternal -->
   <script src="./config-firebase.js"></script>
   
-  <!-- ✅ Link ke CSS eksternal -->
+  <!-- Link ke CSS eksternal -->
   <link rel="stylesheet" href="./css/index.css">
 </head>
 <body>
@@ -31,6 +31,9 @@
     </div>
 
     <h1>Rumah Utama</h1>
+
+    <!-- ✅ BARU: Tombol Control Center (Hanya Admin) -->
+    <button id="adminBtn" style="display: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin-bottom: 18px;">🛡️ Control Center (Admin)</button>
 
     <label for="period">Pilih Periode / Market</label>
     <select id="period">
@@ -55,7 +58,7 @@
     </div>
   </div>
 
-  <!-- ✅ Link ke JavaScript eksternal -->
+  <!-- Link ke JavaScript eksternal -->
   <script src="./js/index.js"></script>
 </body>
 </html>
