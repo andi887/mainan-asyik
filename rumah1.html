@@ -167,6 +167,7 @@
 
   <!-- Firebase Dependencies (Compat Mode) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="./config-firebase.js"></script>
 
@@ -669,10 +670,6 @@
         } else {
           console.log('⚠️ User belum login!');
           showStatus("❌ Akses ditolak. Silakan login terlebih dahulu di pageawal.html", false);
-          // Opsional: Redirect ke halaman login setelah 3 detik
-          // setTimeout(() => {
-          //   window.location.href = './pageawal.html';
-          // }, 3000);
         }
       });
     });
