@@ -1,0 +1,258 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.top-bar {
+  background: #000;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.top-bar h1 {
+  font-size: 1.8rem;
+}
+
+.top-bar .highlight {
+  color: #FFD700;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.btn-back {
+  background: rgba(255,255,255,0.15);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 12px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  width: auto;
+  transition: background 0.2s;
+}
+
+.btn-back:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 3px solid #667eea;
+}
+
+.card-header h2 {
+  color: #2c3e50;
+  font-size: 1.5rem;
+}
+
+.badge {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.info-box {
+  background: #f0f4ff;
+  border-left: 4px solid #667eea;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+}
+
+.info-box p {
+  color: #555;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.btn-add {
+  background: #2196F3;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 20px;
+  transition: background 0.2s;
+}
+
+.btn-add:hover {
+  background: #1976D2;
+}
+
+.announcement-card {
+  background: #f8f9fa;
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.announcement-card label {
+  display: block;
+  font-weight: bold;
+  color: #374151;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.announcement-card input,
+.announcement-card textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.announcement-card input:focus,
+.announcement-card textarea:focus {
+  border-color: #667eea;
+}
+
+.announcement-card textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.remove-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: #f44336;
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.remove-btn:hover {
+  background: #d32f2f;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-save {
+  flex: 2;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  transition: background 0.2s;
+}
+
+.btn-save:hover {
+  background: #45a049;
+}
+
+.btn-preview {
+  flex: 1;
+  background: #9C27B0;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  transition: background 0.2s;
+}
+
+.btn-preview:hover {
+  background: #7B1FA2;
+}
+
+.status-msg {
+  margin-top: 15px;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: bold;
+  display: none;
+}
+
+.status-success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.status-error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 12px;
+  }
+  .top-bar h1 {
+    font-size: 1.4rem;
+  }
+  .card {
+    padding: 16px;
+  }
+  .card-header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  .button-group {
+    flex-direction: column;
+  }
+}
