@@ -32,8 +32,21 @@
 
     <h1>Rumah Utama</h1>
 
-    <!-- ✅ BARU: Tombol Control Center (Hanya Admin) -->
-    <button id="adminBtn" style="display: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin-bottom: 18px;">🛡️ Control Center (Admin)</button>
+    <!-- ✅ BARU: Section Pilih Layanan (Hanya untuk Admin) -->
+    <div id="layananSection" style="display: none;">
+      <label for="layananSelect">Pilih Layanan</label>
+      <select id="layananSelect">
+        <option value="">-- Pilih Layanan --</option>
+        <option value="control-center">🛡️ Control Center (Admin)</option>
+      </select>
+
+      <div class="button-group">
+        <button id="saveLayananBtn" class="btn-save">Simpan Layanan</button>
+        <button id="resetLayananBtn" class="btn-reset">Reset</button>
+      </div>
+
+      <div id="layananStatus"></div>
+    </div>
 
     <label for="period">Pilih Periode / Market</label>
     <select id="period">
@@ -55,6 +68,57 @@
     <div id="childHouses">
       <h2>Anak Rumah</h2>
       <div class="house-grid" id="houseList"></div>
+    </div>
+
+    <!-- ✅ BARU: Panel Control Center (Muncul setelah admin pilih layanan) -->
+    <div id="controlCenterPanel" style="display: none;">
+      <div class="control-header">
+        <h2>🛡️ Fitur Internal: Control Center (Admin)</h2>
+        <span class="admin-badge">ADMIN ONLY</span>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">👥</div>
+          <div class="feature-text">Manajemen Pengguna</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <div class="feature-text">Data & Statistik</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"></div>
+          <div class="feature-text">Keamanan & Log</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚙️</div>
+          <div class="feature-text">Pengaturan Situs</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">👁️</div>
+          <div class="feature-text">Monitoring</div>
+        </div>
+      </div>
+
+      <!-- Sub-panel: Pengaturan Situs (Info Box) -->
+      <div class="sub-panel" id="subPanelPengaturan">
+        <h3>⚙️ Pengaturan Situs</h3>
+        
+        <div class="info-description">
+          <p> Tambahkan beberapa pengumuman. Setiap pengumuman akan tampil bergantian di halaman login. Durasi tampil diacak antara 6-12 detik.</p>
+        </div>
+
+        <button id="addAnnouncementBtn" class="btn-add">➕ Tambah Pengumuman Baru</button>
+
+        <div id="announcementsContainer"></div>
+
+        <div class="button-group">
+          <button id="saveAnnouncementsBtn" class="btn-save">💾 Simpan Pengumuman</button>
+          <button id="previewBtn" class="btn-preview">👁️ Preview</button>
+        </div>
+
+        <div id="announcementStatus"></div>
+      </div>
     </div>
   </div>
 
