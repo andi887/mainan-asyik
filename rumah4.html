@@ -223,7 +223,6 @@
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <!-- ✅ PERBAIKAN 1: Tambah Firebase Auth -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="./config-firebase.js"></script>
@@ -255,6 +254,7 @@
     let currentData = null;
     let currentKey = null;
     let selectedMarket = null;
+    let database = null;
 
     // === FUNGSI BANTUAN ===
     function showStatus(text, type = "") {
@@ -357,7 +357,7 @@
         showStatus("⚠️ Firebase tidak dimuat.", "error");
         return;
       }
-      const database = firebase.database();
+      database = firebase.database();
 
       const marketSelect = document.getElementById('market');
       const input4D = document.getElementById('input4D');
@@ -388,10 +388,7 @@
         if (selectedMarket) {
           localStorage.setItem('marketAktif', selectedMarket);
           marketStatusEl.textContent = `📊 Market aktif: ${selectedMarket}`;
-          // ✅ PERBAIKAN 2: load data hanya jika auth sudah siap (lihat bawah)
-          if (authReady) {
-            loadLatestData(database, selectedMarket);
-          }
+          // Load data akan dipanggil oleh onAuthStateChanged
         } else {
           marketStatusEl.textContent = "⚠️ Pilih market terlebih dahulu.";
           document.getElementById('hasil').style.display = 'none';
@@ -494,22 +491,19 @@
       });
 
       // ============================================
-      // ✅ PERBAIKAN 3: AUTH CHECK - Tunggu login sebelum load data
+      // ✅ PERBAIKAN UTAMA: Tunggu login, baru load data
       // ============================================
-      let authReady = false;
-      
       firebase.auth().onAuthStateChanged((user) => {
         if (user) {
           console.log('✅ [rumah4] User login terdeteksi:', user.email);
-          authReady = true;
           // Load data jika market sudah dipilih
           if (selectedMarket) {
+            console.log('📥 Memuat data untuk market:', selectedMarket);
             loadLatestData(database, selectedMarket);
           }
         } else {
           console.log('⚠️ [rumah4] User belum login!');
           showStatus("❌ Akses ditolak. Silakan login terlebih dahulu.", "error");
-          authReady = false;
         }
       });
     });
