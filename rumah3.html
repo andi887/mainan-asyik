@@ -238,6 +238,8 @@
 
   <!-- Firebase (Gunakan config terpusat) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <!-- ✅ PERBAIKAN 1: Tambah Firebase Auth -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="./config-firebase.js"></script>
 
@@ -609,12 +611,23 @@
     }
 
     function init() {
-      loadFromFirebase();
+      // Setup event listeners
       document.getElementById('btn-clone').addEventListener('click', cloneInstance);
       document.getElementById('btn-clear-clones').addEventListener('click', clearAllClones);
       document.getElementById('btn-apply-all').addEventListener('click', terapkanSemuaRumus);
       document.getElementById('btn-save-all').addEventListener('click', saveAllToFirebase);
       document.getElementById('btn-clear-all').addEventListener('click', clearAllFromFirebase);
+
+      // ✅ PERBAIKAN 2: Tunggu login sebelum load data
+      firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+          console.log('✅ [kamar] User login terdeteksi:', user.email);
+          loadFromFirebase();
+        } else {
+          console.log('⚠️ [kamar] User belum login!');
+          showMessage('❌ Akses ditolak. Silakan login terlebih dahulu.', true);
+        }
+      });
     }
 
     document.addEventListener('DOMContentLoaded', init);
