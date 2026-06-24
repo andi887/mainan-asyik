@@ -201,7 +201,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getDatabase } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     // 🔐 Ganti ke proyek SABAR
     const firebaseConfig = {
@@ -218,8 +218,24 @@
       const app = initializeApp(firebaseConfig);
       window.firebaseApp = app;
       window.db = getDatabase(app);
-      // ✅ PERBAIKAN 1: Expose auth ke window
       window.auth = getAuth(app);
+      
+      // ✅ PERBAIKAN UTAMA: Setup auth listener di sini, bukan di DOMContentLoaded
+      // Ini memastikan listener terpasang SECEPAT MUNGKIN setelah Firebase diinisialisasi
+      onAuthStateChanged(window.auth, (user) => {
+        if (user) {
+          console.log('✅ [rumah9] User login terdeteksi:', user.email);
+          window.authReady = true;
+          window.currentUser = user;
+          
+          // Dispatch custom event untuk memberitahu script biasa
+          window.dispatchEvent(new CustomEvent('authReady'));
+        } else {
+          console.log('⚠️ [rumah9] User belum login!');
+          window.authReady = false;
+          window.currentUser = null;
+        }
+      });
     }
   </script>
 </head>
@@ -244,8 +260,9 @@
     let panelCount = 0;
     const allPanels = new Map();
     
-    // ✅ PERBAIKAN 2: Flag untuk tracking auth status
-    let authReady = false;
+    // ✅ Flag untuk tracking auth status
+    window.authReady = false;
+    window.currentUser = null;
 
     // === HELPER FUNGSI ===
     function hitungDasar2D_2digit(duaDigit) {
@@ -487,8 +504,8 @@
           const data = allPanels.get(oldKey);
           allPanels.delete(oldKey);
           allPanels.set(newMarket, data);
-          // ✅ PERBAIKAN 3: Hanya load jika auth ready
-          if (authReady) {
+          // ✅ PERBAIKAN: Hanya load jika auth ready
+          if (window.authReady) {
             loadFromFirebase(newMarket, panelId);
           }
         }
@@ -497,14 +514,20 @@
       document.getElementById('panels-container').appendChild(el);
       allPanels.set(market, { el, panelId });
       
-      // ✅ PERBAIKAN 4: Hanya load jika auth ready
-      if (authReady) {
+      // ✅ PERBAIKAN: Hanya load jika auth ready
+      if (window.authReady) {
         loadFromFirebase(market, panelId);
       }
     }
 
     // === FIREBASE: LOAD & SAVE PER MARKET (PATH: rumah9) ===
     async function loadFromFirebase(market, panelId) {
+      // ✅ PERBAIKAN: Cek auth sebelum load
+      if (!window.authReady) {
+        console.warn('⚠️ Auth belum ready, menunda load untuk', market);
+        return;
+      }
+      
       try {
         const { ref, get } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
         const snapshot = await get(ref(window.db, `rumah9/${market}`)); 
@@ -652,6 +675,13 @@
     };
 
     window.handleSave = async (panelId) => {
+      // ✅ PERBAIKAN: Cek auth sebelum save
+      if (!window.authReady) {
+        const statusEl = document.getElementById(`status-${panelId}`);
+        showMessage(statusEl, "⚠️ Auth belum ready, silakan tunggu...", true);
+        return;
+      }
+      
       const market = document.querySelector(`#${panelId} .market-select`).value;
       const inputs = getInputs(panelId);
       const data = {
@@ -679,6 +709,13 @@
     };
 
     window.handleClear = async (panelId) => {
+      // ✅ PERBAIKAN: Cek auth sebelum clear
+      if (!window.authReady) {
+        const statusEl = document.getElementById(`status-${panelId}`);
+        showMessage(statusEl, "⚠️ Auth belum ready, silakan tunggu...", true);
+        return;
+      }
+      
       const fields = ['A','B','C','D','E','F','G'];
       fields.forEach(f => {
         const input = document.querySelector(`#${panelId} [data-field="${f}"]`);
@@ -710,45 +747,31 @@
     };
 
     // ============================================
-    // ✅ PERBAIKAN UTAMA: Tunggu login, baru buat panel & load data
+    // ✅ PERBAIKAN UTAMA: Gunakan custom event untuk sinkronisasi
     // ============================================
-    document.addEventListener('DOMContentLoaded', async () => {
-      // Tunggu sampai window.auth tersedia (dari script module)
-      const waitForAuth = () => new Promise((resolve) => {
-        const check = () => {
-          if (window.auth) {
-            resolve();
-          } else {
-            setTimeout(check, 100);
-          }
-        };
-        check();
-      });
-      
-      await waitForAuth();
-      
-      // Import onAuthStateChanged dari modular SDK
-      const { onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
-      
-      onAuthStateChanged(window.auth, (user) => {
-        if (user) {
-          console.log('✅ [rumah9] User login terdeteksi:', user.email);
-          authReady = true;
-          
-          // Buat panel pertama dan load data
-          if (allPanels.size === 0) {
-            createPanel('cambodia');
-          } else {
-            // Reload data untuk panel yang sudah ada
-            allPanels.forEach((data, market) => {
-              loadFromFirebase(market, data.panelId);
-            });
-          }
+    document.addEventListener('DOMContentLoaded', () => {
+      // Tunggu custom event 'authReady' dari script module
+      window.addEventListener('authReady', () => {
+        console.log('🎉 Auth ready event diterima, membuat panel...');
+        
+        // Buat panel pertama jika belum ada
+        if (allPanels.size === 0) {
+          createPanel('cambodia');
         } else {
-          console.log('⚠️ [rumah9] User belum login!');
-          authReady = false;
+          // Reload data untuk panel yang sudah ada
+          allPanels.forEach((data, market) => {
+            loadFromFirebase(market, data.panelId);
+          });
         }
       });
+      
+      // Fallback: jika auth sudah ready sebelum event listener dipasang
+      if (window.authReady) {
+        console.log('✅ Auth sudah ready (fallback), membuat panel...');
+        if (allPanels.size === 0) {
+          createPanel('cambodia');
+        }
+      }
     });
   </script>
 </body>
