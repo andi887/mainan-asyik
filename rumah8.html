@@ -137,7 +137,6 @@
       font-weight: bold;
     }
 
-    /* ✅ BARU: Notifikasi Popup */
     .save-notification {
       position: fixed;
       top: 20px;
@@ -217,39 +216,39 @@
     </div>
   </div>
 
-  <!-- ✅ BARU: Notifikasi Popup -->
   <div id="saveNotification" class="save-notification"></div>
 
-  <!-- Firebase SDK - DIPERBAIKI: Tambah Auth -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="./config-firebase.js"></script>
 
   <script>
-    // Inisialisasi dari config-firebase.js
     const auth = firebase.auth();
+    let authReady = false;
     
-    // ✅ PERBAIKAN: Cek login dari localStorage (Instan)
-    let authReady = !!localStorage.getItem('currentUser');
-    if (authReady) {
-      console.log('✅ [rumah8] User terdeteksi dari localStorage');
-    }
-
-    // Backup: Dengarkan perubahan status dari Firebase Auth
+    // ✅ PERBAIKAN UTAMA: Tunggu Firebase Auth restore session
     auth.onAuthStateChanged((user) => {
       if (user) {
         authReady = true;
         console.log('✅ [rumah8] Firebase Auth: User login terdeteksi:', user.email);
-      } else {
-        if (!localStorage.getItem('currentUser')) {
-          authReady = false;
-          console.log('⚠️ [rumah8] User benar-benar belum login');
+        
+        // Setelah login, load data terakhir
+        const marketSelect = document.getElementById('market');
+        const lastMarket = localStorage.getItem('rumah8_lastMarket');
+        
+        if (lastMarket && MARKETS.includes(lastMarket)) {
+          marketSelect.value = lastMarket;
+          showNotification(`📂 Memuat data ${lastMarket}...`, 'info');
+          loadLastData(lastMarket);
         }
+      } else {
+        authReady = false;
+        console.log('⚠️ [rumah8] User belum login');
       }
     });
 
-    // ✅ BARU: Fungsi Notifikasi
     function showNotification(message, type = 'success') {
       const notif = document.getElementById('saveNotification');
       notif.textContent = message;
@@ -265,10 +264,8 @@
       }, 3000);
     }
 
-    // MARKETS
     const MARKETS = ["Cambodia", "Sidney", "China", "Japan", "SGP", "Taiwan", "Hongkong", "Nusa"];
 
-    // ─── FUNGSI BANTU (100% UTUH) ───────────────────────────
     function degToRad(deg) {
       return deg * (Math.PI / 180);
     }
@@ -288,7 +285,6 @@
       return pairs.join('*');
     }
 
-    // ✅ DIPERBAIKI: Load dari Rumah1 dengan cek auth + data terbaru di index 0
     async function loadFromRumah1(market) {
       if (!market || !MARKETS.includes(market)) {
         showNotification("⚠️ Pilih market terlebih dahulu!", "error");
@@ -296,7 +292,7 @@
       }
 
       if (!authReady) {
-        showNotification("⚠️ Anda belum login!", "error");
+        showNotification("⚠️ Menunggu login... Silakan tunggu sebentar.", "error");
         return;
       }
 
@@ -314,7 +310,6 @@
           return;
         }
 
-        // ✅ DIPERBAIKI: Data terbaru di index 0 (bukan index terakhir)
         const firstRow = data[0];
         if (!Array.isArray(firstRow) || firstRow.length < 2) {
           showNotification("Format baris data tidak valid", "error");
@@ -340,7 +335,6 @@
       }
     }
 
-    // ✅ DIPERBAIKI: Simpan ke Cloud dengan cek auth + path per-market
     function saveToCloud() {
       const market = document.getElementById('market').value;
       const input = document.getElementById('inputResult').value.trim();
@@ -349,7 +343,7 @@
       const statusEl = document.getElementById('saveStatus');
 
       if (!authReady) {
-        showNotification("⚠️ Anda belum login!", "error");
+        showNotification("⚠️ Menunggu login... Silakan tunggu sebentar.", "error");
         return;
       }
 
@@ -376,7 +370,6 @@
         timestamp: firebase.database.ServerValue.TIMESTAMP
       };
 
-      // ✅ DIPERBAIKI: Path per-market, set() bukan push()
       firebase.database().ref(`rumah8/${market}/latest`).set(data)
         .then(() => {
           statusEl.textContent = "✅ Berhasil disimpan ke cloud!";
@@ -393,7 +386,6 @@
         });
     }
 
-    // ✅ BARU: Load data terakhir dari Firebase
     function loadLastData(market) {
       if (!authReady || !market) return;
       
@@ -406,7 +398,6 @@
             document.getElementById('formatted1').textContent = data.ab_akko_cd;
             document.getElementById('formatted2').textContent = data.cd_andi_ab;
             
-            // Hitung ulang untuk isi raw1 dan raw2
             const input = data.input;
             if (input && /^\d{4}$/.test(input)) {
               const AB = parseInt(input.substring(0, 2), 10);
@@ -425,7 +416,6 @@
       });
     }
 
-    // ─── SALIN RINGKASAN (100% UTUH) ─────────────────────────
     function copySummary() {
       const fmt1 = document.getElementById('formatted1').textContent;
       const fmt2 = document.getElementById('formatted2').textContent;
@@ -462,7 +452,6 @@
       showNotification('📋 Tersalin ke clipboard!', 'success');
     }
 
-    // ─── HITUNG (100% UTUH) ─────────────────────────────────
     function calculate() {
       const input = document.getElementById('inputResult').value.trim();
       const raw1El = document.getElementById('raw1');
@@ -490,7 +479,6 @@
       fmt2El.textContent = formatDecimalToSlidingPairs(val2);
     }
 
-    // ─── EVENT LISTENERS ────────────────────────────────────
     document.getElementById('inputResult').addEventListener('input', calculate);
     document.getElementById('loadBtn').addEventListener('click', () => {
       loadFromRumah1(document.getElementById('market').value);
@@ -498,31 +486,13 @@
     document.getElementById('saveBtn').addEventListener('click', saveToCloud);
     document.getElementById('copySummaryBtn').addEventListener('click', copySummary);
 
-    // ✅ DIPERBAIKI: Auto-load market terakhir + data terakhir
-    window.addEventListener('load', () => {
-      const waitForAuth = setInterval(() => {
-        if (authReady) {
-          clearInterval(waitForAuth);
-          
-          const marketSelect = document.getElementById('market');
-          const lastMarket = localStorage.getItem('rumah8_lastMarket');
-          
-          if (lastMarket && MARKETS.includes(lastMarket)) {
-            marketSelect.value = lastMarket;
-            showNotification(`📂 Memuat data ${lastMarket}...`, 'info');
-            loadLastData(lastMarket);
-          }
-          
-          // Event listener untuk ganti market
-          marketSelect.addEventListener('change', (e) => {
-            const newMarket = e.target.value;
-            if (newMarket) {
-              showNotification(`🔄 Beralih ke ${newMarket}...`, 'info');
-              loadLastData(newMarket);
-            }
-          });
-        }
-      }, 100);
+    // ✅ DIPERBAIKI: Setup event listener untuk ganti market setelah auth ready
+    document.getElementById('market').addEventListener('change', (e) => {
+      const newMarket = e.target.value;
+      if (newMarket && authReady) {
+        showNotification(`🔄 Beralih ke ${newMarket}...`, 'info');
+        loadLastData(newMarket);
+      }
     });
   </script>
 </body>
