@@ -23,23 +23,10 @@
       line-height: 1.6;
       padding: 24px;
     }
-    .container {
-      max-width: 980px;
-      margin: 0 auto;
-    }
-    header {
-      margin-bottom: 20px;
-    }
-    h1 {
-      font-size: 1.6rem;
-      margin: 0 0 6px 0;
-      letter-spacing: 0.2px;
-    }
-    .sub {
-      color: var(--muted);
-      font-size: 0.95rem;
-      margin-bottom: 12px;
-    }
+    .container { max-width: 980px; margin: 0 auto; }
+    header { margin-bottom: 20px; }
+    h1 { font-size: 1.6rem; margin: 0 0 6px 0; letter-spacing: 0.2px; }
+    .sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 12px; }
     .card {
       background: linear-gradient(180deg, #121826, #0f1624);
       border: 1px solid rgba(255,255,255,0.06);
@@ -48,163 +35,66 @@
       padding: 18px;
       margin-bottom: 16px;
     }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 14px;
-    }
-    label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-    input[type="text"],
-    select {
-      width: 100%;
-      background: #0c1220;
-      color: var(--text);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 10px;
-      padding: 10px 12px;
-      font-size: 0.95rem;
-      outline: none;
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; }
+    input[type="text"], select {
+      width: 100%; background: #0c1220; color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+      padding: 10px 12px; font-size: 0.95rem; outline: none;
       transition: border-color 0.2s ease;
     }
-    input[type="text"]::placeholder {
-      color: #6b7280;
-    }
-    input[type="text"]:focus,
-    select:focus {
+    input[type="text"]::placeholder { color: #6b7280; }
+    input[type="text"]:focus, select:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
     }
-    .btn-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
     button {
       background: linear-gradient(90deg, var(--accent), var(--accent2));
-      color: #0b1020;
-      font-weight: 700;
-      border: none;
-      border-radius: 10px;
-      padding: 10px 14px;
-      cursor: pointer;
+      color: #0b1020; font-weight: 700; border: none; border-radius: 10px;
+      padding: 10px 14px; cursor: pointer;
       transition: transform 0.08s ease, box-shadow 0.2s ease, filter 0.2s ease;
     }
     button:hover { filter: brightness(1.08); }
     button:active { transform: translateY(1px); }
-    .btn-secondary {
-      background: #0c1220;
-      color: var(--text);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
+    .btn-secondary { background: #0c1220; color: var(--text); border: 1px solid rgba(255,255,255,0.08); }
     .tag {
-      display: inline-block;
-      padding: 4px 8px;
-      border-radius: 999px;
-      font-size: 0.85rem;
-      border: 1px solid rgba(255,255,255,0.12);
-      color: var(--muted);
+      display: inline-block; padding: 4px 8px; border-radius: 999px;
+      font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.12); color: var(--muted);
     }
-    .output {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 14px;
-      align-items: start;
-    }
+    .output { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; align-items: start; }
     .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: #0c1220;
-      border: 1px solid rgba(255,255,255,0.08);
+      display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px;
+      border-radius: 999px; background: #0c1220; border: 1px solid rgba(255,255,255,0.08);
     }
     .digit {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      border-radius: 999px;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; border-radius: 999px;
       background: linear-gradient(180deg, #12192a, #0d1424);
       border: 1px solid rgba(255,255,255,0.08);
-      font-weight: 800;
-      font-size: 1.15rem;
-      color: var(--text);
+      font-weight: 800; font-size: 1.15rem; color: var(--text);
     }
-    .score {
-      font-variant-numeric: tabular-nums;
-      color: var(--muted);
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-variant-numeric: tabular-nums;
-    }
-    th, td {
-      text-align: left;
-      padding: 8px 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-    }
-    th {
-      color: var(--muted);
-      font-weight: 700;
-      background: rgba(255,255,255,0.03);
-    }
-    .muted {
-      color: var(--muted);
-    }
-    .warn {
-      color: var(--danger);
-      font-weight: 600;
-    }
-    .ok {
-      color: var(--ok);
-      font-weight: 600;
-    }
-    .footer {
-      font-size: 0.9rem;
-      color: var(--muted);
-      margin-top: 8px;
-    }
-    .mini {
-      font-size: 0.82rem;
-      color: var(--muted);
-    }
-    .flex {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .chips {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .back-home {
-      text-align: right;
-      margin-bottom: 16px;
-    }
+    .score { font-variant-numeric: tabular-nums; color: var(--muted); }
+    table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    th { color: var(--muted); font-weight: 700; background: rgba(255,255,255,0.03); }
+    .muted { color: var(--muted); }
+    .warn { color: var(--danger); font-weight: 600; }
+    .ok { color: var(--ok); font-weight: 600; }
+    .footer { font-size: 0.9rem; color: var(--muted); margin-top: 8px; }
+    .mini { font-size: 0.82rem; color: var(--muted); }
+    .flex { display: flex; gap: 10px; flex-wrap: wrap; }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .back-home { text-align: right; margin-bottom: 16px; }
     .back-home a {
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+      color: var(--accent); text-decoration: none; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 6px;
     }
     select {
       appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      background-size: 16px;
-      padding-right: 36px;
+      background-repeat: no-repeat; background-position: right 12px center;
+      background-size: 16px; padding-right: 36px;
     }
   </style>
 </head>
@@ -312,33 +202,38 @@
     <div class="footer">Hasil acak dan independen. Gunakan untuk eksplorasi pola saja.</div>
   </div>
 
-  <!-- 🔥 Firebase SDK - DIPERBAIKI: Tambah Auth -->
+  <!-- 🔥 Firebase SDK - DIPERBAIKI: Gunakan config terpusat -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="./config-firebase.js"></script>
 
   <script>
-    // 🔐 Konfigurasi Firebase — proyek SABAR
-    const firebaseConfig = {
-      apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
-      authDomain: "sabar-2e686.firebaseapp.com",
-      databaseURL: "https://sabar-2e686-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "sabar-2e686",
-      storageBucket: "sabar-2e686.firebasestorage.app",
-      messagingSenderId: "985183830784",
-      appId: "1:985183830784:web:fae21bdb94c1f0103769e5"
-    };
-
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
+    // Inisialisasi dari config-firebase.js
     const database = firebase.database();
     const auth = firebase.auth();
     let currentDataId = null;
     let selectedMarket = null;
     
-    // ✅ PERBAIKAN: Flag untuk tracking auth status
-    let authReady = false;
+    // ✅ PERBAIKAN UTAMA: Cek login dari localStorage (Instan)
+    let authReady = !!localStorage.getItem('currentUser');
+    if (authReady) {
+      console.log('✅ [rumah5] User terdeteksi dari localStorage');
+    }
+
+    // Backup: Dengarkan perubahan status dari Firebase Auth
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        authReady = true;
+        console.log('✅ [rumah5] Firebase Auth: User login terdeteksi:', user.email);
+      } else {
+        // Hanya anggap belum login jika localStorage juga kosong
+        if (!localStorage.getItem('currentUser')) {
+          authReady = false;
+          console.log('⚠️ [rumah5] User benar-benar belum login');
+        }
+      }
+    });
 
     (function(){
       const id = s => document.getElementById(s);
@@ -470,11 +365,10 @@
         return div;
       }
 
-      // === ✅ REVISI: Muat 5 result terbaru dari rumah1/{market}/data ===
+      // === Muat 5 result terbaru dari rumah1/{market}/data ===
       async function loadResultsFromRumah1(market) {
         if (!market || !MARKETS.includes(market)) return;
         
-        // ✅ PERBAIKAN: Cek auth sebelum load
         if (!authReady) {
           alert("⚠️ Menunggu login... Silakan tunggu sebentar.");
           return;
@@ -485,7 +379,7 @@
           const data = snapshot.val();
           
           if (!Array.isArray(data) || data.length < 5) {
-            alert(`ℹ️ Data rumah1 untuk ${market} kurang dari 5 baris.`);
+            alert(`️ Data rumah1 untuk ${market} kurang dari 5 baris.`);
             return;
           }
 
@@ -513,9 +407,8 @@
         }
       }
 
-      // === Fungsi Simpan dan Hapus (100% UTUH + cek auth) ===
+      // === Fungsi Simpan dan Hapus ===
       btnSave.addEventListener('click', async () => {
-        // ✅ PERBAIKAN: Cek auth sebelum save
         if (!authReady) {
           alert("⚠️ Menunggu login... Silakan tunggu sebentar.");
           return;
@@ -564,7 +457,6 @@
       });
 
       btnDelete.addEventListener('click', async () => {
-        // ✅ PERBAIKAN: Cek auth sebelum delete
         if (!authReady) {
           alert("⚠️ Menunggu login... Silakan tunggu sebentar.");
           return;
@@ -584,11 +476,11 @@
           alert("🗑️ Data dihapus dari cloud.");
         } catch (err) {
           console.error("Firebase delete error:", err);
-          alert("❌ Gagal menghapus: " + (err.message || "Cek koneksi"));
+          alert(" Gagal menghapus: " + (err.message || "Cek koneksi"));
         }
       });
 
-      // === Fungsi Render (100% UTUH) ===
+      // === Fungsi Render ===
       function render(results, heads, freq, mk, rh, pmedian, pmissing, praw, score, market){
         warn.style.display = 'none';
         out.style.display = 'grid';
@@ -634,7 +526,7 @@
         });
       }
 
-      // === Event Listeners Asli (100% UTUH) ===
+      // === Event Listeners ===
       btnCalc.addEventListener('click', ()=>{
         const market = marketSelect.value;
         if (!market || !MARKETS.includes(market)) {
@@ -704,7 +596,6 @@
         cloneContainer.style.display = 'none';
       });
 
-      // === Tombol Baru: Muat dari Rumah1 ===
       btnLoadRumah1.addEventListener('click', () => {
         const market = marketSelect.value;
         if (!market) {
@@ -714,7 +605,6 @@
         loadResultsFromRumah1(market);
       });
 
-      // Auto-load market terakhir saat halaman pertama kali dibuka
       document.addEventListener('DOMContentLoaded', () => {
         const lastMarket = localStorage.getItem('lastMarket');
         if (lastMarket && MARKETS.includes(lastMarket)) {
@@ -723,19 +613,6 @@
       });
 
     })();
-
-    // ============================================
-    // ✅ PERBAIKAN UTAMA: Tunggu login sebelum load data
-    // ============================================
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        console.log('✅ [rumah5] User login terdeteksi:', user.email);
-        authReady = true;
-      } else {
-        console.log('⚠️ [rumah5] User belum login!');
-        authReady = false;
-      }
-    });
   </script>
 </body>
 </html>
