@@ -30,6 +30,53 @@
       text-align: center;
       margin: 16px 0;
     }
+    
+    /* ✅ BARU: Notifikasi Simpan */
+    .save-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      z-index: 9999;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: slideIn 0.3s ease-out;
+      display: none;
+    }
+    .save-notification.success {
+      background: #4caf50;
+      color: white;
+    }
+    .save-notification.error {
+      background: #f44336;
+      color: white;
+    }
+    .save-notification.info {
+      background: #2196f3;
+      color: white;
+    }
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+    }
   </style>
 </head>
 <body>
@@ -74,24 +121,24 @@
     </div>
   </div>
 
-  <!-- Firebase SDK - DIPERBAIKI: Tambah Auth + Config Eksternal -->
+  <!-- ✅ BARU: Notifikasi Popup -->
+  <div id="saveNotification" class="save-notification"></div>
+
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="./config-firebase.js"></script>
   
   <script>
-    // Inisialisasi dari config-firebase.js
     const db = firebase.database();
     const auth = firebase.auth();
     
-    // ✅ PERBAIKAN: Cek login dari localStorage (Instan)
     let authReady = !!localStorage.getItem('currentUser');
     if (authReady) {
       console.log('✅ [rumah6] User terdeteksi dari localStorage');
     }
 
-    // Backup: Dengarkan perubahan status dari Firebase Auth
     auth.onAuthStateChanged((user) => {
       if (user) {
         authReady = true;
@@ -105,6 +152,22 @@
         }
       }
     });
+
+    // ✅ BARU: Fungsi Notifikasi
+    function showNotification(message, type = 'success') {
+      const notif = document.getElementById('saveNotification');
+      notif.textContent = message;
+      notif.className = `save-notification ${type}`;
+      notif.style.display = 'block';
+      notif.style.animation = 'slideIn 0.3s ease-out';
+      
+      setTimeout(() => {
+        notif.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => {
+          notif.style.display = 'none';
+        }, 300);
+      }, 3000);
+    }
 
     const isSmall = d => d >= 0 && d <= 4;
     const classify = (h, t) => (isSmall(h) ? 'K' : 'B') + (isSmall(t) ? 'K' : 'B');
@@ -131,7 +194,6 @@
       return Array.from(all).sort().join('*');
     }
 
-    // 🔥 DIPERLUAS: 3 POLA PREDIKSI (100% UTUH)
     const transitionMap = {
       'KK': ['KB', 'BK', 'BB'],
       'BB': ['KB', 'BK', 'KK'],
@@ -150,7 +212,7 @@
       });
 
       const patterns = pairs.map(p => classify(parseInt(p[0]), parseInt(p[1])));
-      const p6 = patterns[5]; // pola terakhir
+      const p6 = patterns[5];
 
       const predictedPatterns = transitionMap[p6] || ['KB', 'BK', 'BB'];
       const all2D = generate2DFromPatterns(predictedPatterns);
@@ -161,24 +223,31 @@
       };
     }
 
-    // ✅ DIPERBAIKI: Tambah cek auth sebelum save
+    // ✅ DIPERBAIKI: Tambah notifikasi saat simpan
     function saveToFirebase(market, inputData, resultData) {
       if (!authReady) {
-        console.warn('⚠️ Auth belum ready, tidak bisa simpan');
+        showNotification('⚠️ Anda belum login!', 'error');
         return;
       }
+      
+      showNotification('💾 Menyimpan ke Firebase...', 'info');
       
       db.ref(`rumah6/${market}`).set({
         input: inputData,
         patterns: resultData.patterns,
         all2D: resultData.all2D,
         timestamp: firebase.database.ServerValue.TIMESTAMP
+      }).then(() => {
+        showNotification(`✅ Data untuk ${market} tersimpan!`, 'success');
+        
+        // ✅ BARU: Simpan market terakhir ke localStorage
+        localStorage.setItem('rumah6_lastMarket', market);
       }).catch(err => {
         console.error('Gagal simpan:', err);
+        showNotification('❌ Gagal menyimpan: ' + err.message, 'error');
       });
     }
 
-    // ✅ DIPERBAIKI: Tambah cek auth sebelum load
     function loadFromFirebase(market, callback) {
       if (!authReady) {
         console.warn('⚠️ Auth belum ready, tidak bisa load');
@@ -196,22 +265,24 @@
       });
     }
 
-    // ✅ DIPERBAIKI: Tambah cek auth sebelum delete
     function deleteFromFirebase(market, callback) {
       if (!authReady) {
-        alert("⚠️ Anda belum login. Silakan login dulu.");
+        showNotification('⚠️ Anda belum login!', 'error');
         return;
       }
       
       if (!confirm(`Hapus data untuk market "${market}" dari cloud?`)) return;
+      
+      showNotification('🗑️ Menghapus data...', 'info');
+      
       db.ref(`rumah6/${market}`).remove()
         .then(() => {
-          alert("✅ Data dihapus dari cloud.");
+          showNotification(`✅ Data ${market} dihapus!`, 'success');
           if (callback) callback();
         })
         .catch(err => {
           console.error("Gagal hapus:", err);
-          alert("❌ Gagal menghapus: " + (err.message || "Cek koneksi"));
+          showNotification('❌ Gagal menghapus: ' + err.message, 'error');
         });
     }
 
@@ -219,15 +290,7 @@
       const target = btn.closest('.result-box').querySelector('.copy-target');
       if (target && target.innerText) {
         navigator.clipboard.writeText(target.innerText).then(() => {
-          const notice = document.createElement('div');
-          notice.textContent = '✅ Tersalin!';
-          notice.style.cssText = `
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: #4caf50; color: white; padding: 8px 16px; border-radius: 4px;
-            font-weight: bold; z-index: 1000; box-shadow: 0 3px 8px rgba(0,0,0,0.2);
-          `;
-          document.body.appendChild(notice);
-          setTimeout(() => document.body.removeChild(notice), 1500);
+          showNotification('📋 Tersalin ke clipboard!', 'success');
         });
       }
     }
@@ -321,14 +384,21 @@
       });
     });
 
-    // ✅ DIPERBAIKI: Tunggu auth ready sebelum load data
+    // ✅ DIPERBAIKI: Auto-load market terakhir saat halaman dibuka
     window.addEventListener('load', () => {
-      // Tunggu sampai auth ready
       const waitForAuth = setInterval(() => {
         if (authReady) {
           clearInterval(waitForAuth);
           
           const marketSelect = document.getElementById('market');
+          
+          // ✅ BARU: Load market terakhir dari localStorage
+          const lastMarket = localStorage.getItem('rumah6_lastMarket');
+          if (lastMarket) {
+            marketSelect.value = lastMarket;
+            showNotification(`📂 Memuat data ${lastMarket}...`, 'info');
+          }
+          
           const currentMarket = marketSelect.value;
           
           loadFromFirebase(currentMarket, (data) => {
@@ -347,11 +417,16 @@
               `;
               document.getElementById('results').innerHTML = outputHTML;
               document.getElementById('results').style.display = 'block';
+              showNotification(`✅ Data ${currentMarket} dimuat!`, 'success');
+            } else {
+              showNotification(`ℹ️ Belum ada data untuk ${currentMarket}`, 'info');
             }
           });
 
           marketSelect.addEventListener('change', (e) => {
             const newMarket = e.target.value;
+            showNotification(`🔄 Beralih ke ${newMarket}...`, 'info');
+            
             loadFromFirebase(newMarket, (data) => {
               const inp = document.getElementById('input');
               const res = document.getElementById('results');
@@ -370,10 +445,15 @@
                 `;
                 res.innerHTML = outputHTML;
                 res.style.display = 'block';
+                showNotification(`✅ Data ${newMarket} dimuat!`, 'success');
+                
+                // ✅ BARU: Simpan market yang baru dipilih
+                localStorage.setItem('rumah6_lastMarket', newMarket);
               } else {
                 inp.value = '';
                 res.style.display = 'none';
                 res.innerHTML = '';
+                showNotification(`ℹ️ Belum ada data untuk ${newMarket}`, 'info');
               }
             });
           });
