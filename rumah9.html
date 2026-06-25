@@ -196,10 +196,11 @@
     }
   </style>
 
-  <!--  Firebase SDK (Compat Version - Sama seperti rumah1-4) -->
+  <!-- Firebase SDK (Compat Version - Sama seperti rumah1-4) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="./config-firebase.js"></script>
 </head>
 <body>
   <h1> saringandua</h1>
@@ -217,29 +218,24 @@
   </div>
 
   <script>
-    // === KONFIGURASI FIREBASE ===
-    const firebaseConfig = {
-      apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
-      authDomain: "sabar-2e686.firebaseapp.com",
-      databaseURL: "https://sabar-2e686-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "sabar-2e686",
-      storageBucket: "sabar-2e686.firebasestorage.app",
-      messagingSenderId: "985183830784",
-      appId: "1:985183830784:web:fae21bdb94c1f0103769e5"
-    };
-
-    // Inisialisasi Firebase (Compat)
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    const db = firebase.database();
-    const auth = firebase.auth();
-
     // === KONFIGURASI APLIKASI ===
     const MARKETS = ["cambodia", "sidney", "china", "japan", "sgp", "taiwan", "hongkong"];
     let panelCount = 0;
     const allPanels = new Map();
+    
+    // ✅ PERBAIKAN UTAMA: Cek login dari localStorage (sama seperti index.js)
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
     let authReady = false;
+    
+    if (currentUser && currentUser.uid) {
+      console.log('✅ [rumah9] User terdeteksi dari localStorage:', currentUser.email);
+      authReady = true;
+    } else {
+      console.log('⚠️ [rumah9] User belum login (tidak ada di localStorage)');
+    }
+
+    // Inisialisasi Firebase
+    const db = firebase.database();
 
     // === HELPER FUNGSI (100% UTUH) ===
     function hitungDasar2D_2digit(duaDigit) {
@@ -486,7 +482,7 @@
       }
     }
 
-    // === FIREBASE: LOAD & SAVE (Menggunakan Compat SDK) ===
+    // === FIREBASE: LOAD & SAVE ===
     async function loadFromFirebase(market, panelId) {
       if (!authReady) return;
       
@@ -626,7 +622,7 @@
 
     window.handleSave = async (panelId) => {
       if (!authReady) {
-        showMessage(document.getElementById(`status-${panelId}`), "⚠️ Menunggu login...", true);
+        showMessage(document.getElementById(`status-${panelId}`), "⚠️ Anda belum login. Silakan login dulu.", true);
         return;
       }
       
@@ -650,13 +646,13 @@
         showMessage(statusEl, "✅ Tersimpan!", false);
       } catch (e) {
         console.error(e);
-        showMessage(document.getElementById(`status-${panelId}`), "❌ Gagal simpan", true);
+        showMessage(document.getElementById(`status-${panelId}`), "❌ Gagal simpan: " + e.message, true);
       }
     };
 
     window.handleClear = async (panelId) => {
       if (!authReady) {
-        showMessage(document.getElementById(`status-${panelId}`), "⚠️ Menunggu login...", true);
+        showMessage(document.getElementById(`status-${panelId}`), "⚠️ Anda belum login.", true);
         return;
       }
       
@@ -672,7 +668,7 @@
         await db.ref(`rumah9/${market}`).remove(); 
         showMessage(document.getElementById(`status-${panelId}`), "✅ Data di cloud dihapus", false);
       } catch (e) {
-        showMessage(document.getElementById(`status-${panelId}`), "️ Input lokal dihapus", false);
+        showMessage(document.getElementById(`status-${panelId}`), "ℹ️ Input lokal dihapus", false);
       }
     };
 
@@ -688,25 +684,21 @@
     };
 
     // ============================================
-    // ✅ PERBAIKAN UTAMA: Gunakan onAuthStateChanged (Compat)
+    // ✅ INISIALISASI: Langsung buat panel jika sudah login
     // ============================================
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        console.log('✅ [rumah9] User login terdeteksi:', user.email);
-        authReady = true;
-        
-        // Buat panel pertama jika belum ada
-        if (allPanels.size === 0) {
-          createPanel('cambodia');
-        } else {
-          // Reload data untuk panel yang sudah ada
-          allPanels.forEach((data, market) => {
-            loadFromFirebase(market, data.panelId);
-          });
-        }
+    document.addEventListener('DOMContentLoaded', () => {
+      if (authReady) {
+        console.log('✅ [rumah9] Memulai aplikasi, membuat panel...');
+        createPanel('cambodia');
       } else {
-        console.log('⚠️ [rumah9] User belum login!');
-        authReady = false;
+        console.log('️ [rumah9] User belum login. Silakan login di pageawal.html');
+        document.getElementById('panels-container').innerHTML = `
+          <div style="text-align: center; padding: 40px; background: #fff3cd; border-radius: 10px; border: 1px solid #ffeaa7;">
+            <h3>⚠️ Akses Ditolak</h3>
+            <p>Anda harus login terlebih dahulu untuk menggunakan fitur ini.</p>
+            <a href="pageawal.html" style="display: inline-block; padding: 10px 20px; background: #4285f4; color: white; text-decoration: none; border-radius: 6px; margin-top: 10px;">🔙 Kembali ke Login</a>
+          </div>
+        `;
       }
     });
   </script>
