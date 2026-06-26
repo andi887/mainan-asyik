@@ -5,6 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Rumah Utama</title>
   
+  <!-- ✅ PROTEKSI HALAMAN: Redirect SEBELUM render jika belum login -->
+  <script>
+    (function() {
+      // Cek localStorage SECEPAT MUNGKIN
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+      
+      if (!currentUser || !currentUser.uid) {
+        console.log('⚠️ [index.html] User belum login, redirect ke pageawal.html');
+        // Gunakan replace agar tidak bisa di-back
+        window.location.replace('./pageawal.html');
+      } else {
+        console.log('✅ [index.html] User login:', currentUser.email);
+      }
+    })();
+  </script>
+  
   <!-- Firebase SDK (Compat Version) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
