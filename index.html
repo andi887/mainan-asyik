@@ -10,7 +10,7 @@
     (function() {
       const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
       if (!currentUser || !currentUser.uid) {
-        console.log('️ [index.html] User belum login, redirect ke pageawal.html');
+        console.log('⚠️ [index.html] User belum login, redirect ke pageawal.html');
         window.location.replace('./pageawal.html');
       } else {
         console.log('✅ [index.html] User login:', currentUser.email);
@@ -28,6 +28,22 @@
   
   <!-- Link ke CSS eksternal -->
   <link rel="stylesheet" href="./css/index.css">
+  
+  <!-- ✅ TAMBAHAN: Styling untuk navigasi panel -->
+  <style>
+    .feature-card {
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .feature-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .feature-card.active {
+      border: 2px solid #2196F3;
+      background: #e3f2fd;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -76,32 +92,33 @@
         <span class="admin-badge">ADMIN ONLY</span>
       </div>
 
+      <!-- ✅ DIPERBAIKI: Setiap kartu memiliki ID untuk event listener -->
       <div class="feature-grid">
-        <div class="feature-card">
+        <div class="feature-card" id="cardManajemenUser">
           <div class="feature-icon">👥</div>
           <div class="feature-text">Manajemen Pengguna</div>
         </div>
-        <div class="feature-card" id="cardDataStatistik" style="cursor: pointer;">
+        <div class="feature-card" id="cardDataStatistik">
           <div class="feature-icon">📊</div>
           <div class="feature-text">Data & Statistik</div>
         </div>
-        <div class="feature-card">
+        <div class="feature-card" id="cardKeamanan">
           <div class="feature-icon">🔒</div>
           <div class="feature-text">Keamanan & Log</div>
         </div>
-        <div class="feature-card">
+        <div class="feature-card" id="cardPengaturan">
           <div class="feature-icon">⚙️</div>
           <div class="feature-text">Pengaturan Situs</div>
         </div>
-        <div class="feature-card">
+        <div class="feature-card" id="cardMonitoring">
           <div class="feature-icon">👁️</div>
           <div class="feature-text">Monitoring</div>
         </div>
       </div>
 
       <!-- Sub-panel: Pengaturan Situs (Info Box) -->
-      <div class="sub-panel" id="subPanelPengaturan">
-        <h3>️ Pengaturan Situs</h3>
+      <div class="sub-panel" id="subPanelPengaturan" style="display: none;">
+        <h3>⚙️ Pengaturan Situs</h3>
         
         <div class="info-description">
           <p>📌 Tambahkan beberapa pengumuman. Setiap pengumuman akan tampil bergantian di halaman login. Durasi tampil diacak antara 6-12 detik.</p>
@@ -119,10 +136,10 @@
         <div id="announcementStatus"></div>
       </div>
 
-      <!-- ✅ BARU: Sub-panel Data & Statistik Keuangan -->
+      <!-- ✅ Sub-panel Data & Statistik Keuangan -->
       <div class="sub-panel" id="subPanelStatistik" style="display: none; margin-top: 30px; border-top: 2px dashed #ccc; padding-top: 20px;">
         <h3>📊 Data & Statistik Keuangan (Laba/Rugi)</h3>
-        <p style="font-size: 0.9em; color: #666; margin-bottom: 15px;"> Catat modal, win, dan lose per market. Sistem akan menghitung selisih (Win - Lose) dan total akumulasi secara otomatis.</p>
+        <p style="font-size: 0.9em; color: #666; margin-bottom: 15px;">📝 Catat modal, win, dan lose per market. Sistem akan menghitung selisih (Win - Lose) dan total akumulasi secara otomatis.</p>
 
         <!-- Form Input -->
         <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee;">
@@ -161,7 +178,7 @@
               <input type="text" id="statKet" placeholder="Catatan..." style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
             </div>
           </div>
-          <button id="addStatRowBtn" style="margin-top: 10px; background: #2196F3; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;"> Tambah ke Tabel</button>
+          <button id="addStatRowBtn" style="margin-top: 10px; background: #2196F3; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">➕ Tambah ke Tabel</button>
         </div>
 
         <!-- Tabel Statistik -->
@@ -207,9 +224,93 @@
   <!-- Link ke JavaScript eksternal -->
   <script src="./js/index.js"></script>
 
-  <!-- ✅ SCRIPT KHUSUS FITUR DATA & STATISTIK -->
+  <!-- ✅ SCRIPT NAVIGASI PANEL & DATA STATISTIK -->
   <script>
-    // === LOGIC DATA & STATISTIK ===
+    // ============================================
+    // BAGIAN 1: NAVIGASI ANTAR PANEL CONTROL CENTER
+    // ============================================
+    
+    // Fungsi helper untuk menampilkan panel tertentu
+    function showPanel(panelId) {
+      // Sembunyikan semua sub-panel
+      document.getElementById('subPanelPengaturan').style.display = 'none';
+      document.getElementById('subPanelStatistik').style.display = 'none';
+      
+      // Hapus class active dari semua kartu
+      document.querySelectorAll('.feature-card').forEach(card => {
+        card.classList.remove('active');
+      });
+      
+      // Tampilkan panel yang dipilih
+      const panel = document.getElementById(panelId);
+      if (panel) {
+        panel.style.display = 'block';
+        
+        // Tambahkan class active ke kartu yang diklik
+        const activeCard = document.querySelector(`[onclick*="${panelId}"], .feature-card[data-panel="${panelId}"]`);
+        if (activeCard) activeCard.classList.add('active');
+        
+        // Load data khusus jika panel Statistik
+        if (panelId === 'subPanelStatistik') {
+          loadStatsData();
+        }
+        
+        // Scroll ke panel
+        setTimeout(() => {
+          panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
+    }
+
+    // Setup event listener untuk semua kartu fitur
+    function setupCardNavigation() {
+      // Kartu Data & Statistik
+      const cardStat = document.getElementById('cardDataStatistik');
+      if (cardStat) {
+        cardStat.dataset.panel = 'subPanelStatistik';
+        cardStat.addEventListener('click', () => showPanel('subPanelStatistik'));
+      }
+
+      // Kartu Pengaturan Situs
+      const cardPengaturan = document.getElementById('cardPengaturan');
+      if (cardPengaturan) {
+        cardPengaturan.dataset.panel = 'subPanelPengaturan';
+        cardPengaturan.addEventListener('click', () => showPanel('subPanelPengaturan'));
+      }
+
+      // Kartu yang masih dalam pengembangan
+      const cardManajemen = document.getElementById('cardManajemenUser');
+      if (cardManajemen) {
+        cardManajemen.addEventListener('click', () => {
+          alert('🚧 Fitur Manajemen Pengguna sedang dalam pengembangan.\n\nSilakan hubungi admin untuk informasi lebih lanjut.');
+        });
+      }
+
+      const cardKeamanan = document.getElementById('cardKeamanan');
+      if (cardKeamanan) {
+        cardKeamanan.addEventListener('click', () => {
+          alert('🚧 Fitur Keamanan & Log sedang dalam pengembangan.\n\nSilakan hubungi admin untuk informasi lebih lanjut.');
+        });
+      }
+
+      const cardMonitoring = document.getElementById('cardMonitoring');
+      if (cardMonitoring) {
+        cardMonitoring.addEventListener('click', () => {
+          alert('🚧 Fitur Monitoring sedang dalam pengembangan.\n\nSilakan hubungi admin untuk informasi lebih lanjut.');
+        });
+      }
+    }
+
+    // Jalankan setup setelah DOM siap
+    document.addEventListener('DOMContentLoaded', () => {
+      // Tunggu sebentar untuk memastikan index.js sudah load
+      setTimeout(setupCardNavigation, 500);
+    });
+
+    // ============================================
+    // BAGIAN 2: LOGIC DATA & STATISTIK
+    // ============================================
+    
     let currentStatsData = [];
 
     function formatRupiah(angka) {
@@ -218,6 +319,8 @@
 
     function renderStatsTable() {
       const tbody = document.getElementById('statsTableBody');
+      if (!tbody) return;
+      
       tbody.innerHTML = '';
       
       let tModal = 0, tWin = 0, tLose = 0;
@@ -254,65 +357,85 @@
     }
 
     window.removeStatRow = function(index) {
-      currentStatsData.splice(index, 1);
-      renderStatsTable();
+      if (confirm('Hapus baris ini?')) {
+        currentStatsData.splice(index, 1);
+        renderStatsTable();
+      }
     };
 
     // Tambah baris ke tabel
-    document.getElementById('addStatRowBtn').addEventListener('click', () => {
-      const periode = document.getElementById('statPeriode').value.trim();
-      const market = document.getElementById('statMarket').value;
-      const modal = parseInt(document.getElementById('statModal').value) || 0;
-      const win = parseInt(document.getElementById('statWin').value) || 0;
-      const lose = parseInt(document.getElementById('statLose').value) || 0;
-      const ket = document.getElementById('statKet').value.trim();
+    document.addEventListener('DOMContentLoaded', () => {
+      const addBtn = document.getElementById('addStatRowBtn');
+      if (addBtn) {
+        addBtn.addEventListener('click', () => {
+          const periode = document.getElementById('statPeriode').value.trim();
+          const market = document.getElementById('statMarket').value;
+          const modal = parseInt(document.getElementById('statModal').value) || 0;
+          const win = parseInt(document.getElementById('statWin').value) || 0;
+          const lose = parseInt(document.getElementById('statLose').value) || 0;
+          const ket = document.getElementById('statKet').value.trim();
 
-      if (!periode) { alert('Periode harus diisi!'); return; }
+          if (!periode) { 
+            alert('⚠️ Periode harus diisi!'); 
+            return; 
+          }
 
-      currentStatsData.push({ periode, market, modal, win, lose, ket });
-      renderStatsTable();
+          currentStatsData.push({ periode, market, modal, win, lose, ket });
+          renderStatsTable();
 
-      // Reset form input angka (kecuali periode & market untuk kemudahan input beruntun)
-      document.getElementById('statModal').value = '';
-      document.getElementById('statWin').value = '';
-      document.getElementById('statLose').value = '';
-      document.getElementById('statKet').value = '';
-    });
-
-    // Reset tabel
-    document.getElementById('clearStatsBtn').addEventListener('click', () => {
-      if(confirm('Yakin ingin mereset semua data di tabel?')) {
-        currentStatsData = [];
-        renderStatsTable();
-      }
-    });
-
-    // Simpan ke Firebase
-    document.getElementById('saveStatsBtn').addEventListener('click', async () => {
-      if (currentStatsData.length === 0) {
-        alert('Tabel masih kosong!');
-        return;
-      }
-      const statusEl = document.getElementById('statsStatus');
-      statusEl.textContent = 'Menyimpan...';
-      statusEl.style.color = 'orange';
-      
-      try {
-        const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        await firebase.database().ref('statistics/financials').set({
-          data: currentStatsData,
-          updatedAt: Date.now(),
-          updatedBy: user.uid || 'unknown'
+          // Reset form input angka (kecuali periode & market untuk kemudahan input beruntun)
+          document.getElementById('statModal').value = '';
+          document.getElementById('statWin').value = '';
+          document.getElementById('statLose').value = '';
+          document.getElementById('statKet').value = '';
+          
+          // Fokus kembali ke periode untuk input cepat
+          document.getElementById('statModal').focus();
         });
-        statusEl.textContent = '✅ Data statistik berhasil disimpan!';
-        statusEl.style.color = 'green';
-      } catch (e) {
-        statusEl.textContent = ' Gagal simpan: ' + e.message;
-        statusEl.style.color = 'red';
+      }
+
+      // Reset tabel
+      const clearBtn = document.getElementById('clearStatsBtn');
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          if(confirm('⚠️ Yakin ingin mereset semua data di tabel?')) {
+            currentStatsData = [];
+            renderStatsTable();
+          }
+        });
+      }
+
+      // Simpan ke Firebase
+      const saveBtn = document.getElementById('saveStatsBtn');
+      if (saveBtn) {
+        saveBtn.addEventListener('click', async () => {
+          if (currentStatsData.length === 0) {
+            alert('⚠️ Tabel masih kosong!');
+            return;
+          }
+          const statusEl = document.getElementById('statsStatus');
+          statusEl.textContent = '⏳ Menyimpan...';
+          statusEl.style.color = 'orange';
+          
+          try {
+            const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            await firebase.database().ref('statistics/financials').set({
+              data: currentStatsData,
+              updatedAt: Date.now(),
+              updatedBy: user.uid || 'unknown'
+            });
+            statusEl.textContent = '✅ Data statistik berhasil disimpan!';
+            statusEl.style.color = 'green';
+            setTimeout(() => { statusEl.textContent = ''; }, 3000);
+          } catch (e) {
+            statusEl.textContent = '❌ Gagal simpan: ' + e.message;
+            statusEl.style.color = 'red';
+          }
+        });
       }
     });
 
-    // Load data dari Firebase saat halaman dibuka
+    // Load data dari Firebase
     async function loadStatsData() {
       try {
         const snapshot = await firebase.database().ref('statistics/financials').once('value');
@@ -320,25 +443,14 @@
         if (data && data.data) {
           currentStatsData = data.data;
           renderStatsTable();
+        } else {
+          currentStatsData = [];
+          renderStatsTable();
         }
       } catch (e) {
         console.error('Gagal load statistik:', e);
       }
     }
-
-    // Hook ke kartu "Data & Statistik" untuk menampilkan panel
-    document.getElementById('cardDataStatistik').addEventListener('click', () => {
-      const panel = document.getElementById('subPanelStatistik');
-      const panelPengaturan = document.getElementById('subPanelPengaturan');
-      
-      if (panel.style.display === 'none' || panel.style.display === '') {
-        panel.style.display = 'block';
-        panelPengaturan.style.display = 'none';
-        loadStatsData(); // Load data saat panel dibuka
-      } else {
-        panel.style.display = 'none';
-      }
-    });
   </script>
 </body>
 </html>
