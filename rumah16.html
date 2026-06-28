@@ -15,6 +15,9 @@
       --danger: #ef4444;
       --ok: #10b981;
     }
+    * {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
       background: radial-gradient(1200px 800px at 20% 20%, #0b1324, #0a1020 60%, #070b18);
@@ -22,6 +25,11 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       line-height: 1.6;
       padding: 24px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    body.ready {
+      opacity: 1;
     }
     .container {
       max-width: 980px;
@@ -38,6 +46,9 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
+    }
+    .back-home a:hover {
+      text-decoration: underline;
     }
     h1 {
       text-align: center;
@@ -85,11 +96,6 @@
     }
     button:active { transform: translateY(1px); }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-secondary {
-      background: #0c1220;
-      color: var(--text);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
     .sheet {
       background: rgba(0,0,0,0.2);
       border: 1px solid rgba(255,255,255,0.08);
@@ -176,26 +182,6 @@
     .loading::before {
       content: "⏳ ";
     }
-    .user-info {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-      padding: 12px;
-      background: rgba(34, 211, 238, 0.1);
-      border-radius: 10px;
-      font-size: 0.9rem;
-    }
-    .user-info span {
-      color: var(--accent);
-      font-weight: 600;
-    }
-    .btn-logout {
-      background: var(--danger);
-      color: #fff;
-      padding: 6px 12px;
-      font-size: 0.85rem;
-    }
     .login-form {
       max-width: 400px;
       margin: 60px auto;
@@ -215,30 +201,22 @@
       <a href="index.html">← Kembali ke Beranda</a>
     </div>
 
-    <!-- Login Form (tampil jika belum login) -->
+    <!-- Login Form -->
     <div id="loginSection" class="login-form hidden">
       <h2>🔐 Login Required</h2>
       <div class="card">
         <label for="loginEmail">Email</label>
         <input type="email" id="loginEmail" placeholder="email@example.com" />
-        
         <label for="loginPassword">Password</label>
         <input type="password" id="loginPassword" placeholder="Password" />
-        
         <button id="btnLogin" style="width:100%;">Login</button>
         <div id="loginStatus" class="status"></div>
       </div>
     </div>
 
-    <!-- Main Content (tampil jika sudah login) -->
+    <!-- Main Content -->
     <div id="mainSection" class="hidden">
-      <div class="user-info">
-        <span>👤 <span id="userEmail"></span></span>
-        <button class="btn-logout" id="btnLogout">Logout</button>
-      </div>
-
       <h1>rumah16 <span id="counter" class="counter" style="display:none;">0</span></h1>
-
       <div class="card">
         <label for="marketSelect">Pilih Market</label>
         <select id="marketSelect">
@@ -252,14 +230,12 @@
           <option value="Hongkong">Hongkong</option>
           <option value="Nusa">Nusa</option>
         </select>
-
         <div class="toolbar">
           <button id="btnTambahLembaran">📄 Tambah Lembaran Kosong</button>
           <input type="text" id="searchInput" placeholder="🔍 Cari di lembaran..." style="display:none;">
         </div>
         <div id="status" class="status"></div>
       </div>
-
       <div id="lembaranContainer"></div>
     </div>
   </div>
@@ -274,58 +250,83 @@
     let selectedMarket = null;
     let isLoading = false;
     let currentUser = null;
+    let authUnsubscribe = null;
+    let appInitialized = false;
 
     const dirtyState = new WeakMap();
 
-    function showStatus(text, type = "") {
-      const el = document.getElementById('status');
+    // ========== ANTI-FLICKER ==========
+    // Cegah kedip saat navigasi: sembunyikan body sampai siap
+    window.addEventListener('beforeunload', () => {
+      document.body.classList.remove('ready');
+      if (authUnsubscribe) { authUnsubscribe(); authUnsubscribe = null; }
+    });
+
+    function showBody() {
+      document.body.classList.add('ready');
+    }
+
+    // ========== STATUS ==========
+    function showStatus(text, type) {
+      type = type || "";
+      var el = document.getElementById('status');
       if (!el) return;
       el.textContent = text;
       el.className = "status " + type;
       if (type === "success" || type === "info") {
-        setTimeout(() => {
+        setTimeout(function() {
           if (el.textContent === text) el.textContent = "";
         }, 2500);
       }
     }
 
-    function showLoginStatus(text, type = "") {
-      const el = document.getElementById('loginStatus');
+    function showLoginStatus(text, type) {
+      type = type || "";
+      var el = document.getElementById('loginStatus');
       if (!el) return;
       el.textContent = text;
       el.className = "status " + type;
     }
 
+    // ========== UTILITAS ==========
     function salinTeks(teks) {
       if (!teks) return showStatus("⚠️ Tidak ada yang disalin.", "error");
       if (navigator.clipboard) {
-        navigator.clipboard.writeText(teks).then(() => {
+        navigator.clipboard.writeText(teks).then(function() {
           showStatus("✅ Disalin!", "success");
-        }).catch(() => showStatus("❌ Gagal salin.", "error"));
+        }).catch(function() {
+          fallbackSalin(teks);
+        });
       } else {
-        const ta = document.createElement('textarea');
-        ta.value = teks;
-        document.body.appendChild(ta);
-        ta.select();
-        try {
-          document.execCommand('copy');
-          showStatus("✅ Disalin!", "success");
-        } catch(e) {
-          showStatus("❌ Gagal salin.", "error");
-        }
-        document.body.removeChild(ta);
+        fallbackSalin(teks);
       }
+    }
+
+    function fallbackSalin(teks) {
+      var ta = document.createElement('textarea');
+      ta.value = teks;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showStatus("✅ Disalin!", "success");
+      } catch(e) {
+        showStatus("❌ Gagal salin.", "error");
+      }
+      document.body.removeChild(ta);
     }
 
     function autoResize(textarea) {
       textarea.style.height = 'auto';
-      textarea.style.height = (textarea.scrollHeight) + 'px';
+      textarea.style.height = textarea.scrollHeight + 'px';
     }
 
     function updateCounter() {
-      const counter = document.getElementById('counter');
+      var counter = document.getElementById('counter');
       if (!counter) return;
-      const visible = document.querySelectorAll('.sheet:not(.filtered-out)').length;
+      var visible = document.querySelectorAll('.sheet:not(.filtered-out)').length;
       if (selectedMarket) {
         counter.textContent = visible;
         counter.style.display = 'inline-block';
@@ -334,105 +335,117 @@
       }
     }
 
-    function buatLembaran(isi = "", key = null, timestamp = null) {
-      const container = document.getElementById('lembaranContainer');
-      const sheet = document.createElement('div');
+    // ========== LEMBARAN ==========
+    function buatLembaran(isi, key, timestamp) {
+      isi = isi || "";
+      key = key || null;
+      timestamp = timestamp || null;
+
+      var container = document.getElementById('lembaranContainer');
+      var sheet = document.createElement('div');
       sheet.className = 'sheet';
       sheet.dataset.key = key || '';
 
-      const waktu = timestamp
+      var waktu = timestamp
         ? new Date(timestamp).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })
         : 'Belum disimpan';
 
-      sheet.innerHTML = `
-        <div class="sheet-header">
-          <span class="sheet-time">${waktu}</span>
-          <span class="sheet-status" style="color:var(--muted);">—</span>
-        </div>
-        <textarea placeholder="Ketik atau paste data..."></textarea>
-        <div class="sheet-actions">
-          <button class="btn-salin">📋 Salin</button>
-          <button class="btn-simpan">💾 Simpan</button>
-          <button class="btn-hapus" style="display:${key ? 'inline-block' : 'none'};">🗑️ Hapus</button>
-        </div>
-      `;
+      sheet.innerHTML =
+        '<div class="sheet-header">' +
+          '<span class="sheet-time">' + waktu + '</span>' +
+          '<span class="sheet-status" style="color:var(--muted);">—</span>' +
+        '</div>' +
+        '<textarea placeholder="Ketik atau paste data..."></textarea>' +
+        '<div class="sheet-actions">' +
+          '<button class="btn-salin">📋 Salin</button>' +
+          '<button class="btn-simpan">💾 Simpan</button>' +
+          '<button class="btn-hapus" style="display:' + (key ? 'inline-block' : 'none') + ';">🗑️ Hapus</button>' +
+        '</div>';
 
-      const textarea = sheet.querySelector('textarea');
-      const btnSalin = sheet.querySelector('.btn-salin');
-      const btnSimpan = sheet.querySelector('.btn-simpan');
-      const btnHapus = sheet.querySelector('.btn-hapus');
-      const statusEl = sheet.querySelector('.sheet-status');
+      var textarea = sheet.querySelector('textarea');
+      var btnSalin = sheet.querySelector('.btn-salin');
+      var btnSimpan = sheet.querySelector('.btn-simpan');
+      var btnHapus = sheet.querySelector('.btn-hapus');
+      var statusEl = sheet.querySelector('.sheet-status');
 
       textarea.value = isi;
-      setTimeout(() => autoResize(textarea), 0);
+      setTimeout(function() { autoResize(textarea); }, 0);
 
-      textarea.addEventListener('input', () => {
+      textarea.addEventListener('input', function() {
         autoResize(textarea);
         dirtyState.set(sheet, true);
         statusEl.textContent = '● Belum disimpan';
         statusEl.style.color = '#f59e0b';
       });
 
-      btnSalin.addEventListener('click', () => salinTeks(textarea.value));
+      btnSalin.addEventListener('click', function() {
+        salinTeks(textarea.value);
+      });
 
-      btnSimpan.addEventListener('click', async () => {
+      btnSimpan.addEventListener('click', function() {
         if (!selectedMarket) return showStatus("⚠️ Pilih market dulu.", "error");
         if (!textarea.value.trim()) return showStatus("⚠️ Tidak ada data.", "error");
 
         btnSimpan.disabled = true;
-        const originalText = btnSimpan.textContent;
+        var originalText = btnSimpan.textContent;
         btnSimpan.textContent = '⏳ Menyimpan...';
 
-        try {
-          const dataToSave = {
-            isi: textarea.value,
-            timestamp: firebase.database.ServerValue.TIMESTAMP,
-            lastModifiedBy: currentUser.uid
-          };
+        var dataToSave = {
+          isi: textarea.value,
+          timestamp: firebase.database.ServerValue.TIMESTAMP,
+          lastModifiedBy: currentUser ? currentUser.uid : null
+        };
 
-          if (sheet.dataset.key) {
-            await firebase.database().ref(`rumah16/${selectedMarket}/${sheet.dataset.key}`).set(dataToSave);
-            showStatus("✅ Diperbarui!", "success");
-          } else {
-            const newRef = firebase.database().ref(`rumah16/${selectedMarket}`).push();
-            await newRef.set(dataToSave);
+        var savePromise;
+        if (sheet.dataset.key) {
+          savePromise = firebase.database().ref('rumah16/' + selectedMarket + '/' + sheet.dataset.key).set(dataToSave);
+        } else {
+          var newRef = firebase.database().ref('rumah16/' + selectedMarket).push();
+          savePromise = newRef.set(dataToSave).then(function() {
             sheet.dataset.key = newRef.key;
             btnHapus.style.display = 'inline-block';
-            const waktuBaru = new Date().toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' });
+            var waktuBaru = new Date().toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' });
             sheet.querySelector('.sheet-time').textContent = waktuBaru;
+          });
+        }
+
+        savePromise.then(function() {
+          if (sheet.dataset.key) {
+            showStatus("✅ Diperbarui!", "success");
+          } else {
             showStatus("✅ Tersimpan!", "success");
           }
-
           dirtyState.set(sheet, false);
           statusEl.textContent = '● Tersimpan';
           statusEl.style.color = 'var(--ok)';
-        } catch (err) {
+        }).catch(function(err) {
           console.error("Gagal simpan:", err);
           showStatus("❌ Gagal simpan: " + err.message, "error");
-        } finally {
+        }).finally(function() {
           btnSimpan.disabled = false;
           btnSimpan.textContent = originalText;
-        }
+        });
       });
 
-      btnHapus.addEventListener('click', async () => {
+      btnHapus.addEventListener('click', function() {
         if (!sheet.dataset.key) return;
         if (!confirm("Hapus lembaran ini?")) return;
 
         btnHapus.disabled = true;
-        try {
-          await firebase.database().ref(`rumah16/${selectedMarket}/${sheet.dataset.key}`).remove();
-          sheet.style.opacity = '0';
-          setTimeout(() => {
-            sheet.remove();
-            updateCounter();
-          }, 200);
-          showStatus("🗑️ Dihapus.", "success");
-        } catch (err) {
-          console.error("Gagal hapus:", err);
-          showStatus("❌ Gagal hapus.", "error");
-          btnHapus.disabled = false;
-        }
+        firebase.database().ref('rumah16/' + selectedMarket + '/' + sheet.dataset.key).remove()
+          .then(function() {
+            sheet.style.opacity = '0';
+            setTimeout(function() {
+              sheet.remove();
+              updateCounter();
+            }, 200);
+            showStatus("🗑️ Dihapus.", "success");
+          })
+          .catch(function(err) {
+            console.error("Gagal hapus:", err);
+            showStatus("❌ Gagal hapus.", "error");
+            btnHapus.disabled = false;
+          });
       });
 
       container.appendChild(sheet);
@@ -440,65 +453,70 @@
       return sheet;
     }
 
+    // ========== MUAT DATA ==========
     function tampilkanLoading() {
-      const container = document.getElementById('lembaranContainer');
-      container.innerHTML = '<div class="loading">Memuat data...</div>';
+      document.getElementById('lembaranContainer').innerHTML = '<div class="loading">Memuat data...</div>';
     }
 
-    async function muatDataTersimpan(market) {
+    function muatDataTersimpan(market) {
       if (!market) return;
       isLoading = true;
       tampilkanLoading();
-      try {
-        const snapshot = await firebase.database().ref(`rumah16/${market}`).once('value');
-        const container = document.getElementById('lembaranContainer');
-        container.innerHTML = '';
 
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          const entries = Object.keys(data).map(key => ({
-            key,
-            isi: data[key].isi || "",
-            timestamp: data[key].timestamp || 0
-          }));
-          entries.sort((a, b) => b.timestamp - a.timestamp);
+      firebase.database().ref('rumah16/' + market).once('value')
+        .then(function(snapshot) {
+          var container = document.getElementById('lembaranContainer');
+          container.innerHTML = '';
 
-          entries.forEach(entry => {
-            buatLembaran(entry.isi, entry.key, entry.timestamp);
-          });
+          if (snapshot.exists()) {
+            var data = snapshot.val();
+            var entries = Object.keys(data).map(function(key) {
+              return {
+                key: key,
+                isi: data[key].isi || "",
+                timestamp: data[key].timestamp || 0
+              };
+            });
+            entries.sort(function(a, b) { return b.timestamp - a.timestamp; });
 
-          showStatus(`📊 ${entries.length} lembaran dimuat.`, "info");
-        } else {
-          showStatus("📭 Belum ada lembaran di market ini.", "info");
-        }
-      } catch (err) {
-        console.error("Gagal muat data:", err);
-        showStatus("❌ Gagal memuat data.", "error");
-      } finally {
-        isLoading = false;
-        updateCounter();
-      }
+            entries.forEach(function(entry) {
+              buatLembaran(entry.isi, entry.key, entry.timestamp);
+            });
+
+            showStatus("📊 " + entries.length + " lembaran dimuat.", "info");
+          } else {
+            showStatus("📭 Belum ada lembaran di market ini.", "info");
+          }
+        })
+        .catch(function(err) {
+          console.error("Gagal muat data:", err);
+          showStatus("❌ Gagal memuat data.", "error");
+        })
+        .finally(function() {
+          isLoading = false;
+          updateCounter();
+        });
     }
 
+    // ========== CEK DIRTY ==========
     function cekDataBelumDisimpan() {
-      const sheets = document.querySelectorAll('.sheet');
-      for (const sheet of sheets) {
-        if (dirtyState.get(sheet)) return true;
+      var sheets = document.querySelectorAll('.sheet');
+      for (var i = 0; i < sheets.length; i++) {
+        if (dirtyState.get(sheets[i])) return true;
       }
       return false;
     }
 
+    // ========== PENCARIAN ==========
     function setupSearch() {
-      const searchInput = document.getElementById('searchInput');
-      searchInput.addEventListener('input', () => {
-        const keyword = searchInput.value.toLowerCase().trim();
-        const sheets = document.querySelectorAll('.sheet');
-        let visibleCount = 0;
-        sheets.forEach(sheet => {
-          const text = sheet.querySelector('textarea').value.toLowerCase();
-          if (!keyword || text.includes(keyword)) {
+      var searchInput = document.getElementById('searchInput');
+      searchInput.addEventListener('input', function() {
+        var keyword = searchInput.value.toLowerCase().trim();
+        var sheets = document.querySelectorAll('.sheet');
+        sheets.forEach(function(sheet) {
+          var text = sheet.querySelector('textarea').value.toLowerCase();
+          if (!keyword || text.indexOf(keyword) !== -1) {
             sheet.classList.remove('filtered-out');
-            visibleCount++;
           } else {
             sheet.classList.add('filtered-out');
           }
@@ -507,49 +525,30 @@
       });
     }
 
-    // Auth functions
+    // ========== AUTH UI ==========
     function tampilkanLogin() {
       document.getElementById('loginSection').classList.remove('hidden');
       document.getElementById('mainSection').classList.add('hidden');
+      showBody();
     }
 
-    function tampilkanMain(email) {
+    function tampilkanMain() {
       document.getElementById('loginSection').classList.add('hidden');
       document.getElementById('mainSection').classList.remove('hidden');
-      document.getElementById('userEmail').textContent = email;
-    }
-
-    async function login(email, password) {
-      try {
-        const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
-        currentUser = userCredential.user;
-        tampilkanMain(currentUser.email);
-        initApp();
-      } catch (err) {
-        console.error("Login error:", err);
-        showLoginStatus("❌ " + err.message, "error");
-      }
-    }
-
-    async function logout() {
-      if (cekDataBelumDisimpan()) {
-        if (!confirm("Ada data belum disimpan. Yakin ingin logout?")) return;
-      }
-      await firebase.auth().signOut();
-      currentUser = null;
-      selectedMarket = null;
-      localStorage.removeItem('marketAktif');
-      tampilkanLogin();
+      showBody();
     }
 
     function initApp() {
-      const marketSelect = document.getElementById('marketSelect');
-      const btnTambah = document.getElementById('btnTambahLembaran');
-      const searchInput = document.getElementById('searchInput');
+      if (appInitialized) return;
+      appInitialized = true;
+
+      var marketSelect = document.getElementById('marketSelect');
+      var btnTambah = document.getElementById('btnTambahLembaran');
+      var searchInput = document.getElementById('searchInput');
 
       setupSearch();
 
-      const marketAktif = localStorage.getItem('marketAktif');
+      var marketAktif = localStorage.getItem('marketAktif');
       if (marketAktif) {
         marketSelect.value = marketAktif;
         selectedMarket = marketAktif;
@@ -557,11 +556,11 @@
         muatDataTersimpan(marketAktif);
       }
 
-      marketSelect.addEventListener('change', (e) => {
-        const newMarket = e.target.value;
+      marketSelect.addEventListener('change', function(e) {
+        var newMarket = e.target.value;
 
         if (cekDataBelumDisimpan()) {
-          if (!confirm("Ada lembaran yang belum disimpan. Yakin ingin berpindah market? Data yang belum disimpan akan hilang.")) {
+          if (!confirm("Ada lembaran yang belum disimpan. Yakin ingin berpindah market?")) {
             marketSelect.value = selectedMarket || '';
             return;
           }
@@ -581,48 +580,63 @@
         }
       });
 
-      btnTambah.addEventListener('click', () => {
+      btnTambah.addEventListener('click', function() {
         if (!selectedMarket) {
           showStatus("⚠️ Pilih market dulu.", "error");
           return;
         }
-        const sheet = buatLembaran();
+        var sheet = buatLembaran();
         sheet.querySelector('textarea').focus();
         sheet.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    // ========== INIT ==========
+    document.addEventListener('DOMContentLoaded', function() {
       if (!firebase.apps.length) {
+        document.body.classList.add('ready');
         alert("⚠️ Firebase gagal inisialisasi.");
         return;
       }
 
-      const btnLogin = document.getElementById('btnLogin');
-      const btnLogout = document.getElementById('btnLogout');
+      var btnLogin = document.getElementById('btnLogin');
 
-      btnLogin.addEventListener('click', () => {
-        const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPassword').value;
+      btnLogin.addEventListener('click', function() {
+        var email = document.getElementById('loginEmail').value.trim();
+        var password = document.getElementById('loginPassword').value;
         if (!email || !password) {
           showLoginStatus("⚠️ Email dan password wajib diisi.", "error");
           return;
         }
         btnLogin.disabled = true;
         btnLogin.textContent = '⏳ Logging in...';
-        login(email, password).finally(() => {
-          btnLogin.disabled = false;
-          btnLogin.textContent = 'Login';
-        });
+
+        firebase.auth().signInWithEmailAndPassword(email, password)
+          .then(function(cred) {
+            currentUser = cred.user;
+            tampilkanMain();
+            initApp();
+          })
+          .catch(function(err) {
+            console.error("Login error:", err);
+            showLoginStatus("❌ " + err.message, "error");
+          })
+          .finally(function() {
+            btnLogin.disabled = false;
+            btnLogin.textContent = 'Login';
+          });
       });
 
-      btnLogout.addEventListener('click', logout);
+      // Enter key di password
+      document.getElementById('loginPassword').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') btnLogin.click();
+      });
 
-      // Cek auth state
-      firebase.auth().onAuthStateChanged((user) => {
+      // Auth state listener
+      authUnsubscribe = firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
           currentUser = user;
-          tampilkanMain(user.email);
+          tampilkanMain();
           initApp();
         } else {
           currentUser = null;
