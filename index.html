@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Rumah Utama</title>
   
+  <!-- ✅ ANTI-FLICKER: Sembunyikan body sampai siap -->
+  <style>
+    body {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    body.ready {
+      opacity: 1;
+    }
+  </style>
+  
   <!-- ✅ PROTEKSI HALAMAN: Redirect SEBELUM render jika belum login -->
   <script>
     (function() {
@@ -451,6 +462,30 @@
         console.error('Gagal load statistik:', e);
       }
     }
+  </script>
+
+  <!-- ✅ ANTI-FLICKER: Tampilkan body setelah semua siap -->
+  <script>
+    (function() {
+      function showBody() {
+        document.body.classList.add('ready');
+      }
+      
+      // Tampilkan body setelah semua resource (CSS, JS, gambar) selesai load
+      if (document.readyState === 'complete') {
+        showBody();
+      } else {
+        window.addEventListener('load', showBody);
+      }
+      
+      // Fallback: pastikan body muncul setelah 2 detik meski ada error
+      setTimeout(showBody, 2000);
+      
+      // Cleanup saat navigasi ke halaman lain (mencegah flicker saat pergi)
+      window.addEventListener('beforeunload', function() {
+        document.body.classList.remove('ready');
+      });
+    })();
   </script>
 </body>
 </html>
