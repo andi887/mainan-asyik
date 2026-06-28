@@ -8,12 +8,9 @@
   <!-- ✅ PROTEKSI HALAMAN: Redirect SEBELUM render jika belum login -->
   <script>
     (function() {
-      // Cek localStorage SECEPAT MUNGKIN
       const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
-      
       if (!currentUser || !currentUser.uid) {
-        console.log('⚠️ [index.html] User belum login, redirect ke pageawal.html');
-        // Gunakan replace agar tidak bisa di-back
+        console.log('️ [index.html] User belum login, redirect ke pageawal.html');
         window.location.replace('./pageawal.html');
       } else {
         console.log('✅ [index.html] User login:', currentUser.email);
@@ -84,7 +81,7 @@
           <div class="feature-icon">👥</div>
           <div class="feature-text">Manajemen Pengguna</div>
         </div>
-        <div class="feature-card">
+        <div class="feature-card" id="cardDataStatistik" style="cursor: pointer;">
           <div class="feature-icon">📊</div>
           <div class="feature-text">Data & Statistik</div>
         </div>
@@ -104,7 +101,7 @@
 
       <!-- Sub-panel: Pengaturan Situs (Info Box) -->
       <div class="sub-panel" id="subPanelPengaturan">
-        <h3>⚙️ Pengaturan Situs</h3>
+        <h3>️ Pengaturan Situs</h3>
         
         <div class="info-description">
           <p>📌 Tambahkan beberapa pengumuman. Setiap pengumuman akan tampil bergantian di halaman login. Durasi tampil diacak antara 6-12 detik.</p>
@@ -121,10 +118,227 @@
 
         <div id="announcementStatus"></div>
       </div>
+
+      <!-- ✅ BARU: Sub-panel Data & Statistik Keuangan -->
+      <div class="sub-panel" id="subPanelStatistik" style="display: none; margin-top: 30px; border-top: 2px dashed #ccc; padding-top: 20px;">
+        <h3>📊 Data & Statistik Keuangan (Laba/Rugi)</h3>
+        <p style="font-size: 0.9em; color: #666; margin-bottom: 15px;"> Catat modal, win, dan lose per market. Sistem akan menghitung selisih (Win - Lose) dan total akumulasi secara otomatis.</p>
+
+        <!-- Form Input -->
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+            <div>
+              <label style="display:block; font-size:0.85em; margin-bottom:4px;">Periode (Tgl/Bln)</label>
+              <input type="text" id="statPeriode" placeholder="Contoh: Juni 2026" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+            </div>
+            <div>
+              <label style="display:block; font-size:0.85em; margin-bottom:4px;">Market</label>
+              <select id="statMarket" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                <option value="Cambodia">Cambodia</option>
+                <option value="Sidney">Sidney</option>
+                <option value="China">China</option>
+                <option value="Japan">Japan</option>
+                <option value="SGP">SGP</option>
+                <option value="Taiwan">Taiwan</option>
+                <option value="Hongkong">Hongkong</option>
+                <option value="Nusa">Nusa</option>
+              </select>
+            </div>
+            <div>
+              <label style="display:block; font-size:0.85em; margin-bottom:4px;">Modal</label>
+              <input type="number" id="statModal" placeholder="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+            </div>
+            <div>
+              <label style="display:block; font-size:0.85em; margin-bottom:4px;">Win</label>
+              <input type="number" id="statWin" placeholder="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+            </div>
+            <div>
+              <label style="display:block; font-size:0.85em; margin-bottom:4px;">Lose</label>
+              <input type="number" id="statLose" placeholder="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+            </div>
+            <div>
+              <label style="display:block; font-size:0.85em; margin-bottom:4px;">Keterangan</label>
+              <input type="text" id="statKet" placeholder="Catatan..." style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+            </div>
+          </div>
+          <button id="addStatRowBtn" style="margin-top: 10px; background: #2196F3; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;"> Tambah ke Tabel</button>
+        </div>
+
+        <!-- Tabel Statistik -->
+        <div style="overflow-x: auto; border: 1px solid #ddd; border-radius: 8px;">
+          <table id="statsTable" style="width: 100%; border-collapse: collapse; min-width: 800px; text-align: center;">
+            <thead>
+              <tr style="background: #f2f2f9;">
+                <th style="border: 1px solid #ddd; padding: 10px;">Periode</th>
+                <th style="border: 1px solid #ddd; padding: 10px;">Market</th>
+                <th style="border: 1px solid #ddd; padding: 10px;">Modal</th>
+                <th style="border: 1px solid #ddd; padding: 10px;">Win</th>
+                <th style="border: 1px solid #ddd; padding: 10px;">Lose</th>
+                <th style="border: 1px solid #ddd; padding: 10px;">Selisih (Win-Lose)</th>
+                <th style="border: 1px solid #ddd; padding: 10px;">Keterangan</th>
+                <th style="border: 1px solid #ddd; padding: 10px;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="statsTableBody">
+              <!-- Data akan di-render di sini -->
+            </tbody>
+            <tfoot>
+              <tr style="background: #e8f5e9; font-weight: bold;">
+                <td style="border: 1px solid #ddd; padding: 10px;" colspan="2">TOTAL AKUMULASI</td>
+                <td style="border: 1px solid #ddd; padding: 10px;" id="totalModal">0</td>
+                <td style="border: 1px solid #ddd; padding: 10px;" id="totalWin">0</td>
+                <td style="border: 1px solid #ddd; padding: 10px;" id="totalLose">0</td>
+                <td style="border: 1px solid #ddd; padding: 10px;" id="totalSelisih">0</td>
+                <td style="border: 1px solid #ddd; padding: 10px;" colspan="2"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+          <button id="saveStatsBtn" style="background: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">💾 Simpan ke Cloud</button>
+          <button id="clearStatsBtn" style="background: #f44336; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">🗑️ Reset Tabel</button>
+        </div>
+        <div id="statsStatus" style="margin-top: 10px; font-weight: bold;"></div>
+      </div>
     </div>
   </div>
 
   <!-- Link ke JavaScript eksternal -->
   <script src="./js/index.js"></script>
+
+  <!-- ✅ SCRIPT KHUSUS FITUR DATA & STATISTIK -->
+  <script>
+    // === LOGIC DATA & STATISTIK ===
+    let currentStatsData = [];
+
+    function formatRupiah(angka) {
+      return new Intl.NumberFormat('id-ID').format(angka);
+    }
+
+    function renderStatsTable() {
+      const tbody = document.getElementById('statsTableBody');
+      tbody.innerHTML = '';
+      
+      let tModal = 0, tWin = 0, tLose = 0;
+
+      currentStatsData.forEach((item, index) => {
+        const selisih = item.win - item.lose;
+        tModal += parseInt(item.modal) || 0;
+        tWin += parseInt(item.win) || 0;
+        tLose += parseInt(item.lose) || 0;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="border: 1px solid #ddd; padding: 8px;">${item.periode}</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">${item.market}</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">${formatRupiah(item.modal)}</td>
+          <td style="border: 1px solid #ddd; padding: 8px; color: green;">${formatRupiah(item.win)}</td>
+          <td style="border: 1px solid #ddd; padding: 8px; color: red;">${formatRupiah(item.lose)}</td>
+          <td style="border: 1px solid #ddd; padding: 8px; font-weight: bold; color: ${selisih >= 0 ? 'blue' : 'red'};">${formatRupiah(selisih)}</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">${item.ket}</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <button onclick="removeStatRow(${index})" style="background: #f44336; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Hapus</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Update Footer Totals
+      const totalSelisih = tWin - tLose;
+      document.getElementById('totalModal').textContent = formatRupiah(tModal);
+      document.getElementById('totalWin').textContent = formatRupiah(tWin);
+      document.getElementById('totalLose').textContent = formatRupiah(tLose);
+      document.getElementById('totalSelisih').textContent = formatRupiah(totalSelisih);
+      document.getElementById('totalSelisih').style.color = totalSelisih >= 0 ? 'blue' : 'red';
+    }
+
+    window.removeStatRow = function(index) {
+      currentStatsData.splice(index, 1);
+      renderStatsTable();
+    };
+
+    // Tambah baris ke tabel
+    document.getElementById('addStatRowBtn').addEventListener('click', () => {
+      const periode = document.getElementById('statPeriode').value.trim();
+      const market = document.getElementById('statMarket').value;
+      const modal = parseInt(document.getElementById('statModal').value) || 0;
+      const win = parseInt(document.getElementById('statWin').value) || 0;
+      const lose = parseInt(document.getElementById('statLose').value) || 0;
+      const ket = document.getElementById('statKet').value.trim();
+
+      if (!periode) { alert('Periode harus diisi!'); return; }
+
+      currentStatsData.push({ periode, market, modal, win, lose, ket });
+      renderStatsTable();
+
+      // Reset form input angka (kecuali periode & market untuk kemudahan input beruntun)
+      document.getElementById('statModal').value = '';
+      document.getElementById('statWin').value = '';
+      document.getElementById('statLose').value = '';
+      document.getElementById('statKet').value = '';
+    });
+
+    // Reset tabel
+    document.getElementById('clearStatsBtn').addEventListener('click', () => {
+      if(confirm('Yakin ingin mereset semua data di tabel?')) {
+        currentStatsData = [];
+        renderStatsTable();
+      }
+    });
+
+    // Simpan ke Firebase
+    document.getElementById('saveStatsBtn').addEventListener('click', async () => {
+      if (currentStatsData.length === 0) {
+        alert('Tabel masih kosong!');
+        return;
+      }
+      const statusEl = document.getElementById('statsStatus');
+      statusEl.textContent = 'Menyimpan...';
+      statusEl.style.color = 'orange';
+      
+      try {
+        const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        await firebase.database().ref('statistics/financials').set({
+          data: currentStatsData,
+          updatedAt: Date.now(),
+          updatedBy: user.uid || 'unknown'
+        });
+        statusEl.textContent = '✅ Data statistik berhasil disimpan!';
+        statusEl.style.color = 'green';
+      } catch (e) {
+        statusEl.textContent = ' Gagal simpan: ' + e.message;
+        statusEl.style.color = 'red';
+      }
+    });
+
+    // Load data dari Firebase saat halaman dibuka
+    async function loadStatsData() {
+      try {
+        const snapshot = await firebase.database().ref('statistics/financials').once('value');
+        const data = snapshot.val();
+        if (data && data.data) {
+          currentStatsData = data.data;
+          renderStatsTable();
+        }
+      } catch (e) {
+        console.error('Gagal load statistik:', e);
+      }
+    }
+
+    // Hook ke kartu "Data & Statistik" untuk menampilkan panel
+    document.getElementById('cardDataStatistik').addEventListener('click', () => {
+      const panel = document.getElementById('subPanelStatistik');
+      const panelPengaturan = document.getElementById('subPanelPengaturan');
+      
+      if (panel.style.display === 'none' || panel.style.display === '') {
+        panel.style.display = 'block';
+        panelPengaturan.style.display = 'none';
+        loadStatsData(); // Load data saat panel dibuka
+      } else {
+        panel.style.display = 'none';
+      }
+    });
+  </script>
 </body>
 </html>
