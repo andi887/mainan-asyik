@@ -3,6 +3,7 @@ const rtdb = firebase.database();
 
 // ✅ Flag untuk mencegah race condition
 let isLoggingIn = false; 
+let hasRedirected = false; // ✅ BARU: Cegah multiple redirect
 
 let currentCaptcha = '';
 
@@ -75,6 +76,7 @@ document.getElementById('btnSignIn').addEventListener('click', async () => {
 
   // ✅ Aktifkan flag agar onAuthStateChanged TIDAK mengganggu
   isLoggingIn = true; 
+  hasRedirected = true; // ✅ BARU: Tandai bahwa kita akan redirect
 
   try {
     const userCredential = await auth.signInWithEmailAndPassword(email, password);
@@ -103,11 +105,12 @@ document.getElementById('btnSignIn').addEventListener('click', async () => {
     }, 500); // Delay sedikit agar UI update
     
   } catch (error) {
-    errorMsg.textContent = ' ' + (error.message || 'Login gagal.');
+    errorMsg.textContent = '❌ ' + (error.message || 'Login gagal.');
     btn.disabled = false;
     btn.textContent = 'Sign In';
     refreshCaptcha();
-    isLoggingIn = false; // Reset flag jika gagal
+    isLoggingIn = false;
+    hasRedirected = false; // ✅ Reset flag jika gagal
   } finally {
     loading.classList.remove('active');
   }
@@ -117,24 +120,61 @@ document.getElementById('btnSignIn').addEventListener('click', async () => {
 document.getElementById('navDaftar').addEventListener('click', (e) => { e.preventDefault(); alert('Fitur pendaftaran segera tersedia.'); });
 document.getElementById('navEksplor').addEventListener('click', (e) => { e.preventDefault(); alert('Silakan login untuk eksplorasi.'); });
 
-// Initialize
+// ✅ Initialize - DIPERBAIKI: Cek localStorage dulu, jangan langsung redirect
 window.addEventListener('DOMContentLoaded', () => {
   generateCaptcha();
   
-  // Cek awal: jika sudah login, langsung lempar ke index
-  if (localStorage.getItem('currentUser')) {
-    window.location.href = './index.html';
+  // ✅ Cek awal: jika sudah login, tunggu Firebase Auth restore dulu
+  const currentUser = localStorage.getItem('currentUser');
+  if (currentUser) {
+    console.log('✅ User sudah login, menunggu Firebase Auth restore...');
+    // Jangan langsung redirect! Biarkan onAuthStateChanged yang handle
   }
 });
 
-// ✅ onAuthStateChanged diblokir jika sedang login
+// ✅ onAuthStateChanged - DIPERBAIKI: Lebih robust
 auth.onAuthStateChanged((user) => {
-  if (user && !isLoggingIn) {
-    // Hanya jalan jika user refresh halaman (bukan saat klik login)
-    if (localStorage.getItem('currentUser')) {
-      window.location.href = './index.html';
-    }
+  // ✅ Skip jika sedang dalam proses login manual
+  if (isLoggingIn) {
+    console.log('⏳ Sedang dalam proses login, skip redirect');
+    return;
   }
+  
+  // ✅ Skip jika sudah pernah redirect
+  if (hasRedirected) {
+    console.log('⏳ Sudah pernah redirect, skip');
+    return;
+  }
+  
+  const currentUser = localStorage.getItem('currentUser');
+  
+  if (user && currentUser) {
+    // ✅ User login DAN localStorage ada → redirect ke index
+    console.log('✅ Auth restored + localStorage ada → redirect ke index.html');
+    hasRedirected = true;
+    window.location.href = './index.html';
+  } else if (!user && currentUser) {
+    // ✅ User TIDAK login TAPI localStorage ada → logout paksa
+    console.log('⚠️ Auth null tapi localStorage ada → clear localStorage');
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('userRole');
+    // Jangan redirect, biarkan user di halaman login
+  } else if (user && !currentUser) {
+    // ✅ User login TAPI localStorage kosong → sinkronkan
+    console.log('⚠️ Auth ada tapi localStorage kosong → sinkronkan');
+    getUserRole(user.uid).then(role => {
+      localStorage.setItem('currentUser', JSON.stringify({
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName || user.email.split('@')[0],
+        role: role
+      }));
+      localStorage.setItem('userRole', role);
+      hasRedirected = true;
+      window.location.href = './index.html';
+    });
+  }
+  // else: user tidak login dan localStorage kosong → biarkan di halaman login
 });
 
 console.log('🔐 pageawal.js ready');
