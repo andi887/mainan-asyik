@@ -59,18 +59,18 @@
 
     .login-grid {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
     }
 
     .login-card {
       display: block;
-      padding: 28px 20px;
+      padding: 24px 16px;
       border-radius: 16px;
       text-decoration: none;
       text-align: center;
       font-weight: bold;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       color: white;
       transition: transform 0.2s, box-shadow 0.2s;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -88,24 +88,25 @@
     }
 
     .login-card .icon {
-      font-size: 2.5rem;
+      font-size: 2.2rem;
       display: block;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .login-card .name {
       display: block;
-      font-size: 1.3rem;
+      font-size: 1.2rem;
       margin-bottom: 4px;
     }
 
     .login-card .desc {
       display: block;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       opacity: 0.9;
       font-weight: normal;
     }
 
+    /* Warna untuk setiap card */
     .jitu {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
@@ -114,10 +115,16 @@
       background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     }
 
-    @media (min-width: 500px) {
-      .login-grid {
-        grid-template-columns: 1fr 1fr;
-      }
+    .cvbola {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+
+    .pedia {
+      background: linear-gradient(135deg, #f12711 0%, #f5af19 100%);
+    }
+
+    .parlay {
+      background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
     }
 
     @media (max-width: 480px) {
@@ -128,7 +135,13 @@
         font-size: 1.5rem;
       }
       .login-card {
-        padding: 24px 16px;
+        padding: 20px 12px;
+      }
+      .login-card .icon {
+        font-size: 2rem;
+      }
+      .login-card .name {
+        font-size: 1.1rem;
       }
     }
   </style>
@@ -151,6 +164,24 @@
         <span class="icon">🐼</span>
         <span class="name">PANDA1001</span>
         <span class="desc">pandalog222.xyz</span>
+      </a>
+
+      <a href="https://cvbola.com" target="_blank" rel="noopener noreferrer" class="login-card cvbola">
+        <span class="icon">⚽</span>
+        <span class="name">CVBOLA</span>
+        <span class="desc">cvbola.com</span>
+      </a>
+
+      <a href="https://pedia4d98.shop" target="_blank" rel="noopener noreferrer" class="login-card pedia">
+        <span class="icon">📚</span>
+        <span class="name">PEDIA4D</span>
+        <span class="desc">pedia4d98.shop</span>
+      </a>
+
+      <a href="https://parlay88.express" target="_blank" rel="noopener noreferrer" class="login-card parlay">
+        <span class="icon">🎲</span>
+        <span class="name">PARLAY88</span>
+        <span class="desc">parlay88.express</span>
       </a>
     </div>
   </div>
