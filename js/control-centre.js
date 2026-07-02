@@ -4,7 +4,7 @@
 
 console.log('🛡️ control-center.js dimuat...');
 
-// ✅ Proteksi: Hanya admin yang bisa akses halaman ini
+// ✅ Proteksi: Hanya admin yang bisa akses
 (function() {
   const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
   
@@ -20,7 +20,7 @@ console.log('🛡️ control-center.js dimuat...');
     return;
   }
   
-  // Jika admin, lanjutkan load halaman
+  console.log('✅ Admin terverifikasi:', currentUser.email);
   initControlCenter();
 })();
 
@@ -34,10 +34,9 @@ function initControlCenter() {
   });
 
   // ============================================
-  // ✅ BARU: NAVIGASI ANTAR FITUR CONTROL CENTER
+  // ✅ NAVIGASI ANTAR FITUR CONTROL CENTER
   // ============================================
   
-  // Fungsi helper untuk menampilkan sub-panel
   function showPanel(panelId) {
     // Sembunyikan semua sub-panel
     document.querySelectorAll('.sub-panel').forEach(panel => {
@@ -54,7 +53,6 @@ function initControlCenter() {
       const panel = document.getElementById(panelId);
       if (panel) {
         panel.classList.add('active');
-        // Scroll smooth ke panel
         setTimeout(() => {
           panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);
@@ -66,9 +64,10 @@ function initControlCenter() {
   const cardPengaturan = document.getElementById('cardPengaturan');
   if (cardPengaturan) {
     cardPengaturan.addEventListener('click', () => {
+      document.querySelectorAll('.feature-card').forEach(c => c.classList.remove('active'));
       cardPengaturan.classList.add('active');
       showPanel('subPanelPengaturan');
-      loadAnnouncements(); // Load data pengumuman saat panel dibuka
+      loadAnnouncements();
     });
   }
 
@@ -76,25 +75,28 @@ function initControlCenter() {
   const cardDataStatistik = document.getElementById('cardDataStatistik');
   if (cardDataStatistik) {
     cardDataStatistik.addEventListener('click', () => {
+      document.querySelectorAll('.feature-card').forEach(c => c.classList.remove('active'));
       cardDataStatistik.classList.add('active');
       showPanel('subPanelStatistik');
     });
   }
 
-  // ✅ Event Listener: Kartu Monitoring (REDIRECT ke monitoring.html)
+  // ✅ Event Listener: Kartu Monitoring (REDIRECT)
   const cardMonitoring = document.getElementById('cardMonitoring');
   if (cardMonitoring) {
     cardMonitoring.addEventListener('click', () => {
-      cardMonitoring.classList.add('active');
-      // Langsung redirect ke halaman monitoring
+      console.log('👁️ Kartu Monitoring diklik, redirect ke monitoring.html');
       window.location.href = './monitoring.html';
     });
+  } else {
+    console.error('❌ cardMonitoring tidak ditemukan di HTML!');
   }
 
   // ✅ Event Listener: Kartu Manajemen User
   const cardManajemenUser = document.getElementById('cardManajemenUser');
   if (cardManajemenUser) {
     cardManajemenUser.addEventListener('click', () => {
+      document.querySelectorAll('.feature-card').forEach(c => c.classList.remove('active'));
       cardManajemenUser.classList.add('active');
       showPanel('subPanelManajemen');
     });
@@ -104,6 +106,7 @@ function initControlCenter() {
   const cardKeamanan = document.getElementById('cardKeamanan');
   if (cardKeamanan) {
     cardKeamanan.addEventListener('click', () => {
+      document.querySelectorAll('.feature-card').forEach(c => c.classList.remove('active'));
       cardKeamanan.classList.add('active');
       showPanel('subPanelKeamanan');
     });
@@ -113,7 +116,6 @@ function initControlCenter() {
   // FITUR PENGUMUMAN (EXISTING - 100% UTUH)
   // ============================================
 
-  // === TAMBAH PENGUMUMAN ===
   function addAnnouncementCard(title = '', content = '', index = 0) {
     const container = document.getElementById('announcementsContainer');
     if (!container) return;
@@ -131,7 +133,6 @@ function initControlCenter() {
     container.appendChild(card);
   }
 
-  // === HAPUS PENGUMUMAN ===
   window.removeAnnouncement = function(btn) {
     const card = btn.closest('.announcement-card');
     if (card) {
@@ -140,7 +141,6 @@ function initControlCenter() {
     }
   };
 
-  // === UPDATE NOMOR ===
   function updateAnnouncementNumbers() {
     const cards = document.querySelectorAll('.announcement-card');
     cards.forEach((card, index) => {
@@ -149,7 +149,6 @@ function initControlCenter() {
     });
   }
 
-  // === TAMBAH BARU ===
   const addBtn = document.getElementById('addAnnouncementBtn');
   if (addBtn) {
     addBtn.addEventListener('click', () => {
@@ -158,7 +157,6 @@ function initControlCenter() {
     });
   }
 
-  // === SIMPAN PENGUMUMAN ===
   const saveBtn = document.getElementById('saveAnnouncementsBtn');
   if (saveBtn) {
     saveBtn.addEventListener('click', async () => {
@@ -209,7 +207,6 @@ function initControlCenter() {
     });
   }
 
-  // === PREVIEW ===
   const previewBtn = document.getElementById('previewBtn');
   if (previewBtn) {
     previewBtn.addEventListener('click', () => {
@@ -233,7 +230,6 @@ function initControlCenter() {
     });
   }
 
-  // === LOAD PENGUMUMAN YANG SUDAH ADA ===
   async function loadAnnouncements() {
     try {
       const snapshot = await rtdb.ref('infoBox').once('value');
