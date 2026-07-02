@@ -188,6 +188,32 @@
       font-size: 13px;
     }
 
+    /* ✅ BARU: Notifikasi Popup */
+    .save-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      z-index: 9999;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: slideIn 0.3s ease-out;
+      display: none;
+    }
+    .save-notification.success { background: #4caf50; color: white; }
+    .save-notification.error { background: #f44336; color: white; }
+    .save-notification.info { background: #2196f3; color: white; }
+    @keyframes slideIn {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(400px); opacity: 0; }
+    }
+
     @media (max-width: 600px) {
       .btn-group { flex-direction: column; }
       .btn-group button { width: 100%; }
@@ -219,6 +245,9 @@
     </div>
   </div>
 
+  <!-- ✅ BARU: Notifikasi Popup -->
+  <div id="saveNotification" class="save-notification"></div>
+
   <script>
     // === KONFIGURASI APLIKASI ===
     const MARKETS = ["cambodia", "sidney", "china", "japan", "sgp", "taiwan", "hongkong"];
@@ -229,6 +258,22 @@
     // Inisialisasi Firebase
     const db = firebase.database();
     const auth = firebase.auth();
+
+    // ✅ BARU: Fungsi Notifikasi
+    function showNotification(message, type = 'success') {
+      const notif = document.getElementById('saveNotification');
+      notif.textContent = message;
+      notif.className = `save-notification ${type}`;
+      notif.style.display = 'block';
+      notif.style.animation = 'slideIn 0.3s ease-out';
+      
+      setTimeout(() => {
+        notif.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => {
+          notif.style.display = 'none';
+        }, 300);
+      }, 3000);
+    }
 
     // === HELPER FUNGSI (100% UTUH) ===
     function hitungDasar2D_2digit(duaDigit) {
@@ -399,6 +444,17 @@
       return { angkaBersih, angkaKhusus, outGroups };
     }
 
+    // ✅ DIPERBAIKI: Fungsi untuk RESET panel (input + output)
+    function resetPanel(panelId) {
+      const fields = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+      fields.forEach(f => {
+        const input = document.querySelector(`#${panelId} [data-field="${f}"]`);
+        if (input) input.value = '';
+      });
+      const output = document.getElementById(`output-${panelId}`);
+      if (output) output.innerHTML = '';
+    }
+
     // === RENDER PANEL ===
     function createPanel(market = 'cambodia') {
       panelCount++;
@@ -453,16 +509,23 @@
         <div id="output-${panelId}"></div>
       `;
 
+      // ✅ DIPERBAIKI: Event handler untuk ganti market
       const marketSelect = el.querySelector('.market-select');
-      marketSelect.onchange = () => {
+      marketSelect.onchange = async () => {
         const newMarket = marketSelect.value;
         const oldKey = [...allPanels.keys()].find(k => allPanels.get(k).el.id === panelId);
+        
         if (oldKey && oldKey !== newMarket) {
+          // ✅ PERBAIKAN: Update mapping panel
           const data = allPanels.get(oldKey);
           allPanels.delete(oldKey);
           allPanels.set(newMarket, data);
+          
           if (authReady) {
-            loadFromFirebase(newMarket, panelId);
+            // ✅ PERBAIKAN: Reset dulu, baru load data baru
+            showNotification(`🔄 Beralih ke ${newMarket}...`, 'info');
+            resetPanel(panelId);
+            await loadFromFirebase(newMarket, panelId);
           }
         }
       };
@@ -475,27 +538,36 @@
       }
     }
 
-    // === FIREBASE: LOAD & SAVE ===
+    // ✅ DIPERBAIKI: Load data dari Firebase dengan reset dulu
     async function loadFromFirebase(market, panelId) {
       if (!authReady) return;
       
       try {
         const snapshot = await db.ref(`rumah9/${market}`).once('value'); 
         const data = snapshot.val();
+        
         if (data) {
-          const fields = ['A','B','C','D','E','F','G'];
+          // Data ada → isi input dan generate output
+          const fields = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
           fields.forEach(f => {
             const input = document.querySelector(`#${panelId} [data-field="${f}"]`);
             if (input) input.value = data[f] || '';
           });
+          
           setTimeout(() => {
             const inputs = getInputs(panelId);
             const result = generateSaringan(inputs);
             renderOutput(panelId, result);
+            showNotification(`✅ Data ${market} dimuat!`, 'success');
           }, 100);
+        } else {
+          // ✅ PERBAIKAN: Data tidak ada → biarkan kosong (sudah di-reset sebelumnya)
+          console.log(`ℹ️ Tidak ada data untuk ${market}`);
+          showNotification(`ℹ️ Belum ada data untuk ${market}`, 'info');
         }
       } catch (e) {
         console.warn("Gagal load dari Firebase untuk", market, e);
+        showNotification(`❌ Gagal load data ${market}`, 'error');
       }
     }
 
@@ -637,9 +709,11 @@
         showMessage(statusEl, "Menyimpan...");
         await db.ref(`rumah9/${market}`).set(data); 
         showMessage(statusEl, "✅ Tersimpan!", false);
+        showNotification(`✅ Data ${market} tersimpan!`, 'success');
       } catch (e) {
         console.error(e);
         showMessage(document.getElementById(`status-${panelId}`), "❌ Gagal simpan: " + e.message, true);
+        showNotification(`❌ Gagal simpan: ${e.message}`, 'error');
       }
     };
 
@@ -660,6 +734,7 @@
       try {
         await db.ref(`rumah9/${market}`).remove(); 
         showMessage(document.getElementById(`status-${panelId}`), "✅ Data di cloud dihapus", false);
+        showNotification(`🗑️ Data ${market} dihapus`, 'success');
       } catch (e) {
         showMessage(document.getElementById(`status-${panelId}`), "ℹ️ Input lokal dihapus", false);
       }
@@ -677,7 +752,7 @@
     };
 
     // ============================================
-    // ✅ PERBAIKAN UTAMA: Tunggu Firebase Auth restore session
+    // ✅ PERBAIKAN: Tunggu Firebase Auth restore session
     // ============================================
     auth.onAuthStateChanged((user) => {
       if (user) {
