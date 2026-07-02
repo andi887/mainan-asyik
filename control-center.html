@@ -12,6 +12,57 @@
   
   <script src="./config-firebase.js"></script>
   <link rel="stylesheet" href="./css/control-center.css">
+  
+  <!-- ✅ TAMBAHAN: Styling untuk Grid Fitur -->
+  <style>
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .feature-card {
+      background: white;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 20px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .feature-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border-color: #3498db;
+    }
+    .feature-card.active {
+      border-color: #3498db;
+      background: #e3f2fd;
+    }
+    .feature-icon {
+      font-size: 2em;
+      margin-bottom: 8px;
+    }
+    .feature-text {
+      font-size: 0.9em;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    
+    /* Sub-panel tersembunyi default */
+    .sub-panel {
+      display: none;
+    }
+    .sub-panel.active {
+      display: block;
+    }
+    
+    @media (max-width: 480px) {
+      .feature-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="top-bar">
@@ -22,27 +73,101 @@
     <!-- Tombol Kembali -->
     <button id="backBtn" class="btn-back">← Kembali ke Beranda</button>
 
+    <!-- ✅ BARU: Grid Fitur Control Center -->
     <div class="card">
       <div class="card-header">
-        <h2>⚙️ Pengaturan Situs</h2>
+        <h2>🛡️ Menu Control Center</h2>
         <span class="badge">ADMIN ONLY</span>
       </div>
-
-      <div class="info-box">
-        <p> Tambahkan beberapa pengumuman. Setiap pengumuman akan tampil bergantian di halaman login. Durasi tampil diacak antara 6-12 detik.</p>
+      
+      <div class="feature-grid">
+        <div class="feature-card" id="cardPengaturan">
+          <div class="feature-icon">⚙️</div>
+          <div class="feature-text">Pengaturan Situs</div>
+        </div>
+        <div class="feature-card" id="cardDataStatistik">
+          <div class="feature-icon">📊</div>
+          <div class="feature-text">Data & Statistik</div>
+        </div>
+        <div class="feature-card" id="cardMonitoring">
+          <div class="feature-icon">👁️</div>
+          <div class="feature-text">Monitoring</div>
+        </div>
+        <div class="feature-card" id="cardManajemenUser">
+          <div class="feature-icon">👥</div>
+          <div class="feature-text">Manajemen User</div>
+        </div>
+        <div class="feature-card" id="cardKeamanan">
+          <div class="feature-icon">🔒</div>
+          <div class="feature-text">Keamanan & Log</div>
+        </div>
       </div>
-
-      <button id="addAnnouncementBtn" class="btn-add">➕ Tambah Pengumuman Baru</button>
-
-      <div id="announcementsContainer"></div>
-
-      <div class="button-group">
-        <button id="saveAnnouncementsBtn" class="btn-save"> Simpan Pengumuman</button>
-        <button id="previewBtn" class="btn-preview">️ Preview</button>
-      </div>
-
-      <div id="statusMsg" class="status-msg"></div>
     </div>
+
+    <!-- ✅ Sub-panel: Pengaturan Situs (yang sudah ada, dibungkus) -->
+    <div class="sub-panel" id="subPanelPengaturan">
+      <div class="card">
+        <div class="card-header">
+          <h2>⚙️ Pengaturan Situs</h2>
+          <span class="badge">INFO BOX</span>
+        </div>
+
+        <div class="info-box">
+          <p>📌 Tambahkan beberapa pengumuman. Setiap pengumuman akan tampil bergantian di halaman login. Durasi tampil diacak antara 6-12 detik.</p>
+        </div>
+
+        <button id="addAnnouncementBtn" class="btn-add">➕ Tambah Pengumuman Baru</button>
+
+        <div id="announcementsContainer"></div>
+
+        <div class="button-group">
+          <button id="saveAnnouncementsBtn" class="btn-save">💾 Simpan Pengumuman</button>
+          <button id="previewBtn" class="btn-preview">👁️ Preview</button>
+        </div>
+
+        <div id="statusMsg" class="status-msg"></div>
+      </div>
+    </div>
+
+    <!-- ✅ BARU: Sub-panel: Data & Statistik -->
+    <div class="sub-panel" id="subPanelStatistik">
+      <div class="card">
+        <div class="card-header">
+          <h2>📊 Data & Statistik</h2>
+          <span class="badge">COMING SOON</span>
+        </div>
+        <div class="info-box">
+          <p>🚧 Fitur Data & Statistik sedang dalam pengembangan. Silakan cek kembali nanti.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ BARU: Sub-panel: Manajemen User -->
+    <div class="sub-panel" id="subPanelManajemen">
+      <div class="card">
+        <div class="card-header">
+          <h2>👥 Manajemen User</h2>
+          <span class="badge">COMING SOON</span>
+        </div>
+        <div class="info-box">
+          <p>🚧 Fitur Manajemen User sedang dalam pengembangan. Silakan cek kembali nanti.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ BARU: Sub-panel: Keamanan & Log -->
+    <div class="sub-panel" id="subPanelKeamanan">
+      <div class="card">
+        <div class="card-header">
+          <h2>🔒 Keamanan & Log</h2>
+          <span class="badge">COMING SOON</span>
+        </div>
+        <div class="info-box">
+          <p>🚧 Fitur Keamanan & Log sedang dalam pengembangan. Silakan cek kembali nanti.</p>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script src="./js/control-center.js"></script>
