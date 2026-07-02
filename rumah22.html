@@ -106,6 +106,7 @@
     .btn-primary { background-color: #4CAF50; color: white; }
     .btn-danger { background-color: #f44336; color: white; }
     .btn-success { background-color: #2196F3; color: white; }
+    .btn-info { background-color: #9C27B0; color: white; }
     #hasil-ev, #historyList {
       margin-top: 16px;
       padding: 12px;
@@ -137,7 +138,6 @@
       color: #666;
     }
     
-    /* ✅ BARU: Notifikasi Popup */
     .save-notification {
       position: fixed;
       top: 20px;
@@ -239,23 +239,20 @@
     </div>
   </div>
 
-  <!-- ✅ BARU: Notifikasi Popup -->
   <div id="saveNotification" class="save-notification"></div>
 
-  <!-- Firebase SDK - DIPERBAIKI: Tambah Auth -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="./config-firebase.js"></script>
 
   <script>
-    // ✅ PERBAIKAN: Cek login dari localStorage (Instan)
     let authReady = !!localStorage.getItem('currentUser');
     if (authReady) {
       console.log('✅ [rumah22] User terdeteksi dari localStorage');
     }
 
-    // Backup: Dengarkan perubahan status dari Firebase Auth
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         authReady = true;
@@ -268,7 +265,6 @@
       }
     });
 
-    // ✅ BARU: Fungsi Notifikasi
     function showNotification(message, type = 'success') {
       const notif = document.getElementById('saveNotification');
       notif.textContent = message;
@@ -291,7 +287,6 @@
       "-w/u/o"
     ];
 
-    // === UPDATE TABEL OTOMATIS DARI CATATAN (100% UTUH) ===
     function updateTablesFromNotes() {
       const n1 = document.getElementById('note1').value.trim();
       const n2 = document.getElementById('note2').value.trim();
@@ -314,7 +309,6 @@
       }
     }
 
-    // ✅ DIPERBAIKI: FITUR CATATAN - Tambah cek auth + notifikasi
     function saveNotes() {
       if (!authReady) {
         showNotification('⚠️ Anda belum login!', 'error');
@@ -332,7 +326,6 @@
       showNotification('✅ Catatan disimpan!', 'success');
     }
 
-    // === BUAT TABEL + INPUT MANUAL (100% UTUH) ===
     function createTables() {
       const container = document.getElementById('tablesContainer');
       container.innerHTML = '';
@@ -374,7 +367,6 @@
       }
     }
 
-    // ✅ DIPERBAIKI: SIMPAN TABEL - Tambah cek auth + notifikasi
     function saveTables() {
       if (!authReady) {
         showNotification('⚠️ Anda belum login!', 'error');
@@ -405,10 +397,72 @@
       showNotification('✅ Semua tabel dan catatan disimpan!', 'success');
     }
 
-    // ✅ DIPERBAIKI: MUAT INPUT MANUAL - Tambah cek auth
+    // ✅ BARU: Load data tabel dari Firebase
+    function loadTablesData() {
+      if (!authReady) {
+        setTimeout(loadTablesData, 500);
+        return;
+      }
+
+      const db = firebase.database();
+      db.ref(`rumah22/tables`).once('value')
+        .then(snapshot => {
+          const tablesData = snapshot.val();
+          if (!tablesData || !Array.isArray(tablesData)) return;
+          
+          console.log('📊 Memuat data tabel:', tablesData.length, 'tabel');
+          
+          for (let i = 0; i < tablesData.length && i < 4; i++) {
+            const table = document.getElementById(`table${i+1}`);
+            if (table && Array.isArray(tablesData[i]) && Array.isArray(tablesData[i][0])) {
+              const row = tablesData[i][0];
+              const inputs = table.querySelectorAll('input');
+              
+              // Hanya isi jika data dari Firebase tidak kosong
+              if (inputs[0] && row[0]) inputs[0].value = row[0];
+              if (inputs[1] && row[1]) inputs[1].value = row[1];
+              if (inputs[2] && row[2]) inputs[2].value = row[2];
+            }
+          }
+        })
+        .catch(err => console.error('Load tables error:', err));
+    }
+
+    // ✅ BARU: Load riwayat dari Firebase
+    function loadHistoryData() {
+      if (!authReady) {
+        setTimeout(loadHistoryData, 500);
+        return;
+      }
+
+      const db = firebase.database();
+      db.ref(`rumah22/history`).once('value')
+        .then(snapshot => {
+          const historyData = snapshot.val();
+          if (!historyData || !Array.isArray(historyData)) return;
+          
+          console.log('📁 Memuat riwayat:', historyData.length, 'item');
+          
+          const historyList = document.getElementById('historyList');
+          historyList.innerHTML = '';
+          
+          historyData.forEach(itemText => {
+            if (itemText && itemText.trim()) {
+              const div = document.createElement('div');
+              div.style.marginBottom = '10px';
+              div.style.padding = '8px';
+              div.style.backgroundColor = '#f0f0f0';
+              div.style.borderRadius = '4px';
+              div.innerHTML = itemText + `<button onclick="removeFromHistory(this)" style="float:right; margin-left:10px;" class="btn-danger">Hapus</button>`;
+              historyList.appendChild(div);
+            }
+          });
+        })
+        .catch(err => console.error('Load history error:', err));
+    }
+
     function loadTableNotes() {
       if (!authReady) {
-        console.warn('⚠️ Auth belum ready, menunda load tableNotes');
         setTimeout(loadTableNotes, 500);
         return;
       }
@@ -427,7 +481,6 @@
         .catch(err => console.error('Load tableNotes error:', err));
     }
 
-    // === KALKULATOR EV (100% UTUH) ===
     function tambahBaris() {
       const inputsDiv = document.getElementById('inputs');
       const newRow = document.createElement('div');
@@ -507,13 +560,15 @@
     function getHistoryData() {
       const items = [];
       document.querySelectorAll('#historyList > div').forEach(div => {
-        const text = div.textContent;
-        items.push(text);
+        // Clone node untuk menghapus tombol dari text yang disimpan
+        const clone = div.cloneNode(true);
+        const btn = clone.querySelector('button');
+        if (btn) btn.remove();
+        items.push(clone.innerHTML.trim());
       });
       return items;
     }
 
-    // ✅ DIPERBAIKI: CLEAR HISTORY - Tambah cek auth + notifikasi
     function clearHistory() {
       if (!authReady) {
         showNotification('⚠️ Anda belum login!', 'error');
@@ -527,7 +582,6 @@
       }
     }
 
-    // ✅ DIPERBAIKI: FIREBASE - Tambah cek auth
     function saveToFirebase(key, data) {
       if (!authReady) {
         console.warn('⚠️ Auth belum ready, tidak bisa simpan');
@@ -546,7 +600,7 @@
         });
     }
 
-    // ✅ DIPERBAIKI: LOAD DATA - Tambah cek auth
+    // ✅ DIPERBAIKI: Load SEMUA data dari Firebase
     async function loadDataFromFirebase() {
       if (!authReady) {
         console.warn('⚠️ Auth belum ready, menunda load');
@@ -557,6 +611,7 @@
       const db = firebase.database();
       
       try {
+        // Load notes
         const notesSnap = await db.ref(`rumah22/notes`).once('value');
         const notes = notesSnap.val() || ['', '', '', '', ''];
         if (notes.length >= 5) {
@@ -571,10 +626,16 @@
         console.error('Load notes error:', e); 
       }
 
+      // ✅ Load tableNotes
       loadTableNotes();
+      
+      // ✅ Load tables data (BARU)
+      loadTablesData();
+      
+      // ✅ Load history (BARU)
+      loadHistoryData();
     }
 
-    // ✅ DIPERBAIKI: DELETE ALL - Tambah cek auth + notifikasi
     function deleteAllData() {
       if (!authReady) {
         showNotification('⚠️ Anda belum login!', 'error');
@@ -607,11 +668,9 @@
       }
     }
 
-    // === INISIALISASI ===
     document.addEventListener('DOMContentLoaded', () => {
       createTables();
       
-      // ✅ DIPERBAIKI: Tunggu auth ready sebelum load
       const waitForAuth = setInterval(() => {
         if (authReady) {
           clearInterval(waitForAuth);
