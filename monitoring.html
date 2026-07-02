@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Monitoring - Asisten Pribadi</title>
+  
+  <!-- CSS Eksternal -->
+  <link rel="stylesheet" href="./css/monitoring.css">
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="back-btn">← Kembali ke Beranda</a>
+    <h1>🔔 Monitoring - Asisten Pribadi</h1>
+
+    <div class="nav">
+      <button onclick="showSection('home')">Beranda</button>
+      <button onclick="showSection('links')">Link Penting</button>
+      <button onclick="showSection('agenda')">Agenda Harian</button>
+      <button onclick="showSection('planning')">Planning</button>
+    </div>
+
+    <!-- Beranda -->
+    <div id="home" class="section active">
+      <h2>Beranda</h2>
+      <div class="form-group">
+        <label>Catatan Bebas</label>
+        <textarea id="home-note" placeholder="Tulis apa saja di sini..."></textarea>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-save" onclick="saveHome()">Simpan</button>
+        <button class="btn btn-back" onclick="location.reload()">Refresh</button>
+      </div>
+      <div id="home-display" style="margin-top: 16px; padding: 12px; background: #f1f2f6; border-radius: 8px;">
+        Belum ada catatan.
+      </div>
+    </div>
+
+    <!-- Link Penting -->
+    <div id="links" class="section">
+      <h2>Data Link Penting</h2>
+      <div style="overflow-x: auto;">
+        <table id="links-table">
+          <thead>
+            <tr>
+              <th>Nama</th>
+              <th>User</th>
+              <th>Pass</th>
+              <th>Ket</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="links-body"></tbody>
+        </table>
+      </div>
+      <div class="form-group">
+        <label>Nama Link</label>
+        <input type="text" id="new-link-name" placeholder="Contoh: Google Drive" />
+      </div>
+      <div class="form-group">
+        <label>User ID</label>
+        <input type="text" id="new-link-user" placeholder="Username atau email" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="new-link-pass" placeholder="Kosongkan jika tidak ada" />
+      </div>
+      <div class="form-group">
+        <label>Keterangan</label>
+        <input type="text" id="new-link-desc" placeholder="Catatan tambahan" />
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-save" onclick="saveLink()">Simpan</button>
+        <button class="btn btn-back" onclick="location.reload()">Refresh</button>
+      </div>
+    </div>
+
+    <!-- Agenda Harian -->
+    <div id="agenda" class="section">
+      <h2>Agenda Harian</h2>
+      <div class="form-group">
+        <label>Tanggal</label>
+        <input type="date" id="agenda-date" />
+      </div>
+      <div class="form-group">
+        <label>Waktu (HH:MM)</label>
+        <input type="time" id="agenda-time" />
+      </div>
+      <div class="form-group">
+        <label>Kegiatan</label>
+        <textarea id="agenda-activity" placeholder="Apa rencanamu hari ini?"></textarea>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-save" onclick="saveAgenda()">Simpan</button>
+        <button class="btn btn-back" onclick="location.reload()">Refresh</button>
+      </div>
+      <div id="agenda-list" style="margin-top: 16px;"></div>
+    </div>
+
+    <!-- Planning -->
+    <div id="planning" class="section">
+      <h2>Planning Mendatang</h2>
+      <div class="planning-buttons">
+        <button onclick="showPlanning('past')">Masa Lalu</button>
+        <button onclick="showPlanning('present')">Sekarang</button>
+        <button onclick="showPlanning('future')">Masa Depan</button>
+      </div>
+      <div id="planning-form" style="display:none; margin-top:16px;">
+        <div class="form-group">
+          <label>Rencana</label>
+          <textarea id="planning-text" placeholder="Tulis rencanamu di sini..."></textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-save" onclick="savePlanning()">Simpan</button>
+          <button class="btn btn-back" onclick="location.reload()">Refresh</button>
+        </div>
+      </div>
+      <div id="planning-display" style="margin-top: 16px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+        Pilih jenis planning terlebih dahulu.
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifikasi Popup -->
+  <div id="saveNotification" class="save-notification"></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="./config-firebase.js"></script>
+  
+  <!-- JavaScript Eksternal -->
+  <script src="./js/monitoring.js"></script>
+</body>
+</html>
