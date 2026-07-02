@@ -3,13 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>rumah22</title>
+  <title>rumah22 - Sketsa Bil</title>
   <style>
+    /* =========================================
+       RESET & BASE STYLES
+       ========================================= */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
+
     body {
       font-family: Arial, sans-serif;
       background-color: #f8f9fa;
@@ -17,6 +21,10 @@
       padding: 16px;
       line-height: 1.5;
     }
+
+    /* =========================================
+       COMPONENTS
+       ========================================= */
     .back-btn {
       display: inline-block;
       margin-bottom: 16px;
@@ -28,9 +36,11 @@
       font-weight: bold;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
+
     .back-btn:hover {
       background: #27ae60;
     }
+
     .page-title {
       text-align: center;
       font-size: 1.6em;
@@ -38,90 +48,86 @@
       color: #2c3e50;
       font-weight: bold;
     }
+
     .sketsa-bil {
       display: flex;
       flex-direction: column;
       gap: 24px;
     }
+
     .sketsa-bil-section {
       background: white;
       padding: 16px;
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     }
+
     .sketsa-bil-section h2 {
       margin-bottom: 16px;
       color: #2c3e50;
     }
+
+    .sketsa-bil-section h3 {
+      margin-bottom: 12px;
+      color: #555;
+      font-size: 1.1em;
+    }
+
+    /* =========================================
+       NOTES SECTION
+       ========================================= */
     #notes {
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
+
     #notes label {
       font-weight: bold;
       margin-right: 8px;
     }
+
     #notes input {
       width: 100%;
       padding: 8px;
       border: 1px solid #ddd;
       border-radius: 4px;
     }
-    .input-row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .input-row input {
-      flex: 1;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
+
+    /* =========================================
+       TABLES SECTION
+       ========================================= */
     #tablesContainer {
       margin: 16px 0;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 12px;
     }
+
     th, td {
       border: 1px solid #ddd;
       padding: 8px;
       text-align: center;
     }
+
     th {
       background-color: #f1f3f5;
     }
-    button {
-      padding: 10px 16px;
-      margin: 6px 6px 6px 0;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.95em;
-    }
-    .btn-primary { background-color: #4CAF50; color: white; }
-    .btn-danger { background-color: #f44336; color: white; }
-    .btn-success { background-color: #2196F3; color: white; }
-    .btn-info { background-color: #9C27B0; color: white; }
-    #hasil-ev, #historyList {
-      margin-top: 16px;
-      padding: 12px;
-      background: #f9f9f9;
-      border-radius: 6px;
-    }
+
     .table-section {
       margin-bottom: 16px;
     }
+
     .table-header {
       display: flex;
       align-items: center;
       gap: 8px;
       margin-bottom: 6px;
     }
+
     .table-note-input {
       width: 80px;
       padding: 4px 6px;
@@ -129,15 +135,102 @@
       border: 1px solid #ccc;
       border-radius: 4px;
     }
+
     .table-label {
       font-weight: bold;
       color: #e91e63;
     }
+
     input[readonly] {
       background-color: #f9f9f9 !important;
       color: #666;
     }
-    
+
+    /* =========================================
+       INPUT ROWS (EV CALCULATOR)
+       ========================================= */
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .input-row input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    /* =========================================
+       BUTTONS
+       ========================================= */
+    button {
+      padding: 10px 16px;
+      margin: 6px 6px 6px 0;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.95em;
+      transition: opacity 0.2s;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .btn-primary { background-color: #4CAF50; color: white; }
+    .btn-danger { background-color: #f44336; color: white; }
+    .btn-success { background-color: #2196F3; color: white; }
+    .btn-info { background-color: #9C27B0; color: white; }
+
+    /* =========================================
+       RESULTS & HISTORY
+       ========================================= */
+    #hasil-ev, #historyList {
+      margin-top: 16px;
+      padding: 12px;
+      background: #f9f9f9;
+      border-radius: 6px;
+    }
+
+    /* =========================================
+       CLONE BLOCK STYLES (BARU)
+       ========================================= */
+    .clone-block {
+      border: 2px dashed #9C27B0;
+      background: #fdfbff;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 20px;
+      position: relative;
+    }
+
+    .clone-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .clone-title {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #9C27B0;
+    }
+
+    .btn-remove-clone {
+      background: #f44336;
+      color: white;
+      padding: 6px 12px;
+      font-size: 0.85em;
+    }
+
+    /* =========================================
+       NOTIFICATIONS
+       ========================================= */
     .save-notification {
       position: fixed;
       top: 20px;
@@ -151,18 +244,24 @@
       animation: slideIn 0.3s ease-out;
       display: none;
     }
+
     .save-notification.success { background: #4caf50; color: white; }
     .save-notification.error { background: #f44336; color: white; }
     .save-notification.info { background: #2196f3; color: white; }
+
     @keyframes slideIn {
       from { transform: translateX(400px); opacity: 0; }
       to { transform: translateX(0); opacity: 1; }
     }
+
     @keyframes slideOut {
       from { transform: translateX(0); opacity: 1; }
       to { transform: translateX(400px); opacity: 0; }
     }
-    
+
+    /* =========================================
+       RESPONSIVE
+       ========================================= */
     @media (min-width: 768px) {
       .sketsa-bil {
         flex-direction: row;
@@ -172,7 +271,11 @@
       .sketsa-bil-section {
         width: calc(50% - 12px);
       }
+      .clone-block {
+        width: 100%;
+      }
     }
+
     @media (max-width: 480px) {
       .table-header {
         flex-direction: column;
@@ -185,12 +288,14 @@
   </style>
 </head>
 <body>
+
   <a href="index.html" class="back-btn">← Kembali ke Beranda</a>
   <h1 class="page-title">rumah22 — Sketsa Bil</h1>
 
   <div class="sketsa-bil">
-    <!-- 1. Fitur Catatan -->
-    <div class="sketsa-bil-section">
+    
+    <!-- 1. Fitur Catatan (BLOK UTAMA) -->
+    <div class="sketsa-bil-section" id="mainNotesSection">
       <h2>📝 Fitur Catatan</h2>
       <div id="notes">
         <div><label for="note1">1.</label><input type="text" id="note1" placeholder="Contoh: juve" /></div>
@@ -199,16 +304,22 @@
         <div><label for="note4">4.</label><input type="text" id="note4" placeholder="Contoh: roma" /></div>
         <div><label for="note5">5.</label><input type="text" id="note5" placeholder="Contoh: napoli" /></div>
       </div>
-      <button id="saveNotes" class="btn-primary">Simpan Catatan</button>
+      <div style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
+        <button id="saveNotes" class="btn-primary">Simpan Catatan</button>
+        <button id="btnClone" class="btn-info">🔄 Kloning Blok Baru</button>
+      </div>
     </div>
 
-    <!-- 2. Fitur Collection (4 Tabel + Input Manual) -->
-    <div class="sketsa-bil-section">
+    <!-- 2. Fitur Collection (BLOK UTAMA) -->
+    <div class="sketsa-bil-section" id="mainTablesSection">
       <h2>📊 Fitur Collection (4 Tabel)</h2>
       <div id="tablesContainer"></div>
       <button id="saveTables" class="btn-primary">Simpan Semua Tabel</button>
       <button id="deleteAll" class="btn-danger">Hapus Semua Data</button>
     </div>
+
+    <!-- CONTAINER UNTUK BLOK KLONING -->
+    <div id="clonesContainer" style="width: 100%;"></div>
 
     <!-- 3. Kalkulator BEP + EV Parlay -->
     <div class="sketsa-bil-section">
@@ -237,6 +348,7 @@
       <div id="historyList"></div>
       <button id="clearHistory" class="btn-danger" style="margin-top: 10px;">Hapus Semua Riwayat</button>
     </div>
+
   </div>
 
   <div id="saveNotification" class="save-notification"></div>
@@ -248,6 +360,9 @@
   <script src="./config-firebase.js"></script>
 
   <script>
+    // ==========================================
+    // AUTHENTICATION SETUP
+    // ==========================================
     let authReady = !!localStorage.getItem('currentUser');
     if (authReady) {
       console.log('✅ [rumah22] User terdeteksi dari localStorage');
@@ -265,6 +380,9 @@
       }
     });
 
+    // ==========================================
+    // NOTIFICATION SYSTEM
+    // ==========================================
     function showNotification(message, type = 'success') {
       const notif = document.getElementById('saveNotification');
       notif.textContent = message;
@@ -280,23 +398,17 @@
       }, 3000);
     }
 
-    const TABLE_LABELS = [
-      "-w/o/o",
-      "-w/u/u/",
-      "-w/o/u",
-      "-w/u/o"
-    ];
+    const TABLE_LABELS = ["-w/o/o", "-w/u/u/", "-w/o/u", "-w/u/o"];
+    let cloneCount = 0; // Counter untuk ID unik kloning
 
+    // ==========================================
+    // MAIN BLOCK LOGIC (NOTES & TABLES)
+    // ==========================================
     function updateTablesFromNotes() {
-      const n1 = document.getElementById('note1').value.trim();
-      const n2 = document.getElementById('note2').value.trim();
-      const n3 = document.getElementById('note3').value.trim();
-      const n4 = document.getElementById('note4').value.trim();
-      const n5 = document.getElementById('note5').value.trim();
-
-      const colA = n1;
-      const colB = n2 && n3 ? `${n2} vs ${n3}` : '';
-      const colC = n4 && n5 ? `${n4} vs ${n5}` : '';
+      const notes = [1, 2, 3, 4, 5].map(i => document.getElementById(`note${i}`).value.trim());
+      const colA = notes[0];
+      const colB = notes[1] && notes[2] ? `${notes[1]} vs ${notes[2]}` : '';
+      const colC = notes[3] && notes[4] ? `${notes[3]} vs ${notes[4]}` : '';
 
       for (let i = 1; i <= 4; i++) {
         const table = document.getElementById(`table${i}`);
@@ -310,20 +422,10 @@
     }
 
     function saveNotes() {
-      if (!authReady) {
-        showNotification('⚠️ Anda belum login!', 'error');
-        return;
-      }
-
-      const notes = [
-        document.getElementById('note1').value,
-        document.getElementById('note2').value,
-        document.getElementById('note3').value,
-        document.getElementById('note4').value,
-        document.getElementById('note5').value
-      ];
+      if (!authReady) return showNotification('⚠️ Anda belum login!', 'error');
+      const notes = [1, 2, 3, 4, 5].map(i => document.getElementById(`note${i}`).value);
       saveToFirebase('notes', notes);
-      showNotification('✅ Catatan disimpan!', 'success');
+      showNotification('✅ Catatan utama disimpan!', 'success');
     }
 
     function createTables() {
@@ -332,14 +434,14 @@
       for (let i = 0; i < 4; i++) {
         const section = document.createElement('div');
         section.className = 'table-section';
-
+        
         const header = document.createElement('div');
         header.className = 'table-header';
         
         const noteInput = document.createElement('input');
         noteInput.type = 'text';
         noteInput.className = 'table-note-input';
-        noteInput.id = `tableNote${i+1}`;
+        noteInput.id = `tableNote${i + 1}`;
         noteInput.placeholder = 'Input...';
         
         const labelSpan = document.createElement('span');
@@ -349,11 +451,17 @@
         header.appendChild(noteInput);
         header.appendChild(labelSpan);
         section.appendChild(header);
-
+        
         const table = document.createElement('table');
-        table.id = `table${i+1}`;
+        table.id = `table${i + 1}`;
         table.innerHTML = `
-          <thead><tr><th>Kolom A</th><th>Kolom B</th><th>Kolom C</th></tr></thead>
+          <thead>
+            <tr>
+              <th>Kolom A</th>
+              <th>Kolom B</th>
+              <th>Kolom C</th>
+            </tr>
+          </thead>
           <tbody>
             <tr>
               <td><input type="text" readonly /></td>
@@ -368,119 +476,226 @@
     }
 
     function saveTables() {
-      if (!authReady) {
-        showNotification('⚠️ Anda belum login!', 'error');
-        return;
-      }
-
-      showNotification('💾 Menyimpan...', 'info');
-
+      if (!authReady) return showNotification('⚠️ Anda belum login!', 'error');
+      showNotification('💾 Menyimpan tabel utama...', 'info');
+      
       const tablesData = [];
       for (let i = 1; i <= 4; i++) {
         const table = document.getElementById(`table${i}`);
         const inputs = table.querySelectorAll('input');
-        const row = [
-          inputs[0]?.value || '',
-          inputs[1]?.value || '',
-          inputs[2]?.value || ''
-        ];
-        tablesData.push([row]);
+        tablesData.push([[inputs[0]?.value || '', inputs[1]?.value || '', inputs[2]?.value || '']]);
       }
       saveToFirebase('tables', tablesData);
-
-      const tableNotes = [];
-      for (let i = 1; i <= 4; i++) {
-        tableNotes.push(document.getElementById(`tableNote${i}`).value.trim());
-      }
+      
+      const tableNotes = [1, 2, 3, 4].map(i => document.getElementById(`tableNote${i}`).value.trim());
       saveToFirebase('tableNotes', tableNotes);
-
-      showNotification('✅ Semua tabel dan catatan disimpan!', 'success');
-    }
-
-    // ✅ BARU: Load data tabel dari Firebase
-    function loadTablesData() {
-      if (!authReady) {
-        setTimeout(loadTablesData, 500);
-        return;
-      }
-
-      const db = firebase.database();
-      db.ref(`rumah22/tables`).once('value')
-        .then(snapshot => {
-          const tablesData = snapshot.val();
-          if (!tablesData || !Array.isArray(tablesData)) return;
-          
-          console.log('📊 Memuat data tabel:', tablesData.length, 'tabel');
-          
-          for (let i = 0; i < tablesData.length && i < 4; i++) {
-            const table = document.getElementById(`table${i+1}`);
-            if (table && Array.isArray(tablesData[i]) && Array.isArray(tablesData[i][0])) {
-              const row = tablesData[i][0];
-              const inputs = table.querySelectorAll('input');
-              
-              // Hanya isi jika data dari Firebase tidak kosong
-              if (inputs[0] && row[0]) inputs[0].value = row[0];
-              if (inputs[1] && row[1]) inputs[1].value = row[1];
-              if (inputs[2] && row[2]) inputs[2].value = row[2];
-            }
-          }
-        })
-        .catch(err => console.error('Load tables error:', err));
-    }
-
-    // ✅ BARU: Load riwayat dari Firebase
-    function loadHistoryData() {
-      if (!authReady) {
-        setTimeout(loadHistoryData, 500);
-        return;
-      }
-
-      const db = firebase.database();
-      db.ref(`rumah22/history`).once('value')
-        .then(snapshot => {
-          const historyData = snapshot.val();
-          if (!historyData || !Array.isArray(historyData)) return;
-          
-          console.log('📁 Memuat riwayat:', historyData.length, 'item');
-          
-          const historyList = document.getElementById('historyList');
-          historyList.innerHTML = '';
-          
-          historyData.forEach(itemText => {
-            if (itemText && itemText.trim()) {
-              const div = document.createElement('div');
-              div.style.marginBottom = '10px';
-              div.style.padding = '8px';
-              div.style.backgroundColor = '#f0f0f0';
-              div.style.borderRadius = '4px';
-              div.innerHTML = itemText + `<button onclick="removeFromHistory(this)" style="float:right; margin-left:10px;" class="btn-danger">Hapus</button>`;
-              historyList.appendChild(div);
-            }
-          });
-        })
-        .catch(err => console.error('Load history error:', err));
+      
+      showNotification('✅ Tabel utama disimpan!', 'success');
     }
 
     function loadTableNotes() {
-      if (!authReady) {
-        setTimeout(loadTableNotes, 500);
-        return;
-      }
-
-      const db = firebase.database();
-      db.ref(`rumah22/tableNotes`).once('value')
-        .then(snapshot => {
-          const notes = snapshot.val() || ['', '', '', ''];
-          for (let i = 0; i < 4; i++) {
-            const input = document.getElementById(`tableNote${i+1}`);
-            if (input && notes[i]) {
-              input.value = notes[i];
-            }
-          }
-        })
-        .catch(err => console.error('Load tableNotes error:', err));
+      if (!authReady) return setTimeout(loadTableNotes, 500);
+      firebase.database().ref(`rumah22/tableNotes`).once('value').then(snap => {
+        const notes = snap.val() || ['', '', '', ''];
+        for (let i = 0; i < 4; i++) {
+          const input = document.getElementById(`tableNote${i + 1}`);
+          if (input && notes[i]) input.value = notes[i];
+        }
+      });
     }
 
+    // ==========================================
+    // CLONING LOGIC (FITUR BARU)
+    // ==========================================
+    function addCloneBlock(cloneId, data = null) {
+      cloneCount++;
+      const id = cloneId || `c${Date.now()}`;
+      const container = document.getElementById('clonesContainer');
+      
+      const block = document.createElement('div');
+      block.className = 'clone-block';
+      block.id = `block_${id}`;
+      block.dataset.cloneId = id;
+
+      // Generate HTML untuk catatan kloning
+      let notesHtml = '';
+      for (let i = 1; i <= 5; i++) {
+        notesHtml += `
+          <div>
+            <label>${i}.</label>
+            <input type="text" id="${id}_note${i}" placeholder="Catatan ${i}" />
+          </div>
+        `;
+      }
+
+      block.innerHTML = `
+        <div class="clone-header">
+          <span class="clone-title">📋 Kloning #${cloneCount} (${id})</span>
+          <button class="btn-remove-clone" onclick="removeClone('${id}')">🗑️ Hapus Kloning</button>
+        </div>
+        
+        <div class="sketsa-bil-section" style="box-shadow: none; padding: 0; background: transparent;">
+          <h3> Catatan Kloning</h3>
+          <div id="${id}_notes">
+            ${notesHtml}
+          </div>
+          <button onclick="saveCloneNotes('${id}')" class="btn-primary" style="margin-top: 10px;">Simpan Catatan Kloning</button>
+        </div>
+
+        <div class="sketsa-bil-section" style="box-shadow: none; padding: 0; background: transparent; margin-top: 16px;">
+          <h3>📊 Tabel Kloning</h3>
+          <div id="${id}_tablesContainer"></div>
+          <button onclick="saveCloneTables('${id}')" class="btn-primary">Simpan Tabel Kloning</button>
+        </div>
+      `;
+
+      container.appendChild(block);
+
+      // Buat tabel untuk kloning ini
+      createCloneTables(id);
+
+      // Setup event listeners untuk auto-update tabel dari catatan
+      for (let i = 1; i <= 5; i++) {
+        const input = document.getElementById(`${id}_note${i}`);
+        if (input) {
+          input.addEventListener('input', () => updateCloneTablesFromNotes(id));
+        }
+      }
+
+      // Jika ada data (saat load dari Firebase), isi datanya
+      if (data) {
+        if (data.notes) {
+          data.notes.forEach((val, idx) => {
+            const input = document.getElementById(`${id}_note${idx + 1}`);
+            if (input) input.value = val;
+          });
+          updateCloneTablesFromNotes(id);
+        }
+        if (data.tables) {
+          for (let i = 0; i < 4; i++) {
+            const table = document.getElementById(`${id}_table${i + 1}`);
+            if (table && data.tables[i] && data.tables[i][0]) {
+              const inputs = table.querySelectorAll('input');
+              if (inputs[0]) inputs[0].value = data.tables[i][0][0] || '';
+              if (inputs[1]) inputs[1].value = data.tables[i][0][1] || '';
+              if (inputs[2]) inputs[2].value = data.tables[i][0][2] || '';
+            }
+          }
+        }
+        if (data.tableNotes) {
+          data.tableNotes.forEach((val, idx) => {
+            const input = document.getElementById(`${id}_tableNote${idx + 1}`);
+            if (input) input.value = val;
+          });
+        }
+      }
+    }
+
+    function createCloneTables(cloneId) {
+      const container = document.getElementById(`${cloneId}_tablesContainer`);
+      container.innerHTML = '';
+      
+      for (let i = 0; i < 4; i++) {
+        const section = document.createElement('div');
+        section.className = 'table-section';
+        
+        const header = document.createElement('div');
+        header.className = 'table-header';
+        
+        const noteInput = document.createElement('input');
+        noteInput.type = 'text';
+        noteInput.className = 'table-note-input';
+        noteInput.id = `${cloneId}_tableNote${i + 1}`;
+        noteInput.placeholder = 'Input...';
+        
+        const labelSpan = document.createElement('span');
+        labelSpan.className = 'table-label';
+        labelSpan.textContent = TABLE_LABELS[i];
+        
+        header.appendChild(noteInput);
+        header.appendChild(labelSpan);
+        section.appendChild(header);
+        
+        const table = document.createElement('table');
+        table.id = `${cloneId}_table${i + 1}`;
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Kolom A</th>
+              <th>Kolom B</th>
+              <th>Kolom C</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="text" readonly /></td>
+              <td><input type="text" readonly /></td>
+              <td><input type="text" readonly /></td>
+            </tr>
+          </tbody>
+        `;
+        section.appendChild(table);
+        container.appendChild(section);
+      }
+    }
+
+    function updateCloneTablesFromNotes(cloneId) {
+      const notes = [1, 2, 3, 4, 5].map(i => document.getElementById(`${cloneId}_note${i}`).value.trim());
+      const colA = notes[0];
+      const colB = notes[1] && notes[2] ? `${notes[1]} vs ${notes[2]}` : '';
+      const colC = notes[3] && notes[4] ? `${notes[3]} vs ${notes[4]}` : '';
+
+      for (let i = 1; i <= 4; i++) {
+        const table = document.getElementById(`${cloneId}_table${i}`);
+        if (table) {
+          const inputs = table.querySelectorAll('input');
+          if (inputs[0]) inputs[0].value = colA;
+          if (inputs[1]) inputs[1].value = colB;
+          if (inputs[2]) inputs[2].value = colC;
+        }
+      }
+    }
+
+    function saveCloneNotes(cloneId) {
+      if (!authReady) return showNotification('️ Anda belum login!', 'error');
+      const notes = [1, 2, 3, 4, 5].map(i => document.getElementById(`${cloneId}_note${i}`).value);
+      saveToFirebase(`clones/${cloneId}/notes`, notes);
+      showNotification(`✅ Catatan kloning ${cloneId} disimpan!`, 'success');
+    }
+
+    function saveCloneTables(cloneId) {
+      if (!authReady) return showNotification('⚠️ Anda belum login!', 'error');
+      showNotification('💾 Menyimpan tabel kloning...', 'info');
+      
+      const tablesData = [];
+      for (let i = 1; i <= 4; i++) {
+        const table = document.getElementById(`${cloneId}_table${i}`);
+        const inputs = table.querySelectorAll('input');
+        tablesData.push([[inputs[0]?.value || '', inputs[1]?.value || '', inputs[2]?.value || '']]);
+      }
+      saveToFirebase(`clones/${cloneId}/tables`, tablesData);
+      
+      const tableNotes = [1, 2, 3, 4].map(i => document.getElementById(`${cloneId}_tableNote${i}`).value.trim());
+      saveToFirebase(`clones/${cloneId}/tableNotes`, tableNotes);
+      
+      showNotification(`✅ Tabel kloning ${cloneId} disimpan!`, 'success');
+    }
+
+    window.removeClone = function(cloneId) {
+      if (confirm('Hapus blok kloning ini?')) {
+        const block = document.getElementById(`block_${cloneId}`);
+        if (block) block.remove();
+        
+        if (authReady) {
+          firebase.database().ref(`rumah22/clones/${cloneId}`).remove();
+          showNotification('🗑️ Kloning dihapus!', 'success');
+        }
+      }
+    };
+
+    // ==========================================
+    // EV CALCULATOR LOGIC
+    // ==========================================
     function tambahBaris() {
       const inputsDiv = document.getElementById('inputs');
       const newRow = document.createElement('div');
@@ -495,43 +710,35 @@
     function hitungEV() {
       const oddsInputs = document.querySelectorAll('.odds');
       const probInputs = document.querySelectorAll('.prob');
-
-      let totalOdds = 1;
-      let totalProb = 1;
-
+      let totalOdds = 1, totalProb = 1;
+      
       for (let i = 0; i < oddsInputs.length; i++) {
         const odds = parseFloat(oddsInputs[i].value);
         let prob = parseFloat(probInputs[i].value);
-
-        if (isNaN(odds) || isNaN(prob)) {
-          alert('Masukkan angka valid untuk semua leg!');
-          return;
-        }
-
+        
+        if (isNaN(odds) || isNaN(prob)) return alert('Masukkan angka valid!');
         if (prob > 1) prob /= 100;
-
+        
         totalOdds *= odds;
         totalProb *= prob;
       }
-
+      
       const bep = (1 / totalOdds) * 100;
       const fairProb = 1 / totalOdds;
       const ev = (totalProb * (totalOdds - 1)) - (1 - totalProb);
-
+      
       document.getElementById('oddsTotal').textContent = totalOdds.toFixed(3);
       document.getElementById('bep').textContent = bep.toFixed(2) + '%';
       document.getElementById('fairProb').textContent = fairProb.toFixed(4);
       document.getElementById('ev').textContent = (ev * 100).toFixed(2) + '%';
-
-      const rekom = ev > 0 ? '✅ Layak dipertaruhkan' : '❌ Hindari';
-      document.getElementById('rekomendasi').textContent = rekom;
-
-      const historyItem = {
-        odds: totalOdds,
-        prob: totalProb,
-        bep: bep,
-        ev: ev,
-        timestamp: new Date().toLocaleString()
+      document.getElementById('rekomendasi').textContent = ev > 0 ? '✅ Layak dipertaruhkan' : '❌ Hindari';
+      
+      const historyItem = { 
+        odds: totalOdds, 
+        prob: totalProb, 
+        bep: bep, 
+        ev: ev, 
+        timestamp: new Date().toLocaleString() 
       };
       addToHistory(historyItem);
       saveToFirebase('history', getHistoryData());
@@ -540,10 +747,7 @@
     function addToHistory(item) {
       const historyList = document.getElementById('historyList');
       const div = document.createElement('div');
-      div.style.marginBottom = '10px';
-      div.style.padding = '8px';
-      div.style.backgroundColor = '#f0f0f0';
-      div.style.borderRadius = '4px';
+      div.style.cssText = 'margin-bottom: 10px; padding: 8px; background: #f0f0f0; border-radius: 4px;';
       div.innerHTML = `
         <strong>${item.timestamp}</strong><br>
         Odds: ${item.odds.toFixed(3)} | EV: ${(item.ev * 100).toFixed(2)}%
@@ -560,7 +764,6 @@
     function getHistoryData() {
       const items = [];
       document.querySelectorAll('#historyList > div').forEach(div => {
-        // Clone node untuk menghapus tombol dari text yang disimpan
         const clone = div.cloneNode(true);
         const btn = clone.querySelector('button');
         if (btn) btn.remove();
@@ -570,11 +773,7 @@
     }
 
     function clearHistory() {
-      if (!authReady) {
-        showNotification('⚠️ Anda belum login!', 'error');
-        return;
-      }
-
+      if (!authReady) return showNotification('⚠️ Anda belum login!', 'error');
       if (confirm('Hapus semua riwayat?')) {
         document.getElementById('historyList').innerHTML = '';
         saveToFirebase('history', []);
@@ -582,92 +781,105 @@
       }
     }
 
+    // ==========================================
+    // FIREBASE & INITIALIZATION
+    // ==========================================
     function saveToFirebase(key, data) {
-      if (!authReady) {
-        console.warn('⚠️ Auth belum ready, tidak bisa simpan');
-        return;
-      }
-
-      const db = firebase.database();
-      const path = `rumah22/${key}`;
-      db.ref(path).set(data)
-        .then(() => {
-          console.log(`✅ Data ${key} tersimpan`);
-        })
-        .catch(err => {
-          console.error('Firebase save error:', err);
-          showNotification('❌ Gagal simpan: ' + err.message, 'error');
-        });
+      if (!authReady) return;
+      firebase.database().ref(`rumah22/${key}`).set(data)
+        .catch(err => showNotification('❌ Gagal simpan: ' + err.message, 'error'));
     }
 
-    // ✅ DIPERBAIKI: Load SEMUA data dari Firebase
     async function loadDataFromFirebase() {
-      if (!authReady) {
-        console.warn('⚠️ Auth belum ready, menunda load');
-        setTimeout(loadDataFromFirebase, 500);
-        return;
-      }
-
+      if (!authReady) return setTimeout(loadDataFromFirebase, 500);
       const db = firebase.database();
       
-      try {
-        // Load notes
-        const notesSnap = await db.ref(`rumah22/notes`).once('value');
-        const notes = notesSnap.val() || ['', '', '', '', ''];
-        if (notes.length >= 5) {
-          document.getElementById('note1').value = notes[0];
-          document.getElementById('note2').value = notes[1];
-          document.getElementById('note3').value = notes[2];
-          document.getElementById('note4').value = notes[3];
-          document.getElementById('note5').value = notes[4];
-          updateTablesFromNotes();
-        }
-      } catch (e) { 
-        console.error('Load notes error:', e); 
+      // Load Main Notes
+      const notesSnap = await db.ref(`rumah22/notes`).once('value');
+      const notes = notesSnap.val() || ['', '', '', '', ''];
+      if (notes.length >= 5) {
+        [1, 2, 3, 4, 5].forEach((i, idx) => document.getElementById(`note${i}`).value = notes[idx]);
+        updateTablesFromNotes();
       }
 
-      // ✅ Load tableNotes
       loadTableNotes();
-      
-      // ✅ Load tables data (BARU)
       loadTablesData();
-      
-      // ✅ Load history (BARU)
       loadHistoryData();
+      loadClonesData(); // Load data kloning
+    }
+
+    function loadTablesData() {
+      if (!authReady) return setTimeout(loadTablesData, 500);
+      firebase.database().ref(`rumah22/tables`).once('value').then(snap => {
+        const tablesData = snap.val();
+        if (!tablesData || !Array.isArray(tablesData)) return;
+        for (let i = 0; i < tablesData.length && i < 4; i++) {
+          const table = document.getElementById(`table${i + 1}`);
+          if (table && Array.isArray(tablesData[i]) && Array.isArray(tablesData[i][0])) {
+            const row = tablesData[i][0];
+            const inputs = table.querySelectorAll('input');
+            if (inputs[0] && row[0]) inputs[0].value = row[0];
+            if (inputs[1] && row[1]) inputs[1].value = row[1];
+            if (inputs[2] && row[2]) inputs[2].value = row[2];
+          }
+        }
+      });
+    }
+
+    function loadHistoryData() {
+      if (!authReady) return setTimeout(loadHistoryData, 500);
+      firebase.database().ref(`rumah22/history`).once('value').then(snap => {
+        const historyData = snap.val();
+        if (!historyData || !Array.isArray(historyData)) return;
+        const historyList = document.getElementById('historyList');
+        historyList.innerHTML = '';
+        historyData.forEach(itemText => {
+          if (itemText && itemText.trim()) {
+            const div = document.createElement('div');
+            div.style.cssText = 'margin-bottom: 10px; padding: 8px; background: #f0f0f0; border-radius: 4px;';
+            div.innerHTML = itemText + `<button onclick="removeFromHistory(this)" style="float:right; margin-left:10px;" class="btn-danger">Hapus</button>`;
+            historyList.appendChild(div);
+          }
+        });
+      });
+    }
+
+    async function loadClonesData() {
+      if (!authReady) return setTimeout(loadClonesData, 500);
+      const db = firebase.database();
+      const clonesSnap = await db.ref(`rumah22/clones`).once('value');
+      const clonesData = clonesSnap.val();
+      
+      if (clonesData) {
+        console.log('🔄 Memuat data kloning:', Object.keys(clonesData).length, 'blok');
+        Object.keys(clonesData).forEach(cloneId => {
+          addCloneBlock(cloneId, clonesData[cloneId]);
+        });
+      }
     }
 
     function deleteAllData() {
-      if (!authReady) {
-        showNotification('⚠️ Anda belum login!', 'error');
-        return;
-      }
-
-      if (confirm('Hapus semua data?')) {
-        showNotification('🗑️ Menghapus data...', 'info');
-        
-        const db = firebase.database();
-        db.ref(`rumah22`).set(null)
-          .then(() => {
-            document.getElementById('note1').value = '';
-            document.getElementById('note2').value = '';
-            document.getElementById('note3').value = '';
-            document.getElementById('note4').value = '';
-            document.getElementById('note5').value = '';
-            updateTablesFromNotes();
-            for (let i = 1; i <= 4; i++) {
-              const input = document.getElementById(`tableNote${i}`);
-              if (input) input.value = '';
-            }
-            document.getElementById('historyList').innerHTML = '';
-            showNotification('✅ Semua data dihapus!', 'success');
-          })
-          .catch(err => {
-            console.error('Delete error:', err);
-            showNotification('❌ Gagal hapus: ' + err.message, 'error');
+      if (!authReady) return showNotification('️ Anda belum login!', 'error');
+      if (confirm('Hapus SEMUA data (termasuk kloning)?')) {
+        showNotification('🗑️ Menghapus semua data...', 'info');
+        firebase.database().ref(`rumah22`).set(null).then(() => {
+          [1, 2, 3, 4, 5].forEach(i => document.getElementById(`note${i}`).value = '');
+          updateTablesFromNotes();
+          [1, 2, 3, 4].forEach(i => {
+            const input = document.getElementById(`tableNote${i}`);
+            if (input) input.value = '';
           });
+          document.getElementById('historyList').innerHTML = '';
+          document.getElementById('clonesContainer').innerHTML = '';
+          cloneCount = 0;
+          showNotification('✅ Semua data dihapus!', 'success');
+        });
       }
     }
 
+    // ==========================================
+    // EVENT LISTENERS
+    // ==========================================
     document.addEventListener('DOMContentLoaded', () => {
       createTables();
       
@@ -678,14 +890,24 @@
         }
       }, 100);
 
-      ['note1','note2','note3','note4','note5'].forEach(id => {
-        document.getElementById(id).addEventListener('input', updateTablesFromNotes);
-      });
-
+      [1, 2, 3, 4, 5].forEach(i => 
+        document.getElementById(`note${i}`).addEventListener('input', updateTablesFromNotes)
+      );
+      
       document.getElementById('saveNotes').addEventListener('click', saveNotes);
       document.getElementById('saveTables').addEventListener('click', saveTables);
       document.getElementById('deleteAll').addEventListener('click', deleteAllData);
       document.getElementById('clearHistory').addEventListener('click', clearHistory);
+      
+      // Event Listener untuk tombol Kloning
+      document.getElementById('btnClone').addEventListener('click', () => {
+        const newId = `c${Date.now()}`;
+        addCloneBlock(newId);
+        showNotification(' Blok kloning baru ditambahkan!', 'info');
+        setTimeout(() => {
+          document.getElementById(`block_${newId}`).scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      });
     });
   </script>
 </body>
