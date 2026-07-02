@@ -81,11 +81,12 @@ function initControlCenter() {
     });
   }
 
-  // ✅ Event Listener: Kartu Monitoring (REDIRECT)
+  // ✅ Event Listener: Kartu Monitoring (REDIRECT LANGSUNG)
   const cardMonitoring = document.getElementById('cardMonitoring');
   if (cardMonitoring) {
     cardMonitoring.addEventListener('click', () => {
-      console.log('👁️ Kartu Monitoring diklik, redirect ke monitoring.html');
+      console.log('👁️ Kartu Monitoring diklik - Redirect ke monitoring.html');
+      // LANGSUNG REDIRECT ke monitoring.html
       window.location.href = './monitoring.html';
     });
   } else {
