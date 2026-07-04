@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Rumah Utama</title>
   
-  <!-- ✅ ANTI-FLICKER: Sembunyikan body sampai siap -->
   <style>
     body {
       opacity: 0;
@@ -16,7 +15,6 @@
     }
   </style>
   
-  <!-- ✅ PROTEKSI HALAMAN: Redirect SEBELUM render jika belum login -->
   <script>
     (function() {
       const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
@@ -29,18 +27,12 @@
     })();
   </script>
   
-  <!-- Firebase SDK (Compat Version) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-  
-  <!-- Load config-firebase.js eksternal -->
   <script src="./config-firebase.js"></script>
-  
-  <!-- Link ke CSS eksternal -->
   <link rel="stylesheet" href="./css/index.css">
   
-  <!-- ✅ TAMBAHAN: Styling untuk navigasi panel -->
   <style>
     .feature-card {
       transition: all 0.2s ease;
@@ -58,7 +50,6 @@
 </head>
 <body>
   <div class="container">
-    <!-- User Info Bar -->
     <div class="user-bar">
       <div class="user-info">
         <div class="avatar">👤</div>
@@ -82,7 +73,6 @@
       <option value="Japan">Japan</option>
       <option value="Taiwan">Taiwan</option>
       <option value="Hongkong">Hongkong</option>
-      <!-- ✅ Opsi Control Center (hidden by default, ditampilkan via JS untuk admin) -->
       <option value="control-center" id="controlCenterOption" style="display: none;">🛡️ Control Centre (Admin)</option>
     </select>
 
@@ -96,14 +86,12 @@
       <div class="house-grid" id="houseList"></div>
     </div>
 
-    <!-- ✅ Panel Control Center (Muncul setelah admin pilih "control-center") -->
     <div id="controlCenterPanel" style="display: none;">
       <div class="control-header">
         <h2>🛡️ Fitur Internal: Control Center (Admin)</h2>
         <span class="admin-badge">ADMIN ONLY</span>
       </div>
 
-      <!-- ✅ DIPERBAIKI: Setiap kartu memiliki ID untuk event listener -->
       <div class="feature-grid">
         <div class="feature-card" id="cardManajemenUser">
           <div class="feature-icon">👥</div>
@@ -121,39 +109,31 @@
           <div class="feature-icon">⚙️</div>
           <div class="feature-text">Pengaturan Situs</div>
         </div>
-        <!-- ✅ UPDATE: Tambahkan onclick langsung di HTML -->
+        <!-- ✅ DIPERBAIKI: Tag lengkap dengan onclick -->
         <div class="feature-card" id="cardMonitoring" onclick="window.location.href='./monitoring.html'" style="cursor: pointer;">
           <div class="feature-icon">👁️</div>
           <div class="feature-text">Monitoring</div>
         </div>
       </div>
 
-      <!-- Sub-panel: Pengaturan Situs (Info Box) -->
       <div class="sub-panel" id="subPanelPengaturan" style="display: none;">
         <h3>⚙️ Pengaturan Situs</h3>
-        
         <div class="info-description">
           <p>📌 Tambahkan beberapa pengumuman. Setiap pengumuman akan tampil bergantian di halaman login. Durasi tampil diacak antara 6-12 detik.</p>
         </div>
-
         <button id="addAnnouncementBtn" class="btn-add">➕ Tambah Pengumuman Baru</button>
-
         <div id="announcementsContainer"></div>
-
         <div class="button-group">
           <button id="saveAnnouncementsBtn" class="btn-save">💾 Simpan Pengumuman</button>
           <button id="previewBtn" class="btn-preview">👁️ Preview</button>
         </div>
-
         <div id="announcementStatus"></div>
       </div>
 
-      <!-- ✅ Sub-panel Data & Statistik Keuangan -->
       <div class="sub-panel" id="subPanelStatistik" style="display: none; margin-top: 30px; border-top: 2px dashed #ccc; padding-top: 20px;">
         <h3>📊 Data & Statistik Keuangan (Laba/Rugi)</h3>
         <p style="font-size: 0.9em; color: #666; margin-bottom: 15px;">📝 Catat modal, win, dan lose per market. Sistem akan menghitung selisih (Win - Lose) dan total akumulasi secara otomatis.</p>
 
-        <!-- Form Input -->
         <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee;">
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
             <div>
@@ -193,7 +173,6 @@
           <button id="addStatRowBtn" style="margin-top: 10px; background: #2196F3; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">➕ Tambah ke Tabel</button>
         </div>
 
-        <!-- Tabel Statistik -->
         <div style="overflow-x: auto; border: 1px solid #ddd; border-radius: 8px;">
           <table id="statsTable" style="width: 100%; border-collapse: collapse; min-width: 800px; text-align: center;">
             <thead>
@@ -208,9 +187,7 @@
                 <th style="border: 1px solid #ddd; padding: 10px;">Aksi</th>
               </tr>
             </thead>
-            <tbody id="statsTableBody">
-              <!-- Data akan di-render di sini -->
-            </tbody>
+            <tbody id="statsTableBody"></tbody>
             <tfoot>
               <tr style="background: #e8f5e9; font-weight: bold;">
                 <td style="border: 1px solid #ddd; padding: 10px;" colspan="2">TOTAL AKUMULASI</td>
@@ -233,64 +210,44 @@
     </div>
   </div>
 
-  <!-- Link ke JavaScript eksternal -->
   <script src="./js/index.js"></script>
 
-  <!-- ✅ SCRIPT NAVIGASI PANEL & DATA STATISTIK -->
   <script>
-    // ============================================
-    // BAGIAN 1: NAVIGASI ANTAR PANEL CONTROL CENTER
-    // ============================================
-    
-    // Fungsi helper untuk menampilkan panel tertentu
     function showPanel(panelId) {
-      // Sembunyikan semua sub-panel
       document.getElementById('subPanelPengaturan').style.display = 'none';
       document.getElementById('subPanelStatistik').style.display = 'none';
       
-      // Hapus class active dari semua kartu
       document.querySelectorAll('.feature-card').forEach(card => {
         card.classList.remove('active');
       });
       
-      // Tampilkan panel yang dipilih
       const panel = document.getElementById(panelId);
       if (panel) {
         panel.style.display = 'block';
-        
-        // Tambahkan class active ke kartu yang diklik
         const activeCard = document.querySelector(`[onclick*="${panelId}"], .feature-card[data-panel="${panelId}"]`);
         if (activeCard) activeCard.classList.add('active');
-        
-        // Load data khusus jika panel Statistik
         if (panelId === 'subPanelStatistik') {
           loadStatsData();
         }
-        
-        // Scroll ke panel
         setTimeout(() => {
           panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);
       }
     }
 
-    // Setup event listener untuk semua kartu fitur
     function setupCardNavigation() {
-      // Kartu Data & Statistik
       const cardStat = document.getElementById('cardDataStatistik');
       if (cardStat) {
         cardStat.dataset.panel = 'subPanelStatistik';
         cardStat.addEventListener('click', () => showPanel('subPanelStatistik'));
       }
 
-      // Kartu Pengaturan Situs
       const cardPengaturan = document.getElementById('cardPengaturan');
       if (cardPengaturan) {
         cardPengaturan.dataset.panel = 'subPanelPengaturan';
         cardPengaturan.addEventListener('click', () => showPanel('subPanelPengaturan'));
       }
 
-      // Kartu yang masih dalam pengembangan
       const cardManajemen = document.getElementById('cardManajemenUser');
       if (cardManajemen) {
         cardManajemen.addEventListener('click', () => {
@@ -305,7 +262,6 @@
         });
       }
 
-      // ✅ DIPERBAIKI: Kartu Monitoring - Redirect ke monitoring.html
       const cardMonitoring = document.getElementById('cardMonitoring');
       if (cardMonitoring) {
         cardMonitoring.addEventListener('click', () => {
@@ -314,16 +270,10 @@
       }
     }
 
-    // Jalankan setup setelah DOM siap
     document.addEventListener('DOMContentLoaded', () => {
-      // Tunggu sebentar untuk memastikan index.js sudah load
       setTimeout(setupCardNavigation, 500);
     });
 
-    // ============================================
-    // BAGIAN 2: LOGIC DATA & STATISTIK
-    // ============================================
-    
     let currentStatsData = [];
 
     function formatRupiah(angka) {
@@ -360,7 +310,6 @@
         tbody.appendChild(tr);
       });
 
-      // Update Footer Totals
       const totalSelisih = tWin - tLose;
       document.getElementById('totalModal').textContent = formatRupiah(tModal);
       document.getElementById('totalWin').textContent = formatRupiah(tWin);
@@ -376,7 +325,6 @@
       }
     };
 
-    // Tambah baris ke tabel
     document.addEventListener('DOMContentLoaded', () => {
       const addBtn = document.getElementById('addStatRowBtn');
       if (addBtn) {
@@ -396,18 +344,15 @@
           currentStatsData.push({ periode, market, modal, win, lose, ket });
           renderStatsTable();
 
-          // Reset form input angka (kecuali periode & market untuk kemudahan input beruntun)
           document.getElementById('statModal').value = '';
           document.getElementById('statWin').value = '';
           document.getElementById('statLose').value = '';
           document.getElementById('statKet').value = '';
           
-          // Fokus kembali ke periode untuk input cepat
           document.getElementById('statModal').focus();
         });
       }
 
-      // Reset tabel
       const clearBtn = document.getElementById('clearStatsBtn');
       if (clearBtn) {
         clearBtn.addEventListener('click', () => {
@@ -418,7 +363,6 @@
         });
       }
 
-      // Simpan ke Firebase
       const saveBtn = document.getElementById('saveStatsBtn');
       if (saveBtn) {
         saveBtn.addEventListener('click', async () => {
@@ -448,7 +392,6 @@
       }
     });
 
-    // Load data dari Firebase
     async function loadStatsData() {
       try {
         const snapshot = await firebase.database().ref('statistics/financials').once('value');
@@ -466,24 +409,20 @@
     }
   </script>
 
-  <!-- ✅ ANTI-FLICKER: Tampilkan body setelah semua siap -->
   <script>
     (function() {
       function showBody() {
         document.body.classList.add('ready');
       }
       
-      // Tampilkan body setelah semua resource (CSS, JS, gambar) selesai load
       if (document.readyState === 'complete') {
         showBody();
       } else {
         window.addEventListener('load', showBody);
       }
       
-      // Fallback: pastikan body muncul setelah 2 detik meski ada error
       setTimeout(showBody, 2000);
       
-      // Cleanup saat navigasi ke halaman lain (mencegah flicker saat pergi)
       window.addEventListener('beforeunload', function() {
         document.body.classList.remove('ready');
       });
