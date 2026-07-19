@@ -188,29 +188,37 @@
       font-size: 13px;
     }
 
-    /* ✅ BARU: Styling khusus untuk blok Shio */
+    /* ✅ Styling khusus untuk blok Shio */
     .shio-block {
       background: #fff8e1;
       border-left: 4px solid #ff9800;
-      padding: 8px 10px;
-      margin-bottom: 8px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
       border-radius: 4px;
     }
     .shio-title {
       font-weight: bold;
       color: #e65100;
       font-size: 14px;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
-    .shio-numbers {
+    
+    /* ✅ Penyesuaian result-box di dalam shio-block agar menyatu */
+    .shio-block .result-box {
+      background: transparent;
+      padding: 5px 0;
+      margin-top: 0;
+      border: none;
+      box-shadow: none;
+    }
+    .shio-block .result {
       color: #2e7d32;
       font-weight: bold;
       font-family: monospace;
       font-size: 14px;
-      word-break: break-all;
     }
 
-    /* ✅ BARU: Notifikasi Popup */
+    /* Notifikasi Popup */
     .save-notification {
       position: fixed;
       top: 20px;
@@ -267,7 +275,6 @@
     </div>
   </div>
 
-  <!-- ✅ BARU: Notifikasi Popup -->
   <div id="saveNotification" class="save-notification"></div>
 
   <script>
@@ -277,18 +284,15 @@
     const allPanels = new Map();
     let authReady = false;
 
-    // ✅ BARU: Pemetaan Nama Shio (Sesuai logika modulo 12 Anda)
     const SHIO_NAMES = {
       1: "Tikus", 2: "Kerbau", 3: "Macan", 4: "Kelinci",
       5: "Naga", 6: "Ular", 7: "Kuda", 8: "Kambing",
       9: "Monyet", 10: "Ayam", 11: "Anjing", 12: "Babi"
     };
 
-    // Inisialisasi Firebase
     const db = firebase.database();
     const auth = firebase.auth();
 
-    // ✅ BARU: Fungsi Notifikasi
     function showNotification(message, type = 'success') {
       const notif = document.getElementById('saveNotification');
       notif.textContent = message;
@@ -330,15 +334,13 @@
       return nums;
     }
 
-    // ✅ BARU: Mendapatkan Nama Shio dari sebuah angka 00-99
     function getShioNameFromNumber(numStr) {
       const num = parseInt(numStr, 10);
-      if (num === 0) return SHIO_NAMES[12]; // 00 masuk ke Shio 12 (Babi) berdasarkan logika base Anda
+      if (num === 0) return SHIO_NAMES[12]; 
       const mod = num % 12;
       return SHIO_NAMES[mod === 0 ? 12 : mod];
     }
 
-    // ✅ BARU: Mengelompokkan array angka per Shio
     function groupNumbersByShio(numbersArray) {
       const grouped = {};
       Object.values(SHIO_NAMES).forEach(name => { grouped[name] = []; });
@@ -495,7 +497,6 @@
         }
       }
 
-      // ✅ BARU: Tambahkan pengelompokan per shio ke hasil return
       const angkaBersihPerShio = groupNumbersByShio(angkaBersih);
 
       return { angkaBersih, angkaKhusus, outGroups, angkaBersihPerShio };
@@ -634,7 +635,7 @@
       };
     }
 
-    // === RENDER OUTPUT (DIPERBARUI DENGAN FITUR PER SHIO) ===
+    // === RENDER OUTPUT ===
     function renderOutput(panelId, result) {
       const { angkaBersih, angkaKhusus, outGroups, angkaBersihPerShio } = result;
       let html = '';
@@ -651,20 +652,28 @@
         </div>`;
       }
 
-      // ✅ BARU: Tampilkan Hasil Per Shio di Paling Atas (Paling Penting)
+      // ✅ HASIL PER SHIO (Direvisi: Format Rapat + Tombol Edit/Salin)
       html += `<div class="section"><div class="title" style="font-size: 15px; color: #d35400; border-bottom: 2px solid #d35400; padding-bottom: 5px; margin-bottom: 10px;">🐾 HASIL ANGKA BERSIH PER SHIO</div>`;
       for (const [shioName, numbers] of Object.entries(angkaBersihPerShio)) {
         if (numbers.length > 0) {
-          const text = numbers.join(' * ');
+          const shioId = shioName.toLowerCase();
+          const boxId = `box-${panelId}-shio-${shioId}`;
+          const text = numbers.join('*') + '#'; // Format rapat diakhiri #
+          
           html += `<div class="shio-block">
             <div class="shio-title">${shioName} <span style="font-size:12px; color:#666; font-weight:normal;">(${numbers.length} angka)</span></div>
-            <div class="shio-numbers">${text}</div>
+            <div class="result-box" id="${boxId}">
+              <textarea class="edit-area">${text}</textarea>
+              <div class="result">${text}</div>
+              <button class="copy-btn" onclick="window.copyResult('${boxId}')">Salin</button>
+              <button class="edit-btn" onclick="window.toggleEdit('${boxId}')">Edit</button>
+            </div>
           </div>`;
         }
       }
       html += `</div>`;
 
-      // Tampilan Flat Asli (Tetap dipertahankan agar tidak membingungkan)
+      // Tampilan Flat Asli
       angkaBersih.sort();
       const bersihText = angkaBersih.length ? angkaBersih.join('*') : '-';
       html += createSectionHTML(`✅ Angka Bersih (Flat) (${angkaBersih.length} lines)`, bersihText + '#', 'bersih');
