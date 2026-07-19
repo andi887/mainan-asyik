@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>saringandua</title>
+  <title>PERACIKAN ANGKA PATEN</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -150,7 +150,6 @@
       background: #7B1FA2;
     }
     
-    /* === STYLE FITUR EDIT BARU === */
     .edit-btn {
       background: #FF9800;
       color: white;
@@ -189,6 +188,54 @@
       font-size: 13px;
     }
 
+    /* ✅ BARU: Styling khusus untuk blok Shio */
+    .shio-block {
+      background: #fff8e1;
+      border-left: 4px solid #ff9800;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+    }
+    .shio-title {
+      font-weight: bold;
+      color: #e65100;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    .shio-numbers {
+      color: #2e7d32;
+      font-weight: bold;
+      font-family: monospace;
+      font-size: 14px;
+      word-break: break-all;
+    }
+
+    /* ✅ BARU: Notifikasi Popup */
+    .save-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      z-index: 9999;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: slideIn 0.3s ease-out;
+      display: none;
+    }
+    .save-notification.success { background: #4caf50; color: white; }
+    .save-notification.error { background: #f44336; color: white; }
+    .save-notification.info { background: #2196f3; color: white; }
+    @keyframes slideIn {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(400px); opacity: 0; }
+    }
+
     @media (max-width: 600px) {
       .btn-group { flex-direction: column; }
       .btn-group button { width: 100%; }
@@ -197,28 +244,11 @@
     }
   </style>
 
-  <!-- 🔥 Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-    // 🔐 Ganti ke proyek SABAR
-    const firebaseConfig = {
-      apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
-      authDomain: "sabar-2e686.firebaseapp.com",
-      databaseURL: "https://sabar-2e686-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "sabar-2e686",
-      storageBucket: "sabar-2e686.firebasestorage.app",
-      messagingSenderId: "985183830784",
-      appId: "1:985183830784:web:fae21bdb94c1f0103769e5"
-    };
-
-    if (!window.firebaseApp) {
-      const app = initializeApp(firebaseConfig);
-      window.firebaseApp = app;
-      window.db = getDatabase(app);
-    }
-  </script>
+  <!-- Firebase SDK (Compat Version) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="./config-firebase.js"></script>
 </head>
 <body>
   <h1>🔢 saringandua</h1>
@@ -232,14 +262,47 @@
   </div>
 
   <div id="panels-container">
-    <!-- Panel pertama akan dibuat oleh init -->
+    <div style="text-align: center; padding: 40px;">
+      <p>⏳ Memeriksa status login...</p>
+    </div>
   </div>
 
+  <!-- ✅ BARU: Notifikasi Popup -->
+  <div id="saveNotification" class="save-notification"></div>
+
   <script>
-    // === KONFIGURASI ===
+    // === KONFIGURASI APLIKASI ===
     const MARKETS = ["cambodia", "sidney", "china", "japan", "sgp", "taiwan", "hongkong"];
     let panelCount = 0;
     const allPanels = new Map();
+    let authReady = false;
+
+    // ✅ BARU: Pemetaan Nama Shio (Sesuai logika modulo 12 Anda)
+    const SHIO_NAMES = {
+      1: "Tikus", 2: "Kerbau", 3: "Macan", 4: "Kelinci",
+      5: "Naga", 6: "Ular", 7: "Kuda", 8: "Kambing",
+      9: "Monyet", 10: "Ayam", 11: "Anjing", 12: "Babi"
+    };
+
+    // Inisialisasi Firebase
+    const db = firebase.database();
+    const auth = firebase.auth();
+
+    // ✅ BARU: Fungsi Notifikasi
+    function showNotification(message, type = 'success') {
+      const notif = document.getElementById('saveNotification');
+      notif.textContent = message;
+      notif.className = `save-notification ${type}`;
+      notif.style.display = 'block';
+      notif.style.animation = 'slideIn 0.3s ease-out';
+      
+      setTimeout(() => {
+        notif.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => {
+          notif.style.display = 'none';
+        }, 300);
+      }, 3000);
+    }
 
     // === HELPER FUNGSI ===
     function hitungDasar2D_2digit(duaDigit) {
@@ -265,6 +328,31 @@
         nums.push(num.toString().padStart(2, '0'));
       }
       return nums;
+    }
+
+    // ✅ BARU: Mendapatkan Nama Shio dari sebuah angka 00-99
+    function getShioNameFromNumber(numStr) {
+      const num = parseInt(numStr, 10);
+      if (num === 0) return SHIO_NAMES[12]; // 00 masuk ke Shio 12 (Babi) berdasarkan logika base Anda
+      const mod = num % 12;
+      return SHIO_NAMES[mod === 0 ? 12 : mod];
+    }
+
+    // ✅ BARU: Mengelompokkan array angka per Shio
+    function groupNumbersByShio(numbersArray) {
+      const grouped = {};
+      Object.values(SHIO_NAMES).forEach(name => { grouped[name] = []; });
+      
+      numbersArray.forEach(num => {
+        const shioName = getShioNameFromNumber(num);
+        grouped[shioName].push(num);
+      });
+      
+      Object.keys(grouped).forEach(key => {
+        grouped[key].sort((a, b) => parseInt(a) - parseInt(b));
+      });
+      
+      return grouped;
     }
 
     function parseRange(rangeStr) {
@@ -340,25 +428,20 @@
 
       const twinSet = getTwinNumbers();
 
-      // B. Ekor Lemah
       const ekorList = parseDigitParts(B_input);
       const ekorLemahSet = new Set();
       ekorList.forEach(d => { for (let i = 0; i <= 9; i++) ekorLemahSet.add(i + '' + d); });
 
-      // C. Kepala Lemah
       const kepalaList = parseDigitParts(C_input);
       const kepalaLemahSet = new Set();
       kepalaList.forEach(d => { for (let i = 0; i <= 9; i++) kepalaLemahSet.add(d + '' + i); });
 
-      // D. Jarak Lemah
       const jarakLemahSet = new Set(parseRange(D_input));
 
-      // E. Shio Lemah
       const shioList = parseShioParts(E_input);
       const shioLemahSet = new Set();
       shioList.forEach(shio => { getShioNumbers(shio).forEach(num => shioLemahSet.add(num)); });
 
-      // F. Dasar Lemah
       const dasarList = parseDasarParts(F_input);
       const dasarLemahSet = new Set();
       for (let i = 0; i <= 99; i++) {
@@ -369,17 +452,14 @@
         }
       }
 
-      // G. 2D Lemah
       const duaDLemahSet = parse2DLemah(G_input);
 
-      // A. Angka Kontrol
       let versions = [];
       if (A_input.trim()) {
         versions = A_input.split('/').map(v => v.trim().replace(/\D/g, '')).filter(v => v.length > 0);
       }
       const versionDigitSets = versions.map(ver => new Set(ver.split('')));
 
-      // HITUNG HIT
       const hitCount = {};
       const allNumbers = Array.from({length: 100}, (_, i) => i.toString().padStart(2, '0'));
 
@@ -397,7 +477,6 @@
         hitCount[num] = count;
       }
 
-      // KLASIFIKASI
       const angkaBersih = [];
       const angkaKhusus = [];
       const outGroups = {};
@@ -416,7 +495,20 @@
         }
       }
 
-      return { angkaBersih, angkaKhusus, outGroups };
+      // ✅ BARU: Tambahkan pengelompokan per shio ke hasil return
+      const angkaBersihPerShio = groupNumbersByShio(angkaBersih);
+
+      return { angkaBersih, angkaKhusus, outGroups, angkaBersihPerShio };
+    }
+
+    function resetPanel(panelId) {
+      const fields = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+      fields.forEach(f => {
+        const input = document.querySelector(`#${panelId} [data-field="${f}"]`);
+        if (input) input.value = '';
+      });
+      const output = document.getElementById(`output-${panelId}`);
+      if (output) output.innerHTML = '';
     }
 
     // === RENDER PANEL ===
@@ -474,42 +566,58 @@
       `;
 
       const marketSelect = el.querySelector('.market-select');
-      marketSelect.onchange = () => {
+      marketSelect.onchange = async () => {
         const newMarket = marketSelect.value;
         const oldKey = [...allPanels.keys()].find(k => allPanels.get(k).el.id === panelId);
+        
         if (oldKey && oldKey !== newMarket) {
           const data = allPanels.get(oldKey);
           allPanels.delete(oldKey);
           allPanels.set(newMarket, data);
-          loadFromFirebase(newMarket, panelId);
+          
+          if (authReady) {
+            showNotification(`🔄 Beralih ke ${newMarket}...`, 'info');
+            resetPanel(panelId);
+            await loadFromFirebase(newMarket, panelId);
+          }
         }
       };
 
       document.getElementById('panels-container').appendChild(el);
       allPanels.set(market, { el, panelId });
-      loadFromFirebase(market, panelId);
+      
+      if (authReady) {
+        loadFromFirebase(market, panelId);
+      }
     }
 
-    // === FIREBASE: LOAD & SAVE PER MARKET (PATH: rumah9) ===
     async function loadFromFirebase(market, panelId) {
+      if (!authReady) return;
+      
       try {
-        const { ref, get } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
-        const snapshot = await get(ref(window.db, `rumah9/${market}`)); 
+        const snapshot = await db.ref(`rumah9/${market}`).once('value'); 
         const data = snapshot.val();
+        
         if (data) {
-          const fields = ['A','B','C','D','E','F','G'];
+          const fields = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
           fields.forEach(f => {
             const input = document.querySelector(`#${panelId} [data-field="${f}"]`);
             if (input) input.value = data[f] || '';
           });
+          
           setTimeout(() => {
             const inputs = getInputs(panelId);
             const result = generateSaringan(inputs);
             renderOutput(panelId, result);
+            showNotification(`✅ Data ${market} dimuat!`, 'success');
           }, 100);
+        } else {
+          console.log(`ℹ️ Tidak ada data untuk ${market}`);
+          showNotification(`ℹ️ Belum ada data untuk ${market}`, 'info');
         }
       } catch (e) {
         console.warn("Gagal load dari Firebase untuk", market, e);
+        showNotification(`❌ Gagal load data ${market}`, 'error');
       }
     }
 
@@ -526,12 +634,11 @@
       };
     }
 
-    // === RENDER OUTPUT (DENGAN FITUR EDIT) ===
+    // === RENDER OUTPUT (DIPERBARUI DENGAN FITUR PER SHIO) ===
     function renderOutput(panelId, result) {
-      const { angkaBersih, angkaKhusus, outGroups } = result;
+      const { angkaBersih, angkaKhusus, outGroups, angkaBersihPerShio } = result;
       let html = '';
 
-      // Helper untuk membuat struktur HTML hasil yang bisa diedit
       function createSectionHTML(title, displayText, sectionId) {
         return `<div class="section">
           <div class="title">${title}</div>
@@ -544,23 +651,33 @@
         </div>`;
       }
 
-      // Angka Bersih
+      // ✅ BARU: Tampilkan Hasil Per Shio di Paling Atas (Paling Penting)
+      html += `<div class="section"><div class="title" style="font-size: 15px; color: #d35400; border-bottom: 2px solid #d35400; padding-bottom: 5px; margin-bottom: 10px;">🐾 HASIL ANGKA BERSIH PER SHIO</div>`;
+      for (const [shioName, numbers] of Object.entries(angkaBersihPerShio)) {
+        if (numbers.length > 0) {
+          const text = numbers.join(' * ');
+          html += `<div class="shio-block">
+            <div class="shio-title">${shioName} <span style="font-size:12px; color:#666; font-weight:normal;">(${numbers.length} angka)</span></div>
+            <div class="shio-numbers">${text}</div>
+          </div>`;
+        }
+      }
+      html += `</div>`;
+
+      // Tampilan Flat Asli (Tetap dipertahankan agar tidak membingungkan)
       angkaBersih.sort();
       const bersihText = angkaBersih.length ? angkaBersih.join('*') : '-';
-      html += createSectionHTML(`✅ Angka Bersih (${angkaBersih.length} lines)`, bersihText + '#', 'bersih');
+      html += createSectionHTML(`✅ Angka Bersih (Flat) (${angkaBersih.length} lines)`, bersihText + '#', 'bersih');
 
-      // Angka Khusus
       angkaKhusus.sort();
       const khususText = angkaKhusus.length ? angkaKhusus.join('*') : '-';
       html += createSectionHTML(`🌟 Angka Khusus (${angkaKhusus.length} lines)`, khususText + '#', 'khusus');
 
-      // Out 1x
       const out1x = outGroups[1] || [];
       out1x.sort();
       const out1xText = out1x.length ? out1x.join('*') : '-';
       html += createSectionHTML(`⚠️ Out 1x (${out1x.length} lines)`, out1xText + '#', 'out1');
 
-      // Out 2x, 3x, ...
       const maxHit = Math.max(...Object.keys(outGroups).map(Number).filter(k => k !== 1), 0);
       for (let hit = 2; hit <= maxHit; hit++) {
         const list = outGroups[hit] || [];
@@ -570,7 +687,6 @@
         html += createSectionHTML(`⚠️ Out ${hit}x (${list.length} lines)`, text + '#', `out${hit}`);
       }
 
-      // Rangkuman
       const summaryText = bersihText + '#' + '+' + out1xText + '#' + '+' + khususText + '#';
       html += createSectionHTML(`📋 Rangkuman`, summaryText, 'rangkuman');
 
@@ -580,7 +696,6 @@
     // === HANDLER GLOBAL ===
     window.copyToClipboard = copyToClipboard;
 
-    // Handler untuk Toggle Edit
     window.toggleEdit = (boxId) => {
       const box = document.getElementById(boxId);
       if (!box) return;
@@ -589,23 +704,20 @@
       const editBtn = box.querySelector('.edit-btn');
       
       if (resDiv.style.display !== 'none') {
-        // Masuk mode edit
         editArea.value = resDiv.textContent;
         resDiv.style.display = 'none';
         editArea.style.display = 'block';
         editBtn.textContent = 'Selesai';
-        editBtn.style.background = '#4CAF50'; // Hijau
+        editBtn.style.background = '#4CAF50';
       } else {
-        // Keluar mode edit
         resDiv.textContent = editArea.value;
         resDiv.style.display = 'block';
         editArea.style.display = 'none';
         editBtn.textContent = 'Edit';
-        editBtn.style.background = '#FF9800'; // Oranye
+        editBtn.style.background = '#FF9800';
       }
     };
 
-    // Handler untuk Salin (mengambil teks asli atau teks yang sedang diedit)
     window.copyResult = (boxId) => {
       const box = document.getElementById(boxId);
       if (!box) return;
@@ -621,7 +733,6 @@
       
       copyToClipboard(textToCopy);
       
-      // Feedback visual tombol salin
       const copyBtn = box.querySelector('.copy-btn');
       const originalText = copyBtn.textContent;
       copyBtn.textContent = 'Tersalin!';
@@ -639,6 +750,11 @@
     };
 
     window.handleSave = async (panelId) => {
+      if (!authReady) {
+        showMessage(document.getElementById(`status-${panelId}`), "⚠️ Anda belum login. Silakan login dulu.", true);
+        return;
+      }
+      
       const market = document.querySelector(`#${panelId} .market-select`).value;
       const inputs = getInputs(panelId);
       const data = {
@@ -655,17 +771,22 @@
       try {
         const statusEl = document.getElementById(`status-${panelId}`);
         showMessage(statusEl, "Menyimpan...");
-        const { ref, set } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
-        await set(ref(window.db, `rumah9/${market}`), data); 
+        await db.ref(`rumah9/${market}`).set(data); 
         showMessage(statusEl, "✅ Tersimpan!", false);
+        showNotification(`✅ Data ${market} tersimpan!`, 'success');
       } catch (e) {
         console.error(e);
-        const statusEl = document.getElementById(`status-${panelId}`);
-        showMessage(statusEl, "❌ Gagal simpan", true);
+        showMessage(document.getElementById(`status-${panelId}`), "❌ Gagal simpan: " + e.message, true);
+        showNotification(`❌ Gagal simpan: ${e.message}`, 'error');
       }
     };
 
     window.handleClear = async (panelId) => {
+      if (!authReady) {
+        showMessage(document.getElementById(`status-${panelId}`), "⚠️ Anda belum login.", true);
+        return;
+      }
+      
       const fields = ['A','B','C','D','E','F','G'];
       fields.forEach(f => {
         const input = document.querySelector(`#${panelId} [data-field="${f}"]`);
@@ -675,13 +796,11 @@
 
       const market = document.querySelector(`#${panelId} .market-select`).value;
       try {
-        const { ref, remove } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
-        await remove(ref(window.db, `rumah9/${market}`)); 
-        const statusEl = document.getElementById(`status-${panelId}`);
-        showMessage(statusEl, "✅ Data di cloud dihapus", false);
+        await db.ref(`rumah9/${market}`).remove(); 
+        showMessage(document.getElementById(`status-${panelId}`), "✅ Data di cloud dihapus", false);
+        showNotification(`🗑️ Data ${market} dihapus`, 'success');
       } catch (e) {
-        const statusEl = document.getElementById(`status-${panelId}`);
-        showMessage(statusEl, "ℹ️ Input lokal dihapus", false);
+        showMessage(document.getElementById(`status-${panelId}`), "ℹ️ Input lokal dihapus", false);
       }
     };
 
@@ -696,15 +815,23 @@
       createPanel(nextMarket);
     };
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const init = () => {
-        if (window.db) {
-          createPanel('cambodia');
-        } else {
-          setTimeout(init, 100);
-        }
-      };
-      init();
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        console.log('✅ [rumah9] Firebase Auth: User login terdeteksi:', user.email);
+        authReady = true;
+        document.getElementById('panels-container').innerHTML = '';
+        createPanel('cambodia');
+      } else {
+        console.log('⚠️ [rumah9] Firebase Auth: User belum login');
+        authReady = false;
+        document.getElementById('panels-container').innerHTML = `
+          <div style="text-align: center; padding: 40px; background: #fff3cd; border-radius: 10px; border: 1px solid #ffeaa7;">
+            <h3>⚠️ Akses Ditolak</h3>
+            <p>Anda harus login terlebih dahulu untuk menggunakan fitur ini.</p>
+            <a href="pageawal.html" style="display: inline-block; padding: 10px 20px; background: #4285f4; color: white; text-decoration: none; border-radius: 6px; margin-top: 10px;">🔙 Kembali ke Login</a>
+          </div>
+        `;
+      }
     });
   </script>
 </body>
