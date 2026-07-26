@@ -94,6 +94,30 @@
       text-align: center;
       font-weight: 600;
     }
+    .ket-select {
+      background: #0c1220;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+      text-align: center;
+    }
+    .ket-select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
+    }
+    .ket-select option[value="check"] {
+      color: var(--ok);
+      font-weight: bold;
+    }
+    .ket-select option[value="cross"] {
+      color: var(--danger);
+      font-weight: bold;
+    }
     label {
       display: block;
       font-weight: 600;
@@ -247,7 +271,7 @@
       try {
         const snapshot = await database.ref(`rumah4/${market}`)
           .orderByChild("timestamp")
-          .limitToLast(50) // Ambil 50 data terakhir agar tidak berat
+          .limitToLast(50)
           .once("value");
 
         listContainer.innerHTML = '';
@@ -258,24 +282,29 @@
         }
 
         const dataObj = snapshot.val();
-        // Urutkan dari yang terbaru ke terlama
         const keys = Object.keys(dataObj).reverse();
 
         keys.forEach(key => {
           const item = dataObj[key];
           const catatan = item.catatan || '';
+          const ketValue = item.ket || '-'; // Default '-' jika belum ada
           
           const card = document.createElement('div');
           card.className = 'card result-item';
           card.innerHTML = `
             <div class="result-header">
-              <span class="result-time">🕒 ${formatDate(item.timestamp)}</span>
+              <span class="result-time"> ${formatDate(item.timestamp)}</span>
               <span class="data-pill" style="background: rgba(167, 139, 250, 0.15); color: var(--accent2);">${item.market}</span>
             </div>
             <div class="result-data">
               <div class="data-pill">4D: ${item.input4D}</div>
               <div class="data-pill">Kop-As: ${item.kopAs2D}</div>
               <div class="data-pill">Kamar: ${item.kamar.join(' & ')}</div>
+              <select class="ket-select" id="ket-${key}" onchange="saveKet('${market}', '${key}', this.value)">
+                <option value="-" ${ketValue === '-' ? 'selected' : ''}>-</option>
+                <option value="check" ${ketValue === 'check' ? 'selected' : ''}>✓</option>
+                <option value="cross" ${ketValue === 'cross' ? 'selected' : ''}>✗</option>
+              </select>
             </div>
             <label>Catatan Pribadi:</label>
             <textarea id="note-${key}" placeholder="Tulis analisis atau catatan Anda di sini...">${catatan}</textarea>
@@ -291,17 +320,32 @@
       } catch (err) {
         console.error("Gagal muat data:", err);
         listContainer.innerHTML = '<div class="empty-state error">❌ Gagal memuat data dari cloud.</div>';
-        showStatus("⚠️ Gagal memuat data.", "error");
+        showStatus("️ Gagal memuat data.", "error");
       }
     }
 
-    // Fungsi global agar bisa dipanggil dari onclick di HTML string
+    // Fungsi untuk menyimpan keterangan (ket)
+    window.saveKet = async function(market, key, value) {
+      const displayValue = value === 'check' ? '✓' : value === 'cross' ? '✗' : '-';
+      
+      try {
+        await database.ref(`rumah4/${market}/${key}`).update({
+          ket: value
+        });
+        showStatus(`✅ Keterangan disimpan: ${displayValue}`, "success");
+      } catch (err) {
+        console.error("Gagal simpan keterangan:", err);
+        showStatus("❌ Gagal menyimpan keterangan.", "error");
+      }
+    };
+
+    // Fungsi global untuk menyimpan catatan
     window.saveNote = async function(market, key) {
       const noteText = document.getElementById(`note-${key}`).value.trim();
       const btn = event.target;
       const originalText = btn.textContent;
       
-      btn.textContent = '⏳ Menyimpan...';
+      btn.textContent = ' Menyimpan...';
       btn.disabled = true;
 
       try {
@@ -318,13 +362,13 @@
       }
     };
 
+    // Fungsi global untuk menghapus entry
     window.deleteEntry = async function(market, key) {
       if (!confirm("⚠️ Yakin ingin menghapus data hasil ini secara permanen?")) return;
 
       try {
         await database.ref(`rumah4/${market}/${key}`).remove();
         showStatus("🗑️ Data berhasil dihapus.", "success");
-        // Muat ulang data setelah hapus
         if (selectedMarket) loadResults(selectedMarket);
       } catch (err) {
         console.error("Gagal hapus data:", err);
@@ -343,7 +387,6 @@
       const marketStatusEl = document.getElementById('market-status');
       const btnRefresh = document.getElementById('btnRefresh');
 
-      // Cek market aktif dari localStorage (sama seperti rumah4)
       const marketAktif = localStorage.getItem('marketAktif');
       if (marketAktif) {
         marketFilter.value = marketAktif;
@@ -375,7 +418,6 @@
         }
       });
 
-      // Tunggu autentikasi sebelum memuat data
       firebase.auth().onAuthStateChanged((user) => {
         if (user) {
           console.log('✅ [rumah18] User login terdeteksi:', user.email);
@@ -383,7 +425,7 @@
             loadResults(selectedMarket);
           }
         } else {
-          console.log('⚠️ [rumah18] User belum login!');
+          console.log('️ [rumah18] User belum login!');
           showStatus("❌ Akses ditolak. Silakan login terlebih dahulu.", "error");
         }
       });
