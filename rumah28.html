@@ -110,14 +110,6 @@
       border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
     }
-    .ket-select option[value="check"] {
-      color: var(--ok);
-      font-weight: bold;
-    }
-    .ket-select option[value="cross"] {
-      color: var(--danger);
-      font-weight: bold;
-    }
     label {
       display: block;
       font-weight: 600;
@@ -201,6 +193,20 @@
       padding: 40px 20px;
       color: var(--muted);
     }
+    .live-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: var(--ok);
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.4; }
+      100% { opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -225,10 +231,6 @@
         <option value="Hongkong">Hongkong</option>
       </select>
 
-      <div class="btn-row" style="justify-content: center; margin-bottom: 16px;">
-        <button class="btn-secondary" id="btnRefresh">🔄 Muat Ulang Data</button>
-      </div>
-
       <div id="status" class="status"></div>
     </div>
 
@@ -246,6 +248,7 @@
   <script>
     let selectedMarket = null;
     let database = null;
+    let dataListener = null; // Variable untuk menyimpan listener
 
     function showStatus(text, type = "") {
       const el = document.getElementById('status');
@@ -264,16 +267,23 @@
       });
     }
 
-    async function loadResults(market) {
+    // ✅ FUNGSI REAL-TIME LISTENER (MENGGANTIKAN loadResults)
+    function startRealtimeListener(market) {
+      // Hentikan listener sebelumnya jika ada (mencegah memory leak)
+      if (dataListener) {
+        database.ref(`rumah4/${selectedMarket}`).off('value', dataListener);
+        dataListener = null;
+      }
+
       const listContainer = document.getElementById('resultList');
-      listContainer.innerHTML = '<div class="empty-state">⏳ Memuat data...</div>';
+      listContainer.innerHTML = '<div class="empty-state">⏳ Memuat data real-time...</div>';
 
-      try {
-        const snapshot = await database.ref(`rumah4/${market}`)
-          .orderByChild("timestamp")
-          .limitToLast(50)
-          .once("value");
+      const ref = database.ref(`rumah4/${market}`)
+        .orderByChild("timestamp")
+        .limitToLast(50);
 
+      // ✅ Gunakan on('value') untuk real-time update
+      dataListener = ref.on('value', (snapshot) => {
         listContainer.innerHTML = '';
 
         if (!snapshot.exists()) {
@@ -287,13 +297,13 @@
         keys.forEach(key => {
           const item = dataObj[key];
           const catatan = item.catatan || '';
-          const ketValue = item.ket || '-'; // Default '-' jika belum ada
+          const ketValue = item.ket || '-';
           
           const card = document.createElement('div');
           card.className = 'card result-item';
           card.innerHTML = `
             <div class="result-header">
-              <span class="result-time"> ${formatDate(item.timestamp)}</span>
+              <span class="result-time">🕒 ${formatDate(item.timestamp)}</span>
               <span class="data-pill" style="background: rgba(167, 139, 250, 0.15); color: var(--accent2);">${item.market}</span>
             </div>
             <div class="result-data">
@@ -310,18 +320,18 @@
             <textarea id="note-${key}" placeholder="Tulis analisis atau catatan Anda di sini...">${catatan}</textarea>
             <div class="btn-row">
               <button class="btn-save-note" onclick="saveNote('${market}', '${key}')">💾 Simpan Catatan</button>
-              <button class="btn-delete" onclick="deleteEntry('${market}', '${key}')">🗑️ Hapus Data</button>
+              <button class="btn-delete" onclick="deleteEntry('${market}', '${key}')">️ Hapus Data</button>
             </div>
           `;
           listContainer.appendChild(card);
         });
 
-        showStatus(`✅ Berhasil memuat ${keys.length} data.`, "success");
-      } catch (err) {
-        console.error("Gagal muat data:", err);
+        showStatus(`<span class="live-indicator"></span> Live: ${keys.length} data terdeteksi`, "success");
+      }, (error) => {
+        console.error("Gagal muat data:", error);
         listContainer.innerHTML = '<div class="empty-state error">❌ Gagal memuat data dari cloud.</div>';
-        showStatus("️ Gagal memuat data.", "error");
-      }
+        showStatus("⚠️ Gagal memuat data.", "error");
+      });
     }
 
     // Fungsi untuk menyimpan keterangan (ket)
@@ -368,8 +378,8 @@
 
       try {
         await database.ref(`rumah4/${market}/${key}`).remove();
-        showStatus("🗑️ Data berhasil dihapus.", "success");
-        if (selectedMarket) loadResults(selectedMarket);
+        showStatus("️ Data berhasil dihapus.", "success");
+        // Tidak perlu load ulang manual, real-time listener akan otomatis update
       } catch (err) {
         console.error("Gagal hapus data:", err);
         showStatus("❌ Gagal menghapus data.", "error");
@@ -385,7 +395,6 @@
 
       const marketFilter = document.getElementById('marketFilter');
       const marketStatusEl = document.getElementById('market-status');
-      const btnRefresh = document.getElementById('btnRefresh');
 
       const marketAktif = localStorage.getItem('marketAktif');
       if (marketAktif) {
@@ -401,20 +410,18 @@
         selectedMarket = marketFilter.value;
         if (selectedMarket) {
           localStorage.setItem('marketAktif', selectedMarket);
-          marketStatusEl.textContent = `📊 Market aktif: ${selectedMarket}`;
+          marketStatusEl.textContent = ` Market aktif: ${selectedMarket}`;
           marketStatusEl.style.color = "var(--accent)";
-          loadResults(selectedMarket);
+          // ✅ Mulai real-time listener untuk market baru
+          startRealtimeListener(selectedMarket);
         } else {
-          marketStatusEl.textContent = "⚠️ Pilih market terlebih dahulu.";
+          marketStatusEl.textContent = "️ Pilih market terlebih dahulu.";
           document.getElementById('resultList').innerHTML = '';
-        }
-      });
-
-      btnRefresh.addEventListener('click', () => {
-        if (selectedMarket) {
-          loadResults(selectedMarket);
-        } else {
-          showStatus("⚠️ Pilih market terlebih dahulu.", "error");
+          // Hentikan listener jika tidak ada market
+          if (dataListener) {
+            database.ref(`rumah4/${selectedMarket}`).off('value', dataListener);
+            dataListener = null;
+          }
         }
       });
 
@@ -422,11 +429,18 @@
         if (user) {
           console.log('✅ [rumah18] User login terdeteksi:', user.email);
           if (selectedMarket) {
-            loadResults(selectedMarket);
+            startRealtimeListener(selectedMarket);
           }
         } else {
-          console.log('️ [rumah18] User belum login!');
+          console.log('⚠️ [rumah18] User belum login!');
           showStatus("❌ Akses ditolak. Silakan login terlebih dahulu.", "error");
+        }
+      });
+
+      // Cleanup saat user meninggalkan halaman
+      window.addEventListener('beforeunload', () => {
+        if (dataListener && selectedMarket) {
+          database.ref(`rumah4/${selectedMarket}`).off('value', dataListener);
         }
       });
     });
