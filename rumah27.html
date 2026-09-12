@@ -2,499 +2,877 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kelompok</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PERACIKAN ANGKA PATEN</title>
   <style>
-    :root {
-      --bg: #0f172a;
-      --card: #111827;
-      --text: #e5e7eb;
-      --muted: #9ca3af;
-      --accent: #22d3ee;
-      --accent2: #a78bfa;
-      --danger: #ef4444;
-      --ok: #10b981;
-    }
     body {
-      margin: 0;
-      background: radial-gradient(1200px 800px at 20% 20%, #0b1324, #0a1020 60%, #070b18);
-      color: var(--text);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      line-height: 1.6;
-      padding: 24px;
+      font-family: Arial, sans-serif;
+      padding: 15px;
+      background: #f0f8ff;
+      color: #333;
     }
-    .container {
-      max-width: 980px;
-      margin: 0 auto;
+    h1 {
+      text-align: center;
+      font-size: 1.4em;
     }
+
     .back-home {
-      text-align: right;
-      margin-bottom: 16px;
+      text-align: center;
+      margin: 12px 0;
     }
     .back-home a {
-      color: var(--accent);
+      display: inline-block;
+      padding: 10px 20px;
+      background: #4285f4;
+      color: white;
       text-decoration: none;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    h2 {
-      text-align: center;
-      font-size: 1.6rem;
-      margin: 0 0 20px;
-      letter-spacing: 0.2px;
-    }
-    #market-status {
-      text-align: center;
+      border-radius: 6px;
       font-weight: bold;
-      color: var(--accent);
-      margin-bottom: 16px;
+      font-size: 0.95em;
     }
-    .card {
-      background: linear-gradient(180deg, #121826, #0f1624);
-      border: 1px solid rgba(255,255,255,0.06);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
-      border-radius: 14px;
-      padding: 18px;
-      margin-bottom: 16px;
+    .back-home a:hover {
+      background: #3367d6;
+    }
+
+    .cloning-controls {
+      text-align: center;
+      margin: 15px 0;
+    }
+    .cloning-controls button {
+      padding: 10px 16px;
+      background: #673ab7;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .cloning-controls button:hover {
+      background: #512da8;
+    }
+
+    .saringan-panel {
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+      background: #ffffff;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .panel-title {
+      font-weight: bold;
+      font-size: 1.1em;
+      color: #2c3e50;
+    }
+    .market-select {
+      padding: 6px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 0.95em;
+    }
+
+    .form-group {
+      margin: 12px 0;
     }
     label {
       display: block;
-      font-weight: 600;
-      margin-bottom: 6px;
+      font-weight: bold;
+      margin-bottom: 4px;
     }
-    input[type="text"],
-    select {
+    input {
       width: 100%;
-      background: #0c1220;
-      color: var(--text);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 10px;
-      padding: 10px 12px;
-      font-size: 0.95rem;
-      outline: none;
-      transition: border-color 0.2s ease;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+      box-sizing: border-box;
     }
-    input[type="text"]::placeholder {
-      color: #6b7280;
-    }
-    input[type="text"]:focus,
-    select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
-    }
-    .btn-row {
+    .btn-group {
       display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 12px;
-    }
-    button {
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      color: #0b1020;
-      font-weight: 700;
-      border: none;
-      border-radius: 10px;
-      padding: 10px 14px;
-      cursor: pointer;
-      transition: transform 0.08s ease, box-shadow 0.2s ease, filter 0.2s ease;
-    }
-    button:hover { filter: brightness(1.08); }
-    button:active { transform: translateY(1px); }
-    .btn-secondary {
-      background: #0c1220;
-      color: var(--text);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-    .btn-edit { background: linear-gradient(90deg, #FF9800, #FFB347); color: #0b1020; }
-    .btn-delete { background: linear-gradient(90deg, var(--danger), #f87171); color: #0b1020; }
-    .pill {
-      display: inline-flex;
-      align-items: center;
       gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: #0c1220;
-      border: 1px solid rgba(255,255,255,0.08);
+      margin: 15px 0;
     }
-    .digit {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      border-radius: 999px;
-      background: linear-gradient(180deg, #12192a, #0d1424);
-      border: 1px solid rgba(255,255,255,0.08);
-      font-weight: 800;
-      font-size: 1.15rem;
-      color: var(--text);
+    .btn-group button {
+      flex: 1;
+      padding: 10px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
     }
-    .angka {
-      word-break: break-all;
-      font-family: monospace;
-      margin: 12px 0;
-      line-height: 1.5;
-      font-size: 0.95rem;
-    }
-    .kamar-box {
-      margin-top: 16px;
-      padding: 14px;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px;
-      background: rgba(0,0,0,0.2);
-    }
-    .kamar-title {
-      font-weight: 700;
-      margin-bottom: 10px;
-      color: var(--accent);
-    }
+    .generateBtn { background: #4CAF50; }
+    .generateBtn:hover { background: #45a049; }
+    .saveBtn { background: #2196F3; }
+    .saveBtn:hover { background: #0b7dda; }
+    .clearBtn { background: #f44336; color: white; }
+    .clearBtn:hover { background: #d32f2f; }
+
     .status {
       text-align: center;
-      min-height: 24px;
-      margin: 12px 0;
-      font-weight: 600;
+      font-size: 12px;
+      min-height: 18px;
+      margin: 5px 0;
     }
-    .success { color: var(--ok); }
-    .error { color: var(--danger); }
-    .btn-salin {
-      background: linear-gradient(90deg, var(--ok), #34d399);
-      color: #0b1020;
-      padding: 6px 12px;
-      font-size: 0.9rem;
+    .error { color: #e74c3c; }
+    .success { color: #27ae60; }
+
+    .result-box {
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 10px;
+      position: relative;
+    }
+    .result {
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 6px;
+      word-break: break-all;
+    }
+    .copy-btn {
+      background: #9C27B0;
+      color: white;
+      border: none;
+      padding: 5px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .copy-btn:hover {
+      background: #7B1FA2;
+    }
+    
+    .edit-btn {
+      background: #FF9800;
+      color: white;
+      border: none;
+      padding: 5px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-left: 5px;
+      transition: background 0.3s;
+    }
+    .edit-btn:hover {
+      background: #F57C00;
+    }
+    .edit-area {
+      width: 100%;
+      min-height: 60px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 13px;
+      box-sizing: border-box;
+      display: none;
+      margin-bottom: 5px;
+      resize: vertical;
+    }
+
+    .section {
+      margin-top: 12px;
+    }
+    .title {
+      font-weight: bold;
       margin-top: 8px;
+      color: #2c3e50;
+      font-size: 13px;
     }
-    select {
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      background-size: 16px;
-      padding-right: 36px;
+
+    /* Notifikasi Popup */
+    .save-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      z-index: 9999;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: slideIn 0.3s ease-out;
+      display: none;
+    }
+    .save-notification.success { background: #4caf50; color: white; }
+    .save-notification.error { background: #f44336; color: white; }
+    .save-notification.info { background: #2196f3; color: white; }
+    @keyframes slideIn {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(400px); opacity: 0; }
+    }
+
+    @media (max-width: 600px) {
+      .btn-group { flex-direction: column; }
+      .btn-group button { width: 100%; }
+      .panel-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .edit-area { min-height: 80px; }
     }
   </style>
+
+  <!-- Firebase SDK (Compat Version) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="./config-firebase.js"></script>
 </head>
 <body>
-  <div class="container">
-    <div class="back-home">
-      <a href="index.html">← Kembali ke Beranda</a>
-    </div>
+  <h1>🔢 saringandua</h1>
 
-    <h2>Kelompok</h2>
-    <div id="market-status"></div>
+  <div class="back-home">
+    <a href="index.html">🔙 Kembali ke Beranda</a>
+  </div>
 
-    <div class="card">
-      <div style="margin-bottom: 16px;">
-        <label for="market">Pilih Market</label>
-        <select id="market">
-          <option value="">-- Pilih Market --</option>
-          <option value="Cambodia">Cambodia</option>
-          <option value="Sidney">Sidney</option>
-          <option value="China">China</option>
-          <option value="Japan">Japan</option>
-          <option value="SGP">SGP</option>
-          <option value="Taiwan">Taiwan</option>
-          <option value="Hongkong">Hongkong</option>
-        </select>
-      </div>
+  <div class="cloning-controls">
+    <button id="cloneBtn">➕ Kloning Saringan</button>
+  </div>
 
-      <div style="margin-bottom: 16px;">
-        <label for="input4D">Input 4D (contoh: 1234)</label>
-        <input type="text" id="input4D" placeholder="Contoh: 1234" maxlength="4" />
-      </div>
-
-      <div class="btn-row">
-        <button id="btnCari">Cari</button>
-        <button class="btn-secondary" id="btnEdit">Edit</button>
-        <button id="btnSimpan">Simpan ke Cloud</button>
-        <button class="btn-delete" id="btnHapus">Hapus dari Cloud</button>
-        <button id="btnMuatDariRumah1" class="btn-secondary">Muat dari rumah1</button>
-      </div>
-
-      <div id="status" class="status"></div>
-    </div>
-
-    <div id="hasil" class="card" style="display: none;">
-      <h3>Hasil Kelompok</h3>
-      <div id="hasilContent"></div>
+  <div id="panels-container">
+    <div style="text-align: center; padding: 40px;">
+      <p>⏳ Memeriksa status login...</p>
     </div>
   </div>
 
-  <!-- Firebase SDK - DIPERBAIKI: HAPUS SPASI -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-  <script src="./config-firebase.js"></script>
+  <div id="saveNotification" class="save-notification"></div>
 
   <script>
-    // === DATA STATIS ===
-    const pasanganKamar = {
-      "00":[1,2],"11":[1,3],"22":[2,3],"33":[1,2],"44":[1,3],"55":[2,3],"66":[1,2],"77":[1,3],"88":[2,3],"99":[1,2],
-      "01":[1,2],"10":[2,3],"02":[1,3],"20":[1,2],"03":[2,3],"30":[1,3],"04":[1,2],"40":[1,3],"05":[2,3],"50":[1,2],
-      "06":[1,3],"60":[2,3],"07":[1,2],"70":[2,3],"08":[2,3],"80":[1,3],"09":[1,3],"90":[1,2],"12":[1,3],"21":[2,3],
-      "13":[2,3],"31":[1,2],"14":[1,2],"41":[2,3],"15":[1,3],"51":[1,2],"16":[2,3],"61":[1,3],"17":[1,2],"71":[1,3],
-      "18":[1,3],"81":[2,3],"19":[2,3],"91":[1,2],"23":[1,2],"32":[1,3],"24":[2,3],"42":[1,2],"25":[1,3],"52":[2,3],
-      "26":[1,2],"62":[1,3],"27":[2,3],"72":[1,2],"28":[1,3],"82":[2,3],"29":[1,2],"92":[1,3],"34":[2,3],"43":[1,2],
-      "35":[1,3],"53":[2,3],"36":[1,2],"63":[1,3],"37":[2,3],"73":[1,2],"38":[1,3],"83":[2,3],"39":[1,2],"93":[1,3],
-      "45":[2,3],"54":[1,3],"46":[1,2],"64":[2,3],"47":[1,3],"74":[1,2],"48":[2,3],"84":[1,3],"49":[1,2],"94":[2,3],
-      "56":[1,3],"65":[1,2],"57":[2,3],"75":[1,3],"58":[1,2],"85":[2,3],"59":[1,3],"95":[1,2],"67":[2,3],"76":[1,3],
-      "68":[1,2],"86":[1,3],"69":[1,3],"96":[2,3],"78":[2,3],"87":[1,2],"79":[1,3],"97":[2,3],"89":[1,2],"98":[1,3]
+    // === KONFIGURASI APLIKASI ===
+    const MARKETS = ["cambodia", "sidney", "china", "japan", "sgp", "taiwan", "hongkong"];
+    let panelCount = 0;
+    const allPanels = new Map();
+    let authReady = false;
+
+    const SHIO_NAMES = {
+      1: "Tikus", 2: "Kerbau", 3: "Macan", 4: "Kelinci",
+      5: "Naga", 6: "Ular", 7: "Kuda", 8: "Kambing",
+      9: "Monyet", 10: "Ayam", 11: "Anjing", 12: "Babi"
     };
 
-    const shioKeKamar = {1:1,4:1,7:1,10:1, 2:2,5:2,8:2,11:2, 3:3,6:3,9:3,12:3};
-    const kamar2D = {1:[],2:[],3:[]};
-    for (let n = 0; n <= 99; n++) {
-      const num = String(n).padStart(2, '0');
-      const shio = (n % 12 === 0) ? 12 : (n % 12);
-      kamar2D[shioKeKamar[shio]].push(num);
+    const db = firebase.database();
+    const auth = firebase.auth();
+
+    function showNotification(message, type = 'success') {
+      const notif = document.getElementById('saveNotification');
+      notif.textContent = message;
+      notif.className = `save-notification ${type}`;
+      notif.style.display = 'block';
+      notif.style.animation = 'slideIn 0.3s ease-out';
+      
+      setTimeout(() => {
+        notif.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => {
+          notif.style.display = 'none';
+        }, 300);
+      }, 3000);
     }
 
-    // === STATE ===
-    let currentData = null;
-    let currentKey = null;
-    let selectedMarket = null;
-
-    // === FUNGSI BANTUAN ===
-    function showStatus(text, type = "") {
-      const el = document.getElementById('status');
-      el.textContent = text;
-      el.className = "status " + type;
-    }
-
-    function salinTeks(teks) {
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(teks).then(() => {
-          showStatus("✅ Disalin ke clipboard!", "success");
-        }).catch(() => {
-          showStatus("❌ Gagal menyalin.", "error");
-        });
-      } else {
-        showStatus("❌ Clipboard tidak didukung.", "error");
+    // === HELPER FUNGSI ===
+    function hitungDasar2D_2digit(duaDigit) {
+      const a = parseInt(duaDigit[0], 10);
+      const b = parseInt(duaDigit[1], 10);
+      let total = a + b;
+      while (total >= 10) {
+        total = String(total).split('').reduce((sum, d) => sum + parseInt(d), 0);
       }
+      return total === 0 ? 9 : total;
     }
 
-    function renderHasil(kopAs2D, kamar) {
-      const [k1, k2] = kamar;
-      const shioText = (k) => k === 1 ? "1,4,7,10" : k === 2 ? "2,5,8,11" : "3,6,9,12";
-      const html = `
-        <div><strong>Kop-As: ${kopAs2D} → Pasangan Kamar: ${k1}, ${k2}</strong></div>
-        <div class="kamar-box">
-          <div class="kamar-title">Kamar ${k1}: shio ${shioText(k1)}</div>
-          <div class="angka" id="angka1">${kamar2D[k1].join('*')}</div>
-          <button class="btn-salin" data-copy="${kamar2D[k1].join('*')}">Salin</button>
-        </div>
-        <div class="kamar-box">
-          <div class="kamar-title">Kamar ${k2}: shio ${shioText(k2)}</div>
-          <div class="angka" id="angka2">${kamar2D[k2].join('*')}</div>
-          <button class="btn-salin" data-copy="${kamar2D[k2].join('*')}">Salin</button>
-        </div>
-      `;
-      document.getElementById('hasilContent').innerHTML = html;
-      document.getElementById('hasil').style.display = 'block';
+    function getTwinNumbers() {
+      return new Set(["00","11","22","33","44","55","66","77","88","99"]);
+    }
 
-      document.querySelectorAll('.btn-salin').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const teks = e.target.getAttribute('data-copy');
-          salinTeks(teks);
-        });
+    function getShioNumbers(shio) {
+      const nums = [];
+      const base = shio === 12 ? 0 : shio;
+      for (let i = 0; i < 9; i++) {
+        let num = base + i * 12;
+        if (num > 99) break;
+        nums.push(num.toString().padStart(2, '0'));
+      }
+      return nums;
+    }
+
+    function getShioNameFromNumber(numStr) {
+      const num = parseInt(numStr, 10);
+      if (num === 0) return SHIO_NAMES[12]; 
+      const mod = num % 12;
+      return SHIO_NAMES[mod === 0 ? 12 : mod];
+    }
+
+    function groupNumbersByShio(numbersArray) {
+      const grouped = {};
+      Object.values(SHIO_NAMES).forEach(name => { grouped[name] = []; });
+      
+      numbersArray.forEach(num => {
+        const shioName = getShioNameFromNumber(num);
+        grouped[shioName].push(num);
       });
+      
+      Object.keys(grouped).forEach(key => {
+        grouped[key].sort((a, b) => parseInt(a) - parseInt(b));
+      });
+      
+      return grouped;
     }
 
-    // === MUAT 1 RES TERAKHIR DARI rumah1 ===
-    async function loadLatestResFromRumah1(database, market) {
-      if (!market) return;
-      try {
-        const snapshot = await database.ref(`rumah1/${market}/data`).once('value');
-        const data = snapshot.val();
-        if (!Array.isArray(data) || data.length < 1) {
-          showStatus("ℹ️ Tidak ada data di rumah1.", "error");
-          return;
+    function parseRange(rangeStr) {
+      const clean = rangeStr.trim();
+      if (!clean.includes('-')) return [];
+      const [start, end] = clean.split('-').map(Number);
+      if (isNaN(start) || isNaN(end)) return [];
+      const result = [];
+      for (let i = Math.max(0, start); i <= Math.min(99, end); i++) {
+        result.push(i.toString().padStart(2, '0'));
+      }
+      return result;
+    }
+
+    function parseShioParts(input) {
+      if (!input.trim()) return [];
+      return input.split('/').map(s => s.trim().replace(/\D/g, ''))
+                   .filter(s => s !== '')
+                   .map(s => parseInt(s, 10))
+                   .filter(n => !isNaN(n) && n >= 1 && n <= 12);
+    }
+
+    function parseDigitParts(input) {
+      if (!input.trim()) return [];
+      return input.split('/').map(s => s.trim().replace(/\D/g, ''))
+                   .filter(s => s !== '')
+                   .join('')
+                   .split('')
+                   .filter(d => d >= '0' && d <= '9');
+    }
+
+    function parseDasarParts(input) {
+      if (!input.trim()) return [];
+      return input.split('/').map(s => s.trim().replace(/\D/g, ''))
+                   .filter(s => s !== '')
+                   .map(s => parseInt(s, 10))
+                   .filter(n => !isNaN(n) && n >= 1 && n <= 9);
+    }
+
+    function parse2DLemah(input) {
+      if (!input.trim()) return new Set();
+      const items = input.split('*').map(s => s.trim());
+      const valid2D = [];
+      for (const item of items) {
+        if (/^\d{2}$/.test(item)) {
+          valid2D.push(item);
         }
-        const validRows = data.filter(row => row && row[1] && /^\d{4}$/.test(row[1]));
-        if (validRows.length < 1) {
-          showStatus("ℹ️ Tidak ada result valid di rumah1.", "error");
-          return;
+      }
+      return new Set(valid2D);
+    }
+
+    function copyToClipboard(text) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
+
+    function showMessage(el, text, isError = false) {
+      el.textContent = text;
+      el.className = isError ? 'status error' : 'status success';
+      setTimeout(() => { if (el.textContent === text) el.textContent = ''; }, 3000);
+    }
+
+    // === LOGIKA INTI: GENERATE PER PANEL ===
+    function generateSaringan(inputs) {
+      const {
+        A_input, B_input, C_input, D_input, E_input, F_input, G_input
+      } = inputs;
+
+      const twinSet = getTwinNumbers();
+
+      const ekorList = parseDigitParts(B_input);
+      const ekorLemahSet = new Set();
+      ekorList.forEach(d => { for (let i = 0; i <= 9; i++) ekorLemahSet.add(i + '' + d); });
+
+      const kepalaList = parseDigitParts(C_input);
+      const kepalaLemahSet = new Set();
+      kepalaList.forEach(d => { for (let i = 0; i <= 9; i++) kepalaLemahSet.add(d + '' + i); });
+
+      const jarakLemahSet = new Set(parseRange(D_input));
+
+      const shioList = parseShioParts(E_input);
+      const shioLemahSet = new Set();
+      shioList.forEach(shio => { getShioNumbers(shio).forEach(num => shioLemahSet.add(num)); });
+
+      const dasarList = parseDasarParts(F_input);
+      const dasarLemahSet = new Set();
+      for (let i = 0; i <= 99; i++) {
+        const num = i.toString().padStart(2, '0');
+        const dasar = hitungDasar2D_2digit(num);
+        if (dasarList.includes(dasar)) {
+          dasarLemahSet.add(num);
         }
-        // ✅ REVISI: Ambil index 0 karena data terbaru sekarang berada di awal array
-        const lastRes = validRows[0][1];
-        document.getElementById('input4D').value = lastRes;
-        showStatus("✅ Result terakhir dari rumah1 dimuat.", "success");
-      } catch (err) {
-        console.error("Gagal muat dari rumah1:", err);
-        showStatus("⚠️ Gagal muat data dari rumah1.", "error");
+      }
+
+      const duaDLemahSet = parse2DLemah(G_input);
+
+      let versions = [];
+      if (A_input.trim()) {
+        versions = A_input.split('/').map(v => v.trim().replace(/\D/g, '')).filter(v => v.length > 0);
+      }
+      const versionDigitSets = versions.map(ver => new Set(ver.split('')));
+
+      const hitCount = {};
+      const allNumbers = Array.from({length: 100}, (_, i) => i.toString().padStart(2, '0'));
+
+      for (const num of allNumbers) {
+        let count = 0;
+        if (ekorLemahSet.has(num)) count++;
+        if (kepalaLemahSet.has(num)) count++;
+        if (jarakLemahSet.has(num)) count++;
+        if (shioLemahSet.has(num)) count++;
+        if (dasarLemahSet.has(num)) count++;
+        if (duaDLemahSet.has(num)) count++;
+        for (const digitSet of versionDigitSets) {
+          if (!digitSet.has(num[0]) && !digitSet.has(num[1])) count++;
+        }
+        hitCount[num] = count;
+      }
+
+      const angkaBersih = [];
+      const angkaKhusus = [];
+      const outGroups = {};
+      
+      // ✅ Tambahan: Inisialisasi pengelompokan out per Shio
+      const shioOutGroups = {};
+      Object.values(SHIO_NAMES).forEach(name => { shioOutGroups[name] = {}; });
+
+      for (const num of allNumbers) {
+        const count = hitCount[num];
+        if (twinSet.has(num)) {
+          angkaKhusus.push(num);
+        } else {
+          if (count === 0) {
+            angkaBersih.push(num);
+          } else {
+            if (!outGroups[count]) outGroups[count] = [];
+            outGroups[count].push(num);
+            
+            // ✅ Masukkan ke pengelompokan per Shio
+            const shioName = getShioNameFromNumber(num);
+            if (!shioOutGroups[shioName][count]) {
+              shioOutGroups[shioName][count] = [];
+            }
+            shioOutGroups[shioName][count].push(num);
+          }
+        }
+      }
+
+      const angkaBersihPerShio = groupNumbersByShio(angkaBersih);
+
+      // ✅ Kembalikan shioOutGroups agar bisa dirender di tabel
+      return { angkaBersih, angkaKhusus, outGroups, angkaBersihPerShio, shioOutGroups };
+    }
+
+    function resetPanel(panelId) {
+      const fields = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+      fields.forEach(f => {
+        const input = document.querySelector(`#${panelId} [data-field="${f}"]`);
+        if (input) input.value = '';
+      });
+      const output = document.getElementById(`output-${panelId}`);
+      if (output) output.innerHTML = '';
+    }
+
+    // === RENDER PANEL ===
+    function createPanel(market = 'cambodia') {
+      panelCount++;
+      const panelId = `panel-${panelCount}`;
+      const el = document.createElement('div');
+      el.className = 'saringan-panel';
+      el.id = panelId;
+
+      el.innerHTML = `
+        <div class="panel-header">
+          <div class="panel-title">Saringan ${panelCount}</div>
+          <select class="market-select">
+            ${MARKETS.map(m => `<option value="${m}" ${m === market ? 'selected' : ''}>${m.charAt(0).toUpperCase() + m.slice(1)}</option>`).join('')}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>A. Angka Kontrol (pisah versi dengan /)</label>
+          <input type="text" data-field="A" placeholder="Contoh: 0123456 atau 1234/789/1780">
+        </div>
+        <div class="form-group">
+          <label>B. Ekor Lemah (pisah dengan / jika >1)</label>
+          <input type="text" data-field="B" placeholder="Contoh: 6 atau 6/7">
+        </div>
+        <div class="form-group">
+          <label>C. Kepala Lemah (pisah dengan / jika >1)</label>
+          <input type="text" data-field="C" placeholder="Contoh: 5 atau 2/5">
+        </div>
+        <div class="form-group">
+          <label>D. Jarak Lemah</label>
+          <input type="text" data-field="D" placeholder="Contoh: 26-58">
+        </div>
+        <div class="form-group">
+          <label>E. Shio Lemah (pisah dengan / jika >1)</label>
+          <input type="text" data-field="E" placeholder="Contoh: 8 atau 8/9">
+        </div>
+        <div class="form-group">
+          <label>F. Dasar Lemah (pisah dengan / jika >1)</label>
+          <input type="text" data-field="F" placeholder="Contoh: 2 atau 2/5/7">
+        </div>
+        <div class="form-group">
+          <label>G. 2D Lemah (pisah dengan *)</label>
+          <input type="text" data-field="G" placeholder="Contoh: 35*27*59">
+        </div>
+
+        <div class="btn-group">
+          <button class="generateBtn" onclick="window.handleGenerate('${panelId}')">Generate</button>
+          <button class="saveBtn" onclick="window.handleSave('${panelId}')">Simpan</button>
+          <button class="clearBtn" onclick="window.handleClear('${panelId}')">Hapus</button>
+        </div>
+        <div class="status" id="status-${panelId}"></div>
+        <div id="output-${panelId}"></div>
+      `;
+
+      const marketSelect = el.querySelector('.market-select');
+      marketSelect.onchange = async () => {
+        const newMarket = marketSelect.value;
+        const oldKey = [...allPanels.keys()].find(k => allPanels.get(k).el.id === panelId);
+        
+        if (oldKey && oldKey !== newMarket) {
+          const data = allPanels.get(oldKey);
+          allPanels.delete(oldKey);
+          allPanels.set(newMarket, data);
+          
+          if (authReady) {
+            showNotification(`🔄 Beralih ke ${newMarket}...`, 'info');
+            resetPanel(panelId);
+            await loadFromFirebase(newMarket, panelId);
+          }
+        }
+      };
+
+      document.getElementById('panels-container').appendChild(el);
+      allPanels.set(market, { el, panelId });
+      
+      if (authReady) {
+        loadFromFirebase(market, panelId);
       }
     }
 
-    // === INISIALISASI DOM ===
-    document.addEventListener('DOMContentLoaded', () => {
-      if (typeof firebase === 'undefined' || !firebase.apps.length) {
-        showStatus("⚠️ Firebase tidak dimuat.", "error");
+    async function loadFromFirebase(market, panelId) {
+      if (!authReady) return;
+      
+      try {
+        const snapshot = await db.ref(`rumah9/${market}`).once('value'); 
+        const data = snapshot.val();
+        
+        if (data) {
+          const fields = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+          fields.forEach(f => {
+            const input = document.querySelector(`#${panelId} [data-field="${f}"]`);
+            if (input) input.value = data[f] || '';
+          });
+          
+          setTimeout(() => {
+            const inputs = getInputs(panelId);
+            const result = generateSaringan(inputs);
+            renderOutput(panelId, result);
+            showNotification(`✅ Data ${market} dimuat!`, 'success');
+          }, 100);
+        } else {
+          console.log(`ℹ️ Tidak ada data untuk ${market}`);
+          showNotification(`ℹ️ Belum ada data untuk ${market}`, 'info');
+        }
+      } catch (e) {
+        console.warn("Gagal load dari Firebase untuk", market, e);
+        showNotification(` Gagal load data ${market}`, 'error');
+      }
+    }
+
+    function getInputs(panelId) {
+      const getVal = (field) => document.querySelector(`#${panelId} [data-field="${field}"]`)?.value || '';
+      return {
+        A_input: getVal('A'),
+        B_input: getVal('B'),
+        C_input: getVal('C'),
+        D_input: getVal('D'),
+        E_input: getVal('E'),
+        F_input: getVal('F'),
+        G_input: getVal('G')
+      };
+    }
+
+    // === RENDER OUTPUT ===
+    function renderOutput(panelId, result) {
+      const { angkaBersih, angkaKhusus, outGroups, angkaBersihPerShio, shioOutGroups } = result;
+      let html = '';
+
+      // Helper untuk membuat sel tabel dengan fitur Edit/Salin
+      function createCellHTML(suffix, text) {
+        const boxId = `box-${panelId}-${suffix}`;
+        return `<td style="padding: 4px; vertical-align: top; border: 1px solid #ddd;">
+          <div class="result-box" id="${boxId}" style="margin:0; padding:2px; background:transparent; box-shadow:none; border:none;">
+            <textarea class="edit-area" style="min-height:30px; font-size:11px;">${text}</textarea>
+            <div class="result" style="font-size:11px; margin-bottom:2px; word-break: break-all;">${text}</div>
+            <div style="display:flex; gap:2px; justify-content:center; margin-top:2px;">
+              <button class="copy-btn" style="padding:2px 4px; font-size:10px;" onclick="window.copyResult('${boxId}')">Salin</button>
+              <button class="edit-btn" style="padding:2px 4px; font-size:10px;" onclick="window.toggleEdit('${boxId}')">Edit</button>
+            </div>
+          </div>
+        </td>`;
+      }
+
+      // ==========================================
+      // ✅ BAGIAN TABEL SHIO (PENGGANTI TAMPILAN LAMA)
+      // ==========================================
+      const shioOrder = Object.values(SHIO_NAMES); // Urutan: Tikus, Kerbau, ..., Babi
+      
+      html += `<div class="section">
+        <div class="title" style="font-size: 15px; color: #d35400; border-bottom: 2px solid #d35400; padding-bottom: 5px; margin-bottom: 10px;"> HASIL ANGKA BERSIH PER SHIO</div>
+        <div style="overflow-x: auto; margin-bottom: 20px;">
+          <table border="1" style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: center; min-width: 800px;">
+            <thead>
+              <tr>
+                <th style="background:#f0f0f0; padding: 6px; border:1px solid #ccc;">Shio</th>
+                <th style="background:#e8f5e9; padding: 6px; border:1px solid #ccc;">Bersih</th>
+                <th style="background:#fff3e0; padding: 6px; border:1px solid #ccc;">1x out</th>
+                <th style="background:#fff3e0; padding: 6px; border:1px solid #ccc;">2x out</th>
+                <th style="background:#fff3e0; padding: 6px; border:1px solid #ccc;">3x out</th>
+                <th style="background:#fff3e0; padding: 6px; border:1px solid #ccc;">4x out</th>
+                <th style="background:#fff3e0; padding: 6px; border:1px solid #ccc;">5x out</th>
+                <th style="background:#fff3e0; padding: 6px; border:1px solid #ccc;">6x out</th>
+                <th style="background:#fff3e0; padding: 6px; border:1px solid #ccc;">7x out</th>
+                <th style="background:#fff3e0; padding: 6px; border:1px solid #ccc;">8x out</th>
+                <th style="background:#fff3e0; padding: 6px; border:1px solid #ccc;">9x out</th>
+                <th style="background:#fff3e0; padding: 6px; border:1px solid #ccc;">10x out</th>
+              </tr>
+            </thead>
+            <tbody>`;
+
+      shioOrder.forEach((shioName, index) => {
+        html += `<tr>`;
+        // Kolom Nama Shio
+        html += `<td style="font-weight:bold; padding: 6px; background:#fff8e1; border:1px solid #ccc;">${index + 1}. ${shioName}</td>`;
+
+        // Kolom Bersih (0x out)
+        const bersihNums = angkaBersihPerShio[shioName] || [];
+        const bersihText = bersihNums.length ? bersihNums.join('*') + '#' : '-';
+        html += createCellHTML(`shio-${index+1}-bersih`, bersihText);
+
+        // Kolom 1x out sampai 10x out
+        for (let hit = 1; hit <= 10; hit++) {
+          const outNums = (shioOutGroups[shioName] && shioOutGroups[shioName][hit]) || [];
+          outNums.sort((a, b) => parseInt(a) - parseInt(b));
+          const outText = outNums.length ? outNums.join('*') + '#' : '-';
+          html += createCellHTML(`shio-${index+1}-out${hit}`, outText);
+        }
+
+        html += `</tr>`;
+      });
+
+      html += `</tbody></table>
+        </div>
+      </div>`;
+      // ==========================================
+      // AKHIR BAGIAN TABEL SHIO
+      // ==========================================
+
+      // Tampilan Flat Asli (Tetap Sama)
+      function createSectionHTML(title, displayText, sectionId) {
+        return `<div class="section">
+          <div class="title">${title}</div>
+          <div class="result-box" id="box-${panelId}-${sectionId}">
+            <textarea class="edit-area">${displayText}</textarea>
+            <div class="result">${displayText}</div>
+            <button class="copy-btn" onclick="window.copyResult('box-${panelId}-${sectionId}')">Salin</button>
+            <button class="edit-btn" onclick="window.toggleEdit('box-${panelId}-${sectionId}')">Edit</button>
+          </div>
+        </div>`;
+      }
+
+      angkaBersih.sort();
+      const bersihText = angkaBersih.length ? angkaBersih.join('*') : '-';
+      html += createSectionHTML(`✅ Angka Bersih (Flat) (${angkaBersih.length} lines)`, bersihText + '#', 'bersih');
+
+      angkaKhusus.sort();
+      const khususText = angkaKhusus.length ? angkaKhusus.join('*') : '-';
+      html += createSectionHTML(`🌟 Angka Khusus (${angkaKhusus.length} lines)`, khususText + '#', 'khusus');
+
+      const out1x = outGroups[1] || [];
+      out1x.sort();
+      const out1xText = out1x.length ? out1x.join('*') : '-';
+      html += createSectionHTML(`️ Out 1x (${out1x.length} lines)`, out1xText + '#', 'out1');
+
+      const maxHit = Math.max(...Object.keys(outGroups).map(Number).filter(k => k !== 1), 0);
+      for (let hit = 2; hit <= maxHit; hit++) {
+        const list = outGroups[hit] || [];
+        if (list.length === 0) continue;
+        list.sort();
+        const text = list.join('*');
+        html += createSectionHTML(`⚠️ Out ${hit}x (${list.length} lines)`, text + '#', `out${hit}`);
+      }
+
+      const summaryText = bersihText + '#' + '+' + out1xText + '#' + '+' + khususText + '#';
+      html += createSectionHTML(`📋 Rangkuman`, summaryText, 'rangkuman');
+
+      document.getElementById(`output-${panelId}`).innerHTML = html;
+    }
+
+    // === HANDLER GLOBAL ===
+    window.copyToClipboard = copyToClipboard;
+
+    window.toggleEdit = (boxId) => {
+      const box = document.getElementById(boxId);
+      if (!box) return;
+      const resDiv = box.querySelector('.result');
+      const editArea = box.querySelector('.edit-area');
+      const editBtn = box.querySelector('.edit-btn');
+      
+      if (resDiv.style.display !== 'none') {
+        editArea.value = resDiv.textContent;
+        resDiv.style.display = 'none';
+        editArea.style.display = 'block';
+        editBtn.textContent = 'Selesai';
+        editBtn.style.background = '#4CAF50';
+      } else {
+        resDiv.textContent = editArea.value;
+        resDiv.style.display = 'block';
+        editArea.style.display = 'none';
+        editBtn.textContent = 'Edit';
+        editBtn.style.background = '#FF9800';
+      }
+    };
+
+    window.copyResult = (boxId) => {
+      const box = document.getElementById(boxId);
+      if (!box) return;
+      const resDiv = box.querySelector('.result');
+      const editArea = box.querySelector('.edit-area');
+      let textToCopy = '';
+      
+      if (editArea.style.display === 'block') {
+        textToCopy = editArea.value;
+      } else {
+        textToCopy = resDiv.textContent;
+      }
+      
+      copyToClipboard(textToCopy);
+      
+      const copyBtn = box.querySelector('.copy-btn');
+      const originalText = copyBtn.textContent;
+      copyBtn.textContent = 'Tersalin!';
+      copyBtn.style.background = '#27ae60';
+      setTimeout(() => {
+        copyBtn.textContent = originalText;
+        copyBtn.style.background = '#9C27B0';
+      }, 1500);
+    };
+
+    window.handleGenerate = (panelId) => {
+      const inputs = getInputs(panelId);
+      const result = generateSaringan(inputs);
+      renderOutput(panelId, result);
+    };
+
+    window.handleSave = async (panelId) => {
+      if (!authReady) {
+        showMessage(document.getElementById(`status-${panelId}`), "️ Anda belum login. Silakan login dulu.", true);
         return;
       }
-      const database = firebase.database();
+      
+      const market = document.querySelector(`#${panelId} .market-select`).value;
+      const inputs = getInputs(panelId);
+      const data = {
+        A: inputs.A_input,
+        B: inputs.B_input,
+        C: inputs.C_input,
+        D: inputs.D_input,
+        E: inputs.E_input,
+        F: inputs.F_input,
+        G: inputs.G_input,
+        timestamp: Date.now()
+      };
 
-      const marketSelect = document.getElementById('market');
-      const input4D = document.getElementById('input4D');
-      const btnCari = document.getElementById('btnCari');
-      const btnEdit = document.getElementById('btnEdit');
-      const btnSimpan = document.getElementById('btnSimpan');
-      const btnHapus = document.getElementById('btnHapus');
-      const btnMuatDariRumah1 = document.getElementById('btnMuatDariRumah1');
-      const marketStatusEl = document.getElementById('market-status');
-
-      input4D.addEventListener('input', () => {
-        input4D.value = input4D.value.replace(/[^0-9]/g, '').slice(0, 4);
-      });
-
-      // Baca market aktif dari localStorage
-      const marketAktif = localStorage.getItem('marketAktif');
-      if (marketAktif) {
-        marketSelect.value = marketAktif;
-        selectedMarket = marketAktif;
-        marketStatusEl.textContent = `📊 Market aktif: ${marketAktif}`;
-      } else {
-        marketStatusEl.textContent = "⚠️ Tidak ada market aktif. Kembali ke beranda untuk pilih.";
-        marketStatusEl.style.color = "#ef4444";
+      try {
+        const statusEl = document.getElementById(`status-${panelId}`);
+        showMessage(statusEl, "Menyimpan...");
+        await db.ref(`rumah9/${market}`).set(data); 
+        showMessage(statusEl, "✅ Tersimpan!", false);
+        showNotification(`✅ Data ${market} tersimpan!`, 'success');
+      } catch (e) {
+        console.error(e);
+        showMessage(document.getElementById(`status-${panelId}`), "❌ Gagal simpan: " + e.message, true);
+        showNotification(`❌ Gagal simpan: ${e.message}`, 'error');
       }
+    };
 
-      marketSelect.addEventListener('change', () => {
-        selectedMarket = marketSelect.value;
-        if (selectedMarket) {
-          localStorage.setItem('marketAktif', selectedMarket);
-          marketStatusEl.textContent = `📊 Market aktif: ${selectedMarket}`;
-          loadLatestData(database, selectedMarket);
-        } else {
-          marketStatusEl.textContent = "⚠️ Pilih market terlebih dahulu.";
-          document.getElementById('hasil').style.display = 'none';
-          currentKey = null;
-          currentData = null;
-        }
+    window.handleClear = async (panelId) => {
+      if (!authReady) {
+        showMessage(document.getElementById(`status-${panelId}`), "️ Anda belum login.", true);
+        return;
+      }
+      
+      const fields = ['A','B','C','D','E','F','G'];
+      fields.forEach(f => {
+        const input = document.querySelector(`#${panelId} [data-field="${f}"]`);
+        if (input) input.value = '';
       });
+      document.getElementById(`output-${panelId}`).innerHTML = '';
 
-      // Muat dari rumah1
-      btnMuatDariRumah1.addEventListener('click', () => {
-        if (!selectedMarket) {
-          showStatus("⚠️ Pilih market terlebih dahulu.", "error");
-          return;
-        }
-        loadLatestResFromRumah1(database, selectedMarket);
-      });
+      const market = document.querySelector(`#${panelId} .market-select`).value;
+      try {
+        await db.ref(`rumah9/${market}`).remove(); 
+        showMessage(document.getElementById(`status-${panelId}`), "✅ Data di cloud dihapus", false);
+        showNotification(`️ Data ${market} dihapus`, 'success');
+      } catch (e) {
+        showMessage(document.getElementById(`status-${panelId}`), "ℹ️ Input lokal dihapus", false);
+      }
+    };
 
-      btnCari.addEventListener('click', () => {
-        const market = marketSelect.value;
-        if (!market) {
-          showStatus("⚠️ Pilih market terlebih dahulu.", "error");
-          return;
-        }
-        const raw = input4D.value.trim();
-        if (raw.length !== 4 || !/^\d{4}$/.test(raw)) {
-          showStatus("⚠️ Masukkan 4 digit angka!", "error");
-          return;
-        }
+    // === INIT ===
+    document.getElementById('cloneBtn').onclick = () => {
+      if (allPanels.size >= MARKETS.length) {
+        alert("Maksimal jumlah market telah tercapai.");
+        return;
+      }
+      const used = new Set(allPanels.keys());
+      const nextMarket = MARKETS.find(m => !used.has(m)) || 'cambodia';
+      createPanel(nextMarket);
+    };
 
-        const as = raw[0];
-        const kop = raw[1];
-        const kopAs2D = kop + as;
-
-        if (!pasanganKamar[kopAs2D]) {
-          showStatus("❌ Kombinasi kop-as tidak dikenali.", "error");
-          return;
-        }
-
-        const kamar = pasanganKamar[kopAs2D];
-        renderHasil(kopAs2D, kamar);
-
-        currentData = {
-          input4D: raw,
-          kopAs2D: kopAs2D,
-          kamar: kamar,
-          market: market
-          // TIDAK simpan timestamp di sini → simpan langsung saat push
-        };
-        selectedMarket = market;
-        showStatus("✅ Hasil siap.", "success");
-      });
-
-      btnEdit.addEventListener('click', () => {
-        if (currentData) {
-          input4D.value = currentData.input4D;
-          marketSelect.value = currentData.market;
-          selectedMarket = currentData.market;
-          marketStatusEl.textContent = `📊 Market aktif: ${selectedMarket}`;
-          showStatus("✏️ Edit input, lalu klik Cari.", "success");
-        } else {
-          showStatus("ℹ️ Tidak ada data untuk diedit.", "error");
-        }
-      });
-
-      btnSimpan.addEventListener('click', () => {
-        if (!currentData || !selectedMarket) {
-          showStatus("⚠️ Tidak ada data untuk disimpan.", "error");
-          return;
-        }
-        // ✅ Gunakan server timestamp saat push
-        const dataToSave = {
-          ...currentData,
-          timestamp: firebase.database.ServerValue.TIMESTAMP
-        };
-        const ref = database.ref(`rumah4/${selectedMarket}`).push();
-        ref.set(dataToSave).then(() => {
-          currentKey = ref.key;
-          showStatus("✅ Data tersimpan ke cloud!", "success");
-        }).catch(err => {
-          console.error("Simpan error:", err);
-          showStatus("❌ Gagal simpan: cek koneksi.", "error");
-        });
-      });
-
-      btnHapus.addEventListener('click', () => {
-        if (!currentKey || !selectedMarket) {
-          showStatus("ℹ️ Tidak ada data cloud untuk dihapus.", "error");
-          return;
-        }
-        if (!confirm(`Hapus data untuk market "${selectedMarket}"?`)) return;
-        database.ref(`rumah4/${selectedMarket}/${currentKey}`).remove()
-          .then(() => {
-            currentKey = null;
-            currentData = null;
-            document.getElementById('hasil').style.display = 'none';
-            showStatus("🗑️ Data dihapus dari cloud.", "success");
-          })
-          .catch(err => {
-            console.error("Hapus error:", err);
-            showStatus("❌ Gagal hapus: cek koneksi.", "error");
-          });
-      });
-
-      if (marketAktif) {
-        setTimeout(() => loadLatestData(database, marketAktif), 300);
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        console.log('✅ [rumah9] Firebase Auth: User login terdeteksi:', user.email);
+        authReady = true;
+        document.getElementById('panels-container').innerHTML = '';
+        createPanel('cambodia');
+      } else {
+        console.log('️ [rumah9] Firebase Auth: User belum login');
+        authReady = false;
+        document.getElementById('panels-container').innerHTML = `
+          <div style="text-align: center; padding: 40px; background: #fff3cd; border-radius: 10px; border: 1px solid #ffeaa7;">
+            <h3>⚠️ Akses Ditolak</h3>
+            <p>Anda harus login terlebih dahulu untuk menggunakan fitur ini.</p>
+            <a href="pageawal.html" style="display: inline-block; padding: 10px 20px; background: #4285f4; color: white; text-decoration: none; border-radius: 6px; margin-top: 10px;"> Kembali ke Login</a>
+          </div>
+        `;
       }
     });
-
-    async function loadLatestData(database, market) {
-      try {
-        const snapshot = await database.ref(`rumah4/${market}`)
-          .orderByChild("timestamp")
-          .limitToLast(1)
-          .once("value");
-
-        if (snapshot.exists()) {
-          const dataObj = snapshot.val();
-          const key = Object.keys(dataObj)[0];
-          const data = dataObj[key];
-
-          document.getElementById('input4D').value = data.input4D;
-          currentData = data;
-          currentKey = key;
-
-          renderHasil(data.kopAs2D, data.kamar);
-          showStatus(`✅ Data termuat untuk market: ${market}`, "success");
-        }
-      } catch (err) {
-        console.warn("Gagal muat data:", err);
-        showStatus("⚠️ Gagal muat data dari cloud.", "error");
-      }
-    }
   </script>
 </body>
 </html>
