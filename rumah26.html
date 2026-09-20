@@ -256,13 +256,14 @@
         <option value="Hongkong">Hongkong</option>
       </select>
 
+      <!-- FITUR BARU: Tombol Aksi -->
       <div class="action-row">
         <button class="btn-secondary" onclick="window.toggleManualForm()">➕ Tambah Manual</button>
         <button class="btn-sync" onclick="window.loadDataFromRumah1()">🔄 Load dari Rumah 1</button>
       </div>
 
-      <!-- Form Input Manual (Tersembunyi secara default) -->
-      <div id="manualForm" class="card" style="display: none; border: 1px solid var(--accent);">
+      <!-- FITUR BARU: Form Input Manual -->
+      <div id="manualForm" class="card" style="display: none; border: 1px solid var(--accent); margin-top: 16px;">
         <h3>Input Data Manual</h3>
         <div class="form-grid">
           <div>
@@ -310,16 +311,14 @@
   <script>
     let selectedMarket = null;
     let database = null;
-    let dataListener = null;
+    let dataListener = null; // Variable untuk menyimpan listener
 
     function showStatus(text, type = "") {
       const el = document.getElementById('status');
       el.textContent = text;
       el.className = "status " + type;
       if (type === 'success' || type === 'error' || type === 'info') {
-        setTimeout(() => { 
-          if (el.textContent === text) el.textContent = ''; 
-        }, 5000);
+        setTimeout(() => { el.textContent = ''; }, 4000);
       }
     }
 
@@ -443,8 +442,9 @@
       }
     };
 
-    // ✅ FUNGSI REAL-TIME LISTENER
+    // ✅ FUNGSI REAL-TIME LISTENER (MENGGANTIKAN loadResults)
     function startRealtimeListener(market) {
+      // Hentikan listener sebelumnya jika ada (mencegah memory leak)
       if (dataListener) {
         database.ref(`rumah4/${selectedMarket}`).off('value', dataListener);
         dataListener = null;
@@ -457,6 +457,7 @@
         .orderByChild("timestamp")
         .limitToLast(50);
 
+      // ✅ Gunakan on('value') untuk real-time update
       dataListener = ref.on('value', (snapshot) => {
         listContainer.innerHTML = '';
 
@@ -472,6 +473,7 @@
           const item = dataObj[key];
           const catatan = item.catatan || '';
           const ketValue = item.ket || '-';
+          // Penanda visual jika data berasal dari sinkronisasi Rumah 1
           const syncBadge = item.syncedFrom === 'rumah1' ? '<span style="font-size:0.75rem; color:var(--warning); margin-left:8px;">(Sync R1)</span>' : '';
           
           const card = document.createElement('div');
@@ -495,7 +497,7 @@
             <textarea id="note-${key}" placeholder="Tulis analisis atau catatan Anda di sini...">${catatan}</textarea>
             <div class="btn-row">
               <button class="btn-save-note" onclick="window.saveNote('${market}', '${key}')">💾 Simpan Catatan</button>
-              <button class="btn-delete" onclick="window.deleteEntry('${market}', '${key}')">🗑️ Hapus Data</button>
+              <button class="btn-delete" onclick="window.deleteEntry('${market}', '${key}')">️ Hapus Data</button>
             </div>
           `;
           listContainer.appendChild(card);
@@ -509,10 +511,14 @@
       });
     }
 
+    // Fungsi untuk menyimpan keterangan (ket)
     window.saveKet = async function(market, key, value) {
       const displayValue = value === 'check' ? '✓' : value === 'cross' ? '✗' : '-';
+      
       try {
-        await database.ref(`rumah4/${market}/${key}`).update({ ket: value });
+        await database.ref(`rumah4/${market}/${key}`).update({
+          ket: value
+        });
         showStatus(`✅ Keterangan disimpan: ${displayValue}`, "success");
       } catch (err) {
         console.error("Gagal simpan keterangan:", err);
@@ -520,16 +526,19 @@
       }
     };
 
+    // Fungsi global untuk menyimpan catatan
     window.saveNote = async function(market, key) {
       const noteText = document.getElementById(`note-${key}`).value.trim();
       const btn = event.target;
       const originalText = btn.textContent;
       
-      btn.textContent = 'Menyimpan...';
+      btn.textContent = ' Menyimpan...';
       btn.disabled = true;
 
       try {
-        await database.ref(`rumah4/${market}/${key}`).update({ catatan: noteText });
+        await database.ref(`rumah4/${market}/${key}`).update({
+          catatan: noteText
+        });
         showStatus("✅ Catatan berhasil disimpan!", "success");
       } catch (err) {
         console.error("Gagal simpan catatan:", err);
@@ -540,12 +549,14 @@
       }
     };
 
+    // Fungsi global untuk menghapus entry
     window.deleteEntry = async function(market, key) {
       if (!confirm("⚠️ Yakin ingin menghapus data hasil ini secara permanen?")) return;
 
       try {
         await database.ref(`rumah4/${market}/${key}`).remove();
-        showStatus("🗑️ Data berhasil dihapus.", "success");
+        showStatus("️ Data berhasil dihapus.", "success");
+        // Tidak perlu load ulang manual, real-time listener akan otomatis update
       } catch (err) {
         console.error("Gagal hapus data:", err);
         showStatus("❌ Gagal menghapus data.", "error");
@@ -554,7 +565,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       if (typeof firebase === 'undefined' || !firebase.apps.length) {
-        showStatus("⚠️ Firebase tidak dimuat. Periksa config-firebase.js", "error");
+        showStatus("⚠️ Firebase tidak dimuat.", "error");
         return;
       }
       database = firebase.database();
@@ -574,18 +585,21 @@
 
       marketFilter.addEventListener('change', () => {
         selectedMarket = marketFilter.value;
-        // Sembunyikan form manual jika market berubah untuk mencegah kesalahan input
-        document.getElementById('manualForm').style.display = 'none';
         
+        // Sembunyikan form manual jika market berubah untuk mencegah kesalahan input
+        const manualForm = document.getElementById('manualForm');
+        if (manualForm) manualForm.style.display = 'none';
+
         if (selectedMarket) {
           localStorage.setItem('marketAktif', selectedMarket);
-          marketStatusEl.textContent = `📊 Market aktif: ${selectedMarket}`;
+          marketStatusEl.textContent = ` Market aktif: ${selectedMarket}`;
           marketStatusEl.style.color = "var(--accent)";
+          // ✅ Mulai real-time listener untuk market baru
           startRealtimeListener(selectedMarket);
         } else {
-          marketStatusEl.textContent = "⚠️ Pilih market terlebih dahulu.";
-          marketStatusEl.style.color = "var(--danger)";
+          marketStatusEl.textContent = "️ Pilih market terlebih dahulu.";
           document.getElementById('resultList').innerHTML = '';
+          // Hentikan listener jika tidak ada market
           if (dataListener) {
             database.ref(`rumah4/${selectedMarket}`).off('value', dataListener);
             dataListener = null;
@@ -595,16 +609,17 @@
 
       firebase.auth().onAuthStateChanged((user) => {
         if (user) {
-          console.log('✅ User login terdeteksi:', user.email);
+          console.log('✅ [rumah18] User login terdeteksi:', user.email);
           if (selectedMarket) {
             startRealtimeListener(selectedMarket);
           }
         } else {
-          console.log('⚠️ User belum login!');
+          console.log('⚠️ [rumah18] User belum login!');
           showStatus("❌ Akses ditolak. Silakan login terlebih dahulu.", "error");
         }
       });
 
+      // Cleanup saat user meninggalkan halaman
       window.addEventListener('beforeunload', () => {
         if (dataListener && selectedMarket) {
           database.ref(`rumah4/${selectedMarket}`).off('value', dataListener);
