@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Catatan Hasil Rumah 4</title>
+  <title>Kelompok</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -14,7 +14,6 @@
       --accent2: #a78bfa;
       --danger: #ef4444;
       --ok: #10b981;
-      --warning: #f59e0b;
     }
     body {
       margin: 0;
@@ -60,64 +59,14 @@
       padding: 18px;
       margin-bottom: 16px;
     }
-    .result-item {
-      border-left: 4px solid var(--accent);
-      padding: 16px;
-      margin-bottom: 16px;
-      background: rgba(255,255,255,0.02);
-      border-radius: 0 10px 10px 0;
-    }
-    .result-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .result-time {
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
-    .result-data {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 10px;
-      margin-bottom: 12px;
-      font-size: 0.95rem;
-    }
-    .data-pill {
-      background: rgba(34, 211, 238, 0.1);
-      color: var(--accent);
-      padding: 6px 10px;
-      border-radius: 8px;
-      text-align: center;
-      font-weight: 600;
-    }
-    .ket-select {
-      background: #0c1220;
-      color: var(--text);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 8px;
-      padding: 6px 10px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      outline: none;
-      text-align: center;
-    }
-    .ket-select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
-    }
     label {
       display: block;
       font-weight: 600;
       margin-bottom: 6px;
-      font-size: 0.9rem;
-      color: var(--muted);
     }
-    textarea {
+    input[type="text"],
+    select,
+    input[type="text"].keterangan-input {
       width: 100%;
       background: #0c1220;
       color: var(--text);
@@ -126,12 +75,14 @@
       padding: 10px 12px;
       font-size: 0.95rem;
       outline: none;
-      resize: vertical;
-      min-height: 80px;
-      font-family: inherit;
-      box-sizing: border-box;
+      transition: border-color 0.2s ease;
     }
-    textarea:focus {
+    input[type="text"]::placeholder {
+      color: #6b7280;
+    }
+    input[type="text"]:focus,
+    select:focus,
+    input[type="text"].keterangan-input:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
     }
@@ -150,7 +101,6 @@
       padding: 10px 14px;
       cursor: pointer;
       transition: transform 0.08s ease, box-shadow 0.2s ease, filter 0.2s ease;
-      font-size: 0.9rem;
     }
     button:hover { filter: brightness(1.08); }
     button:active { transform: translateY(1px); }
@@ -159,9 +109,49 @@
       color: var(--text);
       border: 1px solid rgba(255,255,255,0.08);
     }
+    .btn-edit { background: linear-gradient(90deg, #FF9800, #FFB347); color: #0b1020; }
     .btn-delete { background: linear-gradient(90deg, var(--danger), #f87171); color: #0b1020; }
-    .btn-save-note { background: linear-gradient(90deg, var(--ok), #34d399); color: #0b1020; }
-    
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #0c1220;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .digit {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #12192a, #0d1424);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 800;
+      font-size: 1.15rem;
+      color: var(--text);
+    }
+    .angka {
+      word-break: break-all;
+      font-family: monospace;
+      margin: 12px 0;
+      line-height: 1.5;
+      font-size: 0.95rem;
+    }
+    .kamar-box {
+      margin-top: 16px;
+      padding: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      background: rgba(0,0,0,0.2);
+    }
+    .kamar-title {
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--accent);
+    }
     .status {
       text-align: center;
       min-height: 24px;
@@ -170,42 +160,99 @@
     }
     .success { color: var(--ok); }
     .error { color: var(--danger); }
-    
+    .btn-salin {
+      background: linear-gradient(90deg, var(--ok), #34d399);
+      color: #0b1020;
+      padding: 6px 12px;
+      font-size: 0.9rem;
+      margin-top: 8px;
+    }
     select {
-      width: 100%;
-      background: #0c1220;
-      color: var(--text);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 10px;
-      padding: 10px 12px;
-      font-size: 0.95rem;
-      outline: none;
       appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 12px center;
       background-size: 16px;
       padding-right: 36px;
-      margin-bottom: 16px;
+    }
+    
+    /* Table Styles */
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      font-size: 0.95rem;
+    }
+    .result-table th,
+    .result-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .result-table th {
+      background: rgba(34, 211, 238, 0.1);
+      color: var(--accent);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
+    }
+    .result-table tr:hover {
+      background: rgba(255,255,255,0.02);
+    }
+    .result-table tr:last-child td {
+      border-bottom: none;
+    }
+    .result-table .result-number {
+      font-family: monospace;
+      font-weight: 700;
+      color: var(--accent2);
+      font-size: 1.1rem;
+    }
+    .result-table .hasil-pasangan {
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .result-table .keterangan-cell input {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      width: 100%;
+    }
+    .result-table .keterangan-cell input:focus {
+      border-color: var(--ok);
+      outline: none;
+    }
+    .result-table .btn-hapus-row {
+      background: linear-gradient(90deg, var(--danger), #f87171);
+      color: #0b1020;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
     }
     .empty-state {
       text-align: center;
-      padding: 40px 20px;
+      padding: 40px;
       color: var(--muted);
+      font-style: italic;
     }
-    .live-indicator {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      background: var(--ok);
-      border-radius: 50%;
-      margin-right: 6px;
-      animation: pulse 2s infinite;
+    .section-title {
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+      color: var(--accent);
+      font-weight: 700;
     }
-    @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.4; }
-      100% { opacity: 1; }
+    .input-keterangan-section {
+      margin-top: 16px;
+      padding: 16px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08);
     }
   </style>
 </head>
@@ -215,27 +262,73 @@
       <a href="index.html">← Kembali ke Beranda</a>
     </div>
 
-    <h2>📝 Catatan Hasil Rumah 4</h2>
+    <h2>Kelompok</h2>
     <div id="market-status"></div>
 
     <div class="card">
-      <label for="marketFilter">Filter Market</label>
-      <select id="marketFilter">
-        <option value="">-- Pilih Market --</option>
-        <option value="Cambodia">Cambodia</option>
-        <option value="Sidney">Sidney</option>
-        <option value="China">China</option>
-        <option value="Japan">Japan</option>
-        <option value="SGP">SGP</option>
-        <option value="Taiwan">Taiwan</option>
-        <option value="Hongkong">Hongkong</option>
-      </select>
+      <div style="margin-bottom: 16px;">
+        <label for="market">Pilih Market</label>
+        <select id="market">
+          <option value="">-- Pilih Market --</option>
+          <option value="Cambodia">Cambodia</option>
+          <option value="Sidney">Sidney</option>
+          <option value="China">China</option>
+          <option value="Japan">Japan</option>
+          <option value="SGP">SGP</option>
+          <option value="Taiwan">Taiwan</option>
+          <option value="Hongkong">Hongkong</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <label for="input4D">Input 4D (contoh: 1234)</label>
+        <input type="text" id="input4D" placeholder="Contoh: 1234" maxlength="4" />
+      </div>
+
+      <div class="btn-row">
+        <button id="btnCari">Cari</button>
+        <button class="btn-secondary" id="btnEdit">Edit</button>
+        <button id="btnSimpan">Simpan ke Cloud</button>
+        <button class="btn-delete" id="btnHapus">Hapus dari Cloud</button>
+        <button id="btnMuatDariRumah1" class="btn-secondary">Muat dari rumah1</button>
+      </div>
 
       <div id="status" class="status"></div>
     </div>
 
-    <div id="resultList">
-      <!-- Data akan di-render di sini -->
+    <div id="hasil" class="card" style="display: none;">
+      <h3>Hasil Kelompok</h3>
+      
+      <!-- Input Keterangan untuk hasil saat ini -->
+      <div class="input-keterangan-section" id="inputKeteranganSection" style="display: none;">
+        <div class="section-title">Tambah Keterangan</div>
+        <label for="keteranganInput">Keterangan (opsional)</label>
+        <input type="text" id="keteranganInput" placeholder="Contoh: masuk, lari, dll" />
+        <div class="btn-row" style="margin-top: 12px;">
+          <button id="btnTambahKeTabel">Tambah ke Tabel</button>
+        </div>
+      </div>
+
+      <!-- Tabel Hasil -->
+      <div id="tabelHasilContainer">
+        <div class="section-title" style="margin-top: 20px;">Riwayat Hasil</div>
+        <table class="result-table" id="resultTable">
+          <thead>
+            <tr>
+              <th>Result</th>
+              <th>Hasil</th>
+              <th>Keterangan</th>
+              <th style="text-align: center;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="resultTableBody">
+            <!-- Data akan diisi di sini -->
+          </tbody>
+        </table>
+        <div id="emptyState" class="empty-state" style="display: none;">
+          Belum ada data. Silakan cari dan tambahkan hasil.
+        </div>
+      </div>
     </div>
   </div>
 
@@ -246,146 +339,238 @@
   <script src="./config-firebase.js"></script>
 
   <script>
+    // === DATA STATIS ===
+    const pasanganKamar = {
+      "00":[1,2],"11":[1,3],"22":[2,3],"33":[1,2],"44":[1,3],"55":[2,3],"66":[1,2],"77":[1,3],"88":[2,3],"99":[1,2],
+      "01":[1,2],"10":[2,3],"02":[1,3],"20":[1,2],"03":[2,3],"30":[1,3],"04":[1,2],"40":[1,3],"05":[2,3],"50":[1,2],
+      "06":[1,3],"60":[2,3],"07":[1,2],"70":[2,3],"08":[2,3],"80":[1,3],"09":[1,3],"90":[1,2],"12":[1,3],"21":[2,3],
+      "13":[2,3],"31":[1,2],"14":[1,2],"41":[2,3],"15":[1,3],"51":[1,2],"16":[2,3],"61":[1,3],"17":[1,2],"71":[1,3],
+      "18":[1,3],"81":[2,3],"19":[2,3],"91":[1,2],"23":[1,2],"32":[1,3],"24":[2,3],"42":[1,2],"25":[1,3],"52":[2,3],
+      "26":[1,2],"62":[1,3],"27":[2,3],"72":[1,2],"28":[1,3],"82":[2,3],"29":[1,2],"92":[1,3],"34":[2,3],"43":[1,2],
+      "35":[1,3],"53":[2,3],"36":[1,2],"63":[1,3],"37":[2,3],"73":[1,2],"38":[1,3],"83":[2,3],"39":[1,2],"93":[1,3],
+      "45":[2,3],"54":[1,3],"46":[1,2],"64":[2,3],"47":[1,3],"74":[1,2],"48":[2,3],"84":[1,3],"49":[1,2],"94":[2,3],
+      "56":[1,3],"65":[1,2],"57":[2,3],"75":[1,3],"58":[1,2],"85":[2,3],"59":[1,3],"95":[1,2],"67":[2,3],"76":[1,3],
+      "68":[1,2],"86":[1,3],"69":[1,3],"96":[2,3],"78":[2,3],"87":[1,2],"79":[1,3],"97":[2,3],"89":[1,2],"98":[1,3]
+    };
+
+    const shioKeKamar = {1:1,4:1,7:1,10:1, 2:2,5:2,8:2,11:2, 3:3,6:3,9:3,12:3};
+    const kamar2D = {1:[],2:[],3:[]};
+    for (let n = 0; n <= 99; n++) {
+      const num = String(n).padStart(2, '0');
+      const shio = (n % 12 === 0) ? 12 : (n % 12);
+      kamar2D[shioKeKamar[shio]].push(num);
+    }
+
+    // === STATE ===
+    let currentData = null;
+    let currentKey = null;
     let selectedMarket = null;
     let database = null;
-    let dataListener = null; // Variable untuk menyimpan listener
+    let currentKamar = null;
+    let allResults = []; // Menyimpan semua hasil dalam tabel
 
+    // === FUNGSI BANTUAN ===
     function showStatus(text, type = "") {
       const el = document.getElementById('status');
       el.textContent = text;
       el.className = "status " + type;
-      if (type === 'success' || type === 'error') {
-        setTimeout(() => { el.textContent = ''; }, 4000);
-      }
     }
 
-    function formatDate(timestamp) {
-      if (!timestamp) return 'Waktu tidak diketahui';
-      return new Date(timestamp).toLocaleString('id-ID', {
-        day: '2-digit', month: 'short', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-      });
-    }
-
-    // ✅ FUNGSI REAL-TIME LISTENER (MENGGANTIKAN loadResults)
-    function startRealtimeListener(market) {
-      // Hentikan listener sebelumnya jika ada (mencegah memory leak)
-      if (dataListener) {
-        database.ref(`rumah4/${selectedMarket}`).off('value', dataListener);
-        dataListener = null;
-      }
-
-      const listContainer = document.getElementById('resultList');
-      listContainer.innerHTML = '<div class="empty-state">⏳ Memuat data real-time...</div>';
-
-      const ref = database.ref(`rumah4/${market}`)
-        .orderByChild("timestamp")
-        .limitToLast(50);
-
-      // ✅ Gunakan on('value') untuk real-time update
-      dataListener = ref.on('value', (snapshot) => {
-        listContainer.innerHTML = '';
-
-        if (!snapshot.exists()) {
-          listContainer.innerHTML = '<div class="empty-state">ℹ️ Belum ada data hasil untuk market ini.</div>';
-          return;
-        }
-
-        const dataObj = snapshot.val();
-        const keys = Object.keys(dataObj).reverse();
-
-        keys.forEach(key => {
-          const item = dataObj[key];
-          const catatan = item.catatan || '';
-          const ketValue = item.ket || '-';
-          
-          const card = document.createElement('div');
-          card.className = 'card result-item';
-          card.innerHTML = `
-            <div class="result-header">
-              <span class="result-time">🕒 ${formatDate(item.timestamp)}</span>
-              <span class="data-pill" style="background: rgba(167, 139, 250, 0.15); color: var(--accent2);">${item.market}</span>
-            </div>
-            <div class="result-data">
-              <div class="data-pill">4D: ${item.input4D}</div>
-              <div class="data-pill">Kop-As: ${item.kopAs2D}</div>
-              <div class="data-pill">Kamar: ${item.kamar.join(' & ')}</div>
-              <select class="ket-select" id="ket-${key}" onchange="saveKet('${market}', '${key}', this.value)">
-                <option value="-" ${ketValue === '-' ? 'selected' : ''}>-</option>
-                <option value="check" ${ketValue === 'check' ? 'selected' : ''}>✓</option>
-                <option value="cross" ${ketValue === 'cross' ? 'selected' : ''}>✗</option>
-              </select>
-            </div>
-            <label>Catatan Pribadi:</label>
-            <textarea id="note-${key}" placeholder="Tulis analisis atau catatan Anda di sini...">${catatan}</textarea>
-            <div class="btn-row">
-              <button class="btn-save-note" onclick="saveNote('${market}', '${key}')">💾 Simpan Catatan</button>
-              <button class="btn-delete" onclick="deleteEntry('${market}', '${key}')">️ Hapus Data</button>
-            </div>
-          `;
-          listContainer.appendChild(card);
+    function salinTeks(teks) {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(teks).then(() => {
+          showStatus("✅ Disalin ke clipboard!", "success");
+        }).catch(() => {
+          showStatus("❌ Gagal menyalin.", "error");
         });
+      } else {
+        showStatus(" Clipboard tidak didukung.", "error");
+      }
+    }
 
-        showStatus(`<span class="live-indicator"></span> Live: ${keys.length} data terdeteksi`, "success");
-      }, (error) => {
-        console.error("Gagal muat data:", error);
-        listContainer.innerHTML = '<div class="empty-state error">❌ Gagal memuat data dari cloud.</div>';
-        showStatus("⚠️ Gagal memuat data.", "error");
+    function renderHasil(kopAs2D, kamar) {
+      const [k1, k2] = kamar;
+      const shioText = (k) => k === 1 ? "1,4,7,10" : k === 2 ? "2,5,8,11" : "3,6,9,12";
+      const html = `
+        <div><strong>Kop-As: ${kopAs2D} → Pasangan Kamar: ${k1}, ${k2}</strong></div>
+        <div class="kamar-box">
+          <div class="kamar-title">Kamar ${k1}: shio ${shioText(k1)}</div>
+          <div class="angka" id="angka1">${kamar2D[k1].join('*')}</div>
+          <button class="btn-salin" data-copy="${kamar2D[k1].join('*')}">Salin</button>
+        </div>
+        <div class="kamar-box">
+          <div class="kamar-title">Kamar ${k2}: shio ${shioText(k2)}</div>
+          <div class="angka" id="angka2">${kamar2D[k2].join('*')}</div>
+          <button class="btn-salin" data-copy="${kamar2D[k2].join('*')}">Salin</button>
+        </div>
+      `;
+      document.getElementById('hasilContent').innerHTML = html;
+      document.getElementById('hasil').style.display = 'block';
+
+      document.querySelectorAll('.btn-salin').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const teks = e.target.getAttribute('data-copy');
+          salinTeks(teks);
+        });
       });
     }
 
-    // Fungsi untuk menyimpan keterangan (ket)
-    window.saveKet = async function(market, key, value) {
-      const displayValue = value === 'check' ? '✓' : value === 'cross' ? '✗' : '-';
+    // Render tabel hasil
+    function renderTable() {
+      const tbody = document.getElementById('resultTableBody');
+      const emptyState = document.getElementById('emptyState');
+      
+      if (allResults.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.style.display = 'block';
+        return;
+      }
+      
+      emptyState.style.display = 'none';
+      tbody.innerHTML = allResults.map((item, index) => `
+        <tr>
+          <td class="result-number">${item.result}</td>
+          <td class="hasil-pasangan">${item.hasil}</td>
+          <td class="keterangan-cell">
+            <input type="text" 
+                   value="${item.keterangan || ''}" 
+                   placeholder="-"
+                   onchange="updateKeterangan(${index}, this.value)"
+                   onblur="saveKeteranganToCloud(${index}, this.value)" />
+          </td>
+          <td style="text-align: center;">
+            <button class="btn-hapus-row" onclick="hapusResult(${index})">Hapus</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Update keterangan di array
+    window.updateKeterangan = function(index, value) {
+      allResults[index].keterangan = value;
+    }
+
+    // Simpan keterangan ke cloud
+    window.saveKeteranganToCloud = async function(index, value) {
+      if (!selectedMarket || !currentKey) return;
       
       try {
-        await database.ref(`rumah4/${market}/${key}`).update({
-          ket: value
+        const updateData = {};
+        allResults.forEach((item, idx) => {
+          updateData[`results/${idx}/keterangan`] = item.keterangan || '';
         });
-        showStatus(`✅ Keterangan disimpan: ${displayValue}`, "success");
+        
+        await database.ref(`rumah4/${selectedMarket}/${currentKey}`).update(updateData);
+        showStatus("✅ Keterangan tersimpan", "success");
       } catch (err) {
         console.error("Gagal simpan keterangan:", err);
-        showStatus("❌ Gagal menyimpan keterangan.", "error");
       }
-    };
+    }
 
-    // Fungsi global untuk menyimpan catatan
-    window.saveNote = async function(market, key) {
-      const noteText = document.getElementById(`note-${key}`).value.trim();
-      const btn = event.target;
-      const originalText = btn.textContent;
+    // Hapus result dari tabel
+    window.hapusResult = function(index) {
+      if (!confirm('Hapus result ini?')) return;
       
-      btn.textContent = ' Menyimpan...';
-      btn.disabled = true;
-
-      try {
-        await database.ref(`rumah4/${market}/${key}`).update({
-          catatan: noteText
+      allResults.splice(index, 1);
+      renderTable();
+      
+      // Update ke cloud
+      if (selectedMarket && currentKey) {
+        const updateData = {};
+        allResults.forEach((item, idx) => {
+          updateData[`results/${idx}`] = item;
         });
-        showStatus("✅ Catatan berhasil disimpan!", "success");
-      } catch (err) {
-        console.error("Gagal simpan catatan:", err);
-        showStatus("❌ Gagal menyimpan catatan.", "error");
-      } finally {
-        btn.textContent = originalText;
-        btn.disabled = false;
+        
+        if (allResults.length === 0) {
+          database.ref(`rumah4/${selectedMarket}/${currentKey}`).remove();
+        } else {
+          database.ref(`rumah4/${selectedMarket}/${currentKey}`).update(updateData);
+        }
       }
-    };
+      
+      showStatus("✅ Result dihapus", "success");
+    }
 
-    // Fungsi global untuk menghapus entry
-    window.deleteEntry = async function(market, key) {
-      if (!confirm("⚠️ Yakin ingin menghapus data hasil ini secara permanen?")) return;
+    // Tambah result ke tabel
+    function tambahResultKeTabel(result, hasil, keterangan = '') {
+      // Cek apakah result sudah ada
+      const existingIndex = allResults.findIndex(item => item.result === result);
+      
+      if (existingIndex >= 0) {
+        showStatus("ℹ️ Result sudah ada di tabel", "error");
+        return;
+      }
+      
+      allResults.unshift({
+        result: result,
+        hasil: hasil,
+        keterangan: keterangan,
+        timestamp: Date.now()
+      });
+      
+      renderTable();
+      showStatus("✅ Result ditambahkan ke tabel", "success");
+    }
 
+    // === MUAT 1 RES TERAKHIR DARI rumah1 ===
+    async function loadLatestResFromRumah1(database, market) {
+      if (!market) return;
       try {
-        await database.ref(`rumah4/${market}/${key}`).remove();
-        showStatus("️ Data berhasil dihapus.", "success");
-        // Tidak perlu load ulang manual, real-time listener akan otomatis update
+        const snapshot = await database.ref(`rumah1/${market}/data`).once('value');
+        const data = snapshot.val();
+        if (!Array.isArray(data) || data.length < 1) {
+          showStatus("ℹ️ Tidak ada data di rumah1.", "error");
+          return;
+        }
+        const validRows = data.filter(row => row && row[1] && /^\d{4}$/.test(row[1]));
+        if (validRows.length < 1) {
+          showStatus("ℹ️ Tidak ada result valid di rumah1.", "error");
+          return;
+        }
+        const lastRes = validRows[0][1];
+        document.getElementById('input4D').value = lastRes;
+        showStatus("✅ Result terakhir dari rumah1 dimuat.", "success");
       } catch (err) {
-        console.error("Gagal hapus data:", err);
-        showStatus("❌ Gagal menghapus data.", "error");
+        console.error("Gagal muat dari rumah1:", err);
+        showStatus("️ Gagal muat data dari rumah1.", "error");
       }
-    };
+    }
 
+    async function loadLatestData(database, market) {
+      try {
+        const snapshot = await database.ref(`rumah4/${market}`)
+          .orderByChild("timestamp")
+          .limitToLast(1)
+          .once("value");
+
+        if (snapshot.exists()) {
+          const dataObj = snapshot.val();
+          const key = Object.keys(dataObj)[0];
+          const data = dataObj[key];
+
+          document.getElementById('input4D').value = data.input4D || '';
+          currentData = data;
+          currentKey = key;
+          
+          // Load semua results dari cloud
+          if (data.results && Array.isArray(data.results)) {
+            allResults = data.results;
+            renderTable();
+          }
+
+          showStatus(`✅ Data termuat untuk market: ${market}`, "success");
+        } else {
+          // Tidak ada data, reset
+          allResults = [];
+          renderTable();
+        }
+      } catch (err) {
+        console.warn("Gagal muat data:", err);
+        showStatus("⚠️ Gagal muat data dari cloud.", "error");
+      }
+    }
+
+    // === INISIALISASI DOM ===
     document.addEventListener('DOMContentLoaded', () => {
       if (typeof firebase === 'undefined' || !firebase.apps.length) {
         showStatus("⚠️ Firebase tidak dimuat.", "error");
@@ -393,54 +578,199 @@
       }
       database = firebase.database();
 
-      const marketFilter = document.getElementById('marketFilter');
+      const marketSelect = document.getElementById('market');
+      const input4D = document.getElementById('input4D');
+      const keteranganInput = document.getElementById('keteranganInput');
+      const btnCari = document.getElementById('btnCari');
+      const btnEdit = document.getElementById('btnEdit');
+      const btnSimpan = document.getElementById('btnSimpan');
+      const btnHapus = document.getElementById('btnHapus');
+      const btnMuatDariRumah1 = document.getElementById('btnMuatDariRumah1');
+      const btnTambahKeTabel = document.getElementById('btnTambahKeTabel');
+      const inputKeteranganSection = document.getElementById('inputKeteranganSection');
       const marketStatusEl = document.getElementById('market-status');
 
+      input4D.addEventListener('input', () => {
+        input4D.value = input4D.value.replace(/[^0-9]/g, '').slice(0, 4);
+      });
+
+      // Baca market aktif dari localStorage
       const marketAktif = localStorage.getItem('marketAktif');
       if (marketAktif) {
-        marketFilter.value = marketAktif;
+        marketSelect.value = marketAktif;
         selectedMarket = marketAktif;
         marketStatusEl.textContent = `📊 Market aktif: ${marketAktif}`;
       } else {
-        marketStatusEl.textContent = "⚠️ Tidak ada market aktif. Silakan pilih.";
-        marketStatusEl.style.color = "var(--danger)";
+        marketStatusEl.textContent = "⚠️ Tidak ada market aktif. Kembali ke beranda untuk pilih.";
+        marketStatusEl.style.color = "#ef4444";
       }
 
-      marketFilter.addEventListener('change', () => {
-        selectedMarket = marketFilter.value;
+      marketSelect.addEventListener('change', () => {
+        selectedMarket = marketSelect.value;
         if (selectedMarket) {
           localStorage.setItem('marketAktif', selectedMarket);
           marketStatusEl.textContent = ` Market aktif: ${selectedMarket}`;
-          marketStatusEl.style.color = "var(--accent)";
-          // ✅ Mulai real-time listener untuk market baru
-          startRealtimeListener(selectedMarket);
+          // Load data akan dipanggil oleh onAuthStateChanged
         } else {
-          marketStatusEl.textContent = "️ Pilih market terlebih dahulu.";
-          document.getElementById('resultList').innerHTML = '';
-          // Hentikan listener jika tidak ada market
-          if (dataListener) {
-            database.ref(`rumah4/${selectedMarket}`).off('value', dataListener);
-            dataListener = null;
-          }
+          marketStatusEl.textContent = "⚠️ Pilih market terlebih dahulu.";
+          document.getElementById('hasil').style.display = 'none';
+          currentKey = null;
+          currentData = null;
         }
       });
 
+      // Muat dari rumah1
+      btnMuatDariRumah1.addEventListener('click', () => {
+        if (!selectedMarket) {
+          showStatus("️ Pilih market terlebih dahulu.", "error");
+          return;
+        }
+        loadLatestResFromRumah1(database, selectedMarket);
+      });
+
+      btnCari.addEventListener('click', () => {
+        const market = marketSelect.value;
+        if (!market) {
+          showStatus("️ Pilih market terlebih dahulu.", "error");
+          return;
+        }
+        const raw = input4D.value.trim();
+        if (raw.length !== 4 || !/^\d{4}$/.test(raw)) {
+          showStatus("️ Masukkan 4 digit angka!", "error");
+          return;
+        }
+
+        const as = raw[0];
+        const kop = raw[1];
+        const kopAs2D = kop + as;
+
+        if (!pasanganKamar[kopAs2D]) {
+          showStatus("❌ Kombinasi kop-as tidak dikenali.", "error");
+          return;
+        }
+
+        const kamar = pasanganKamar[kopAs2D];
+        currentKamar = kamar;
+        
+        // Tampilkan section input keterangan
+        inputKeteranganSection.style.display = 'block';
+        keteranganInput.value = '';
+        
+        // Simpan data sementara
+        currentData = {
+          input4D: raw,
+          kopAs2D: kopAs2D,
+          kamar: kamar,
+          market: market,
+          hasilString: `${kamar[0]}-${kamar[1]}`
+        };
+        selectedMarket = market;
+        
+        showStatus("✅ Hasil siap. Tambahkan keterangan lalu klik 'Tambah ke Tabel'.", "success");
+      });
+
+      btnTambahKeTabel.addEventListener('click', () => {
+        if (!currentData) {
+          showStatus("⚠️ Cari hasil terlebih dahulu.", "error");
+          return;
+        }
+        
+        const keterangan = keteranganInput.value.trim();
+        tambahResultKeTabel(
+          currentData.input4D,
+          currentData.hasilString,
+          keterangan
+        );
+        
+        // Reset input
+        keteranganInput.value = '';
+        inputKeteranganSection.style.display = 'none';
+      });
+
+      btnEdit.addEventListener('click', () => {
+        if (currentData) {
+          input4D.value = currentData.input4D;
+          marketSelect.value = currentData.market;
+          selectedMarket = currentData.market;
+          marketStatusEl.textContent = `📊 Market aktif: ${selectedMarket}`;
+          showStatus("✏️ Edit input, lalu klik Cari.", "success");
+        } else {
+          showStatus("ℹ️ Tidak ada data untuk diedit.", "error");
+        }
+      });
+
+      btnSimpan.addEventListener('click', async () => {
+        if (allResults.length === 0) {
+          showStatus("️ Tidak ada data untuk disimpan. Tambahkan hasil ke tabel terlebih dahulu.", "error");
+          return;
+        }
+        
+        if (!selectedMarket) {
+          showStatus("⚠️ Pilih market terlebih dahulu.", "error");
+          return;
+        }
+        
+        // Ambil input4D dari result pertama atau input saat ini
+        const firstResult = allResults[0];
+        const dataToSave = {
+          input4D: firstResult ? firstResult.result : input4D.value,
+          market: selectedMarket,
+          results: allResults,
+          timestamp: firebase.database.ServerValue.TIMESTAMP
+        };
+        
+        try {
+          if (currentKey) {
+            // Update existing
+            await database.ref(`rumah4/${selectedMarket}/${currentKey}`).update(dataToSave);
+            showStatus("✅ Data diperbarui di cloud!", "success");
+          } else {
+            // Create new
+            const ref = database.ref(`rumah4/${selectedMarket}`).push();
+            await ref.set(dataToSave);
+            currentKey = ref.key;
+            showStatus("✅ Data tersimpan ke cloud!", "success");
+          }
+        } catch (err) {
+          console.error("Simpan error:", err);
+          showStatus("❌ Gagal simpan: cek koneksi.", "error");
+        }
+      });
+
+      btnHapus.addEventListener('click', () => {
+        if (!currentKey || !selectedMarket) {
+          showStatus("ℹ️ Tidak ada data cloud untuk dihapus.", "error");
+          return;
+        }
+        if (!confirm(`Hapus semua data untuk market "${selectedMarket}"?`)) return;
+        database.ref(`rumah4/${selectedMarket}/${currentKey}`).remove()
+          .then(() => {
+            currentKey = null;
+            currentData = null;
+            allResults = [];
+            renderTable();
+            showStatus("🗑️ Data dihapus dari cloud.", "success");
+          })
+          .catch(err => {
+            console.error("Hapus error:", err);
+            showStatus("❌ Gagal hapus: cek koneksi.", "error");
+          });
+      });
+
+      // ============================================
+      // ✅ PERBAIKAN UTAMA: Tunggu login, baru load data
+      // ============================================
       firebase.auth().onAuthStateChanged((user) => {
         if (user) {
-          console.log('✅ [rumah18] User login terdeteksi:', user.email);
+          console.log('✅ [rumah4] User login terdeteksi:', user.email);
+          // Load data jika market sudah dipilih
           if (selectedMarket) {
-            startRealtimeListener(selectedMarket);
+            console.log('📥 Memuat data untuk market:', selectedMarket);
+            loadLatestData(database, selectedMarket);
           }
         } else {
-          console.log('⚠️ [rumah18] User belum login!');
+          console.log('️ [rumah4] User belum login!');
           showStatus("❌ Akses ditolak. Silakan login terlebih dahulu.", "error");
-        }
-      });
-
-      // Cleanup saat user meninggalkan halaman
-      window.addEventListener('beforeunload', () => {
-        if (dataListener && selectedMarket) {
-          database.ref(`rumah4/${selectedMarket}`).off('value', dataListener);
         }
       });
     });
