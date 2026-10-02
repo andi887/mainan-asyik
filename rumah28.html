@@ -254,6 +254,16 @@
       border-radius: 10px;
       border: 1px solid rgba(255,255,255,0.08);
     }
+    .hasil-penjelasan {
+      background: rgba(34, 211, 238, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 12px 16px;
+      margin: 16px 0;
+      border-radius: 6px;
+    }
+    .hasil-penjelasan strong {
+      color: var(--accent);
+    }
   </style>
 </head>
 <body>
@@ -299,13 +309,24 @@
     <div id="hasil" class="card" style="display: none;">
       <h3>Hasil Kelompok</h3>
       
-      <!-- Input Keterangan untuk hasil saat ini -->
-      <div class="input-keterangan-section" id="inputKeteranganSection" style="display: none;">
-        <div class="section-title">Tambah Keterangan</div>
-        <label for="keteranganInput">Keterangan (opsional)</label>
-        <input type="text" id="keteranganInput" placeholder="Contoh: masuk, lari, dll" />
-        <div class="btn-row" style="margin-top: 12px;">
-          <button id="btnTambahKeTabel">Tambah ke Tabel</button>
+      <!-- Hasil Perhitungan Kamar -->
+      <div id="hasilPerhitungan" style="display: none;">
+        <div class="hasil-penjelasan" id="hasilPenjelasanContent">
+          <!-- Akan diisi dengan hasil perhitungan -->
+        </div>
+        
+        <div id="kamarContainers">
+          <!-- Akan diisi dengan kotak kamar -->
+        </div>
+
+        <!-- Input Keterangan untuk hasil saat ini -->
+        <div class="input-keterangan-section">
+          <div class="section-title">Tambahkan ke Tabel Riwayat</div>
+          <label for="keteranganInput">Keterangan (opsional)</label>
+          <input type="text" id="keteranganInput" placeholder="Contoh: masuk, lari, dll" />
+          <div class="btn-row" style="margin-top: 12px;">
+            <button id="btnTambahKeTabel">Tambah ke Tabel</button>
+          </div>
         </div>
       </div>
 
@@ -367,6 +388,7 @@
     let selectedMarket = null;
     let database = null;
     let currentKamar = null;
+    let currentKopAs = null;
     let allResults = []; // Menyimpan semua hasil dalam tabel
 
     // === FUNGSI BANTUAN ===
@@ -381,38 +403,46 @@
         navigator.clipboard.writeText(teks).then(() => {
           showStatus("✅ Disalin ke clipboard!", "success");
         }).catch(() => {
-          showStatus("❌ Gagal menyalin.", "error");
+          showStatus(" Gagal menyalin.", "error");
         });
       } else {
-        showStatus(" Clipboard tidak didukung.", "error");
+        showStatus("❌ Clipboard tidak didukung.", "error");
       }
     }
 
-    function renderHasil(kopAs2D, kamar) {
+    function getShioText(kamar) {
+      if (kamar === 1) return "1,4,7,10";
+      if (kamar === 2) return "2,5,8,11";
+      return "3,6,9,12";
+    }
+
+    // Tampilkan hasil perhitungan kamar
+    function tampilkanHasilPerhitungan(kopAs, kamar) {
       const [k1, k2] = kamar;
-      const shioText = (k) => k === 1 ? "1,4,7,10" : k === 2 ? "2,5,8,11" : "3,6,9,12";
-      const html = `
-        <div><strong>Kop-As: ${kopAs2D} → Pasangan Kamar: ${k1}, ${k2}</strong></div>
+      
+      // Update penjelasan
+      const penjelasanHtml = `
+        <strong>Kop-As: ${kopAs}</strong> → <strong>Pasangan Kamar: ${k1}-${k2}</strong>
+      `;
+      document.getElementById('hasilPenjelasanContent').innerHTML = penjelasanHtml;
+      
+      // Buat kotak kamar
+      const kamarHtml = `
         <div class="kamar-box">
-          <div class="kamar-title">Kamar ${k1}: shio ${shioText(k1)}</div>
-          <div class="angka" id="angka1">${kamar2D[k1].join('*')}</div>
-          <button class="btn-salin" data-copy="${kamar2D[k1].join('*')}">Salin</button>
+          <div class="kamar-title">Kamar ${k1}: shio ${getShioText(k1)}</div>
+          <div class="angka">${kamar2D[k1].join('*')}</div>
+          <button class="btn-salin" onclick="salinTeks('${kamar2D[k1].join('*')}')">Salin</button>
         </div>
         <div class="kamar-box">
-          <div class="kamar-title">Kamar ${k2}: shio ${shioText(k2)}</div>
-          <div class="angka" id="angka2">${kamar2D[k2].join('*')}</div>
-          <button class="btn-salin" data-copy="${kamar2D[k2].join('*')}">Salin</button>
+          <div class="kamar-title">Kamar ${k2}: shio ${getShioText(k2)}</div>
+          <div class="angka">${kamar2D[k2].join('*')}</div>
+          <button class="btn-salin" onclick="salinTeks('${kamar2D[k2].join('*')}')">Salin</button>
         </div>
       `;
-      document.getElementById('hasilContent').innerHTML = html;
-      document.getElementById('hasil').style.display = 'block';
-
-      document.querySelectorAll('.btn-salin').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const teks = e.target.getAttribute('data-copy');
-          salinTeks(teks);
-        });
-      });
+      document.getElementById('kamarContainers').innerHTML = kamarHtml;
+      
+      // Tampilkan section
+      document.getElementById('hasilPerhitungan').style.display = 'block';
     }
 
     // Render tabel hasil
@@ -532,7 +562,7 @@
         showStatus("✅ Result terakhir dari rumah1 dimuat.", "success");
       } catch (err) {
         console.error("Gagal muat dari rumah1:", err);
-        showStatus("️ Gagal muat data dari rumah1.", "error");
+        showStatus("⚠️ Gagal muat data dari rumah1.", "error");
       }
     }
 
@@ -587,7 +617,7 @@
       const btnHapus = document.getElementById('btnHapus');
       const btnMuatDariRumah1 = document.getElementById('btnMuatDariRumah1');
       const btnTambahKeTabel = document.getElementById('btnTambahKeTabel');
-      const inputKeteranganSection = document.getElementById('inputKeteranganSection');
+      const hasilDiv = document.getElementById('hasil');
       const marketStatusEl = document.getElementById('market-status');
 
       input4D.addEventListener('input', () => {
@@ -599,7 +629,7 @@
       if (marketAktif) {
         marketSelect.value = marketAktif;
         selectedMarket = marketAktif;
-        marketStatusEl.textContent = `📊 Market aktif: ${marketAktif}`;
+        marketStatusEl.textContent = ` Market aktif: ${marketAktif}`;
       } else {
         marketStatusEl.textContent = "⚠️ Tidak ada market aktif. Kembali ke beranda untuk pilih.";
         marketStatusEl.style.color = "#ef4444";
@@ -610,10 +640,9 @@
         if (selectedMarket) {
           localStorage.setItem('marketAktif', selectedMarket);
           marketStatusEl.textContent = ` Market aktif: ${selectedMarket}`;
-          // Load data akan dipanggil oleh onAuthStateChanged
         } else {
-          marketStatusEl.textContent = "⚠️ Pilih market terlebih dahulu.";
-          document.getElementById('hasil').style.display = 'none';
+          marketStatusEl.textContent = "️ Pilih market terlebih dahulu.";
+          hasilDiv.style.display = 'none';
           currentKey = null;
           currentData = null;
         }
@@ -622,7 +651,7 @@
       // Muat dari rumah1
       btnMuatDariRumah1.addEventListener('click', () => {
         if (!selectedMarket) {
-          showStatus("️ Pilih market terlebih dahulu.", "error");
+          showStatus("⚠️ Pilih market terlebih dahulu.", "error");
           return;
         }
         loadLatestResFromRumah1(database, selectedMarket);
@@ -631,7 +660,7 @@
       btnCari.addEventListener('click', () => {
         const market = marketSelect.value;
         if (!market) {
-          showStatus("️ Pilih market terlebih dahulu.", "error");
+          showStatus("⚠️ Pilih market terlebih dahulu.", "error");
           return;
         }
         const raw = input4D.value.trim();
@@ -645,15 +674,19 @@
         const kopAs2D = kop + as;
 
         if (!pasanganKamar[kopAs2D]) {
-          showStatus("❌ Kombinasi kop-as tidak dikenali.", "error");
+          showStatus(" Kombinasi kop-as tidak dikenali.", "error");
           return;
         }
 
         const kamar = pasanganKamar[kopAs2D];
         currentKamar = kamar;
+        currentKopAs = kopAs2D;
         
-        // Tampilkan section input keterangan
-        inputKeteranganSection.style.display = 'block';
+        // Tampilkan hasil
+        hasilDiv.style.display = 'block';
+        tampilkanHasilPerhitungan(kopAs2D, kamar);
+        
+        // Reset input keterangan
         keteranganInput.value = '';
         
         // Simpan data sementara
@@ -684,7 +717,7 @@
         
         // Reset input
         keteranganInput.value = '';
-        inputKeteranganSection.style.display = 'none';
+        showStatus("✅ Berhasil ditambahkan ke tabel riwayat", "success");
       });
 
       btnEdit.addEventListener('click', () => {
@@ -701,7 +734,7 @@
 
       btnSimpan.addEventListener('click', async () => {
         if (allResults.length === 0) {
-          showStatus("️ Tidak ada data untuk disimpan. Tambahkan hasil ke tabel terlebih dahulu.", "error");
+          showStatus("⚠️ Tidak ada data untuk disimpan. Tambahkan hasil ke tabel terlebih dahulu.", "error");
           return;
         }
         
@@ -769,7 +802,7 @@
             loadLatestData(database, selectedMarket);
           }
         } else {
-          console.log('️ [rumah4] User belum login!');
+          console.log('⚠️ [rumah4] User belum login!');
           showStatus("❌ Akses ditolak. Silakan login terlebih dahulu.", "error");
         }
       });
