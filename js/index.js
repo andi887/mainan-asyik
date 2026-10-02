@@ -85,7 +85,7 @@ const houseNames = {
   11: 'rata muncul', 12: 'ranjang', 13: 'tv', 14: 'ganjil/genap', 15: 'T@RD@L',
   16: 'beting show', 17: 'pustaka', 18: 'jarak lemah', 19: 'RES HARIAN', 20: 'KHUSUS NYA',
   21: 'tabel', 22: 'sketsa bil', 23: 'BBFS', 24: 'percobaan', 25: 'coming soon',
-  26: 'cacatan kelompok', 27: 'mau dihapus2', 28: 'mau dihapus1', 29: 'mau di lempar', 30: 'masuk'
+  26: 'cacatan kelompok', 27: 'menuju paten', 28: 'nunggu ganti', 29: 'mau di lempar', 30: 'masuk'
 };
 
 let activeMarket = null;
