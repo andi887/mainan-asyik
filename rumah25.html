@@ -26,6 +26,49 @@
             text-align: center;
             color: #333;
         }
+        
+        /* ===== STYLE DROPDOWN MARKET ===== */
+        .market-selector {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .market-selector select {
+            width: 300px;
+            max-width: 90%;
+            padding: 12px 15px;
+            font-size: 15px;
+            border: 2px solid #2c3e50;
+            border-radius: 6px;
+            background-color: #fff;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .market-selector select:focus {
+            border-color: #3498db;
+        }
+        .market-selector select option {
+            padding: 10px;
+            font-size: 14px;
+        }
+        .market-selector select option[value=""] {
+            color: #999;
+            font-style: italic;
+        }
+        .current-market {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .current-market span {
+            background-color: #3498db;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
         .button-container {
             text-align: center;
             margin-bottom: 20px;
@@ -42,6 +85,10 @@
         }
         button:hover {
             background-color: #34495e;
+        }
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
         }
         #status {
             text-align: center;
@@ -115,6 +162,12 @@
             background-color: #f1c40f !important;
             color: #000;
         }
+        .table-container {
+            display: none; /* Sembunyikan tabel sampai market dipilih */
+        }
+        .table-container.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -123,22 +176,44 @@
 
     <h2>Rumah25 - Tabel Hasil Pertandingan</h2>
 
+    <!-- ===== DROPDOWN MARKET ===== -->
+    <div class="market-selector">
+        <select id="marketSelect" onchange="changeMarket()">
+            <option value="">-- Pilih Market --</option>
+            <option value="cambodia">🇰🇭 Cambodia</option>
+            <option value="sidney">🇦🇺 Sidney</option>
+            <option value="china">🇨🇳 China</option>
+            <option value="sgp">🇸🇬 SGP</option>
+            <option value="japan">🇯🇵 Japan</option>
+            <option value="taiwan">🇹🇼 Taiwan</option>
+            <option value="hongkong">🇭🇰 Hongkong</option>
+            <option value="admin">🛡️ Control Centre (Admin)</option>
+        </select>
+    </div>
+
+    <div class="current-market" id="currentMarketLabel" style="display:none;">
+        Market Aktif: <span id="marketName">-</span>
+    </div>
+
     <div class="button-container">
-        <button onclick="addColumn()">+ Tambah Kolom Pertandingan</button>
-        <button onclick="resetAllData()" style="background-color: #e74c3c;">🗑️ Reset Semua Data</button>
+        <button id="btnAdd" onclick="addColumn()" disabled>+ Tambah Kolom Pertandingan</button>
+        <button id="btnReset" onclick="resetAllData()" style="background-color: #e74c3c;" disabled>🗑️ Reset Semua Data</button>
     </div>
     
     <div id="status"></div>
 
-    <table id="matchTable">
-        <thead>
-            <tr id="headerRow">
-                <th class="team-col">Nama Tim</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody">
-        </tbody>
-    </table>
+    <!-- ===== TABEL (awalnya tersembunyi) ===== -->
+    <div class="table-container" id="tableContainer">
+        <table id="matchTable">
+            <thead>
+                <tr id="headerRow">
+                    <th class="team-col">Nama Tim</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+            </tbody>
+        </table>
+    </div>
 
     <!-- Firebase SDK -->
     <script type="module">
@@ -168,12 +243,83 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const matchesCollection = collection(db, "rumah25_matches");
 
         const totalTeams = 12;
         const yellowTeamCount = 4;
         window.matchCount = 0;
         window.isSyncing = false;
+        window.currentMarket = null;
+        window.currentCollection = null;
+        window.unsubscribeSnapshot = null; // Untuk stop listener saat ganti market
+
+        // ===== FUNGSI GANTI MARKET =====
+        window.changeMarket = function() {
+            const select = document.getElementById('marketSelect');
+            const market = select.value;
+            
+            // Stop listener market sebelumnya
+            if (window.unsubscribeSnapshot) {
+                window.unsubscribeSnapshot();
+                window.unsubscribeSnapshot = null;
+            }
+            
+            if (!market) {
+                // Belum pilih market
+                window.currentMarket = null;
+                window.currentCollection = null;
+                document.getElementById('tableContainer').classList.remove('active');
+                document.getElementById('currentMarketLabel').style.display = 'none';
+                document.getElementById('btnAdd').disabled = true;
+                document.getElementById('btnReset').disabled = true;
+                return;
+            }
+            
+            window.currentMarket = market;
+            // Nama collection: rumah25_cambodia, rumah25_sidney, dst
+            window.currentCollection = collection(db, `rumah25_${market}`);
+            
+            // Update UI
+            const marketNames = {
+                cambodia: '🇰🇭 Cambodia',
+                sidney: '🇦🇺 Sidney',
+                china: '🇨🇳 China',
+                sgp: '🇸🇬 SGP',
+                japan: '🇯🇵 Japan',
+                taiwan: '🇹🇼 Taiwan',
+                hongkong: '🇭🇰 Hongkong',
+                admin: '🛡️ Control Centre (Admin)'
+            };
+            
+            document.getElementById('marketName').textContent = marketNames[market];
+            document.getElementById('currentMarketLabel').style.display = 'block';
+            document.getElementById('tableContainer').classList.add('active');
+            document.getElementById('btnAdd').disabled = false;
+            document.getElementById('btnReset').disabled = false;
+            
+            // Load data market ini
+            loadMarketData();
+        };
+
+        // ===== LOAD DATA MARKET =====
+        function loadMarketData() {
+            try {
+                showStatus('Memuat data...');
+                initTable();
+                
+                const q = query(window.currentCollection, orderBy("order"));
+                window.unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
+                    const matches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderTableFromData(matches);
+                    showStatus('✅ Data tersinkronisasi');
+                }, (error) => {
+                    console.error(error);
+                    showStatus('❌ Gagal memuat: ' + error.message);
+                });
+            } catch (error) {
+                console.error(error);
+                showStatus('❌ Gagal memuat: ' + error.message);
+            }
+        }
 
         function initTable() {
             const tbody = document.getElementById('tableBody');
@@ -189,6 +335,10 @@
         }
 
         window.addColumn = async function() {
+            if (!window.currentCollection) {
+                showStatus('❌ Pilih market terlebih dahulu!');
+                return;
+            }
             try {
                 showStatus('Menyimpan kolom baru...');
                 const newOrder = window.matchCount + 1;
@@ -200,7 +350,7 @@
                 for (let i = 1; i <= totalTeams; i++) {
                     matchData.results[i] = '';
                 }
-                await setDoc(doc(matchesCollection, `match_${newOrder}`), matchData);
+                await setDoc(doc(window.currentCollection, `match_${newOrder}`), matchData);
                 showStatus('✅ Kolom berhasil ditambahkan!');
             } catch (error) {
                 console.error(error);
@@ -210,11 +360,13 @@
 
         window.handleCellClick = async function(cell) {
             if (window.isSyncing) return;
+            if (!window.currentCollection) return;
+            
             const colOrder = parseInt(cell.dataset.order);
             const rowNumber = parseInt(cell.dataset.row);
             
             try {
-                const matchRef = doc(matchesCollection, `match_${colOrder}`);
+                const matchRef = doc(window.currentCollection, `match_${colOrder}`);
                 
                 if (cell.classList.contains('w-cell')) {
                     const emptyResults = {};
@@ -237,8 +389,9 @@
         };
 
         window.handleDateChange = async function(input, order) {
+            if (!window.currentCollection) return;
             try {
-                const matchRef = doc(matchesCollection, `match_${order}`);
+                const matchRef = doc(window.currentCollection, `match_${order}`);
                 await updateDoc(matchRef, { date: input.value });
             } catch (error) {
                 console.error(error);
@@ -246,10 +399,11 @@
         };
 
         window.resetAllData = async function() {
-            if (!confirm('Yakin ingin menghapus SEMUA data pertandingan?')) return;
+            if (!window.currentCollection) return;
+            if (!confirm(`Yakin ingin menghapus SEMUA data market "${window.currentMarket}"?`)) return;
             try {
                 showStatus('Menghapus semua data...');
-                const snapshot = await getDocs(matchesCollection);
+                const snapshot = await getDocs(window.currentCollection);
                 const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
                 await Promise.all(deletePromises);
                 showStatus('✅ Semua data dihapus');
@@ -366,24 +520,6 @@
             document.getElementById('status').textContent = msg;
             setTimeout(() => { document.getElementById('status').textContent = ''; }, 3000);
         }
-
-        async function loadData() {
-            try {
-                showStatus('Memuat data...');
-                initTable();
-                const q = query(matchesCollection, orderBy("order"));
-                onSnapshot(q, (snapshot) => {
-                    const matches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    renderTableFromData(matches);
-                    showStatus('✅ Data tersinkronisasi');
-                });
-            } catch (error) {
-                console.error(error);
-                showStatus('❌ Gagal memuat: ' + error.message);
-            }
-        }
-
-        loadData();
     </script>
 
 </body>
