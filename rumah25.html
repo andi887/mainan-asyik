@@ -235,7 +235,6 @@
             const select = document.getElementById('marketSelect');
             const market = select.value;
             
-            // Matikan listener sebelumnya jika ada
             if (window.currentDbRef) {
                 window.currentDbRef.off();
             }
@@ -251,7 +250,6 @@
             }
             
             window.currentMarket = market;
-            // Path database: rumah25/{market}/matches
             window.currentDbRef = firebase.database().ref(`rumah25/${market}/matches`);
             
             const marketNames = {
@@ -280,14 +278,13 @@
                 showStatus('Memuat data...');
                 initTable();
                 
-                // Listener realtime (menggantikan onSnapshot)
                 window.currentDbRef.on('value', (snapshot) => {
                     const data = snapshot.val();
                     let matches = [];
                     
                     if (data) {
-                        // Convert object ke array dan urutkan berdasarkan 'order'
-                        matches = Object.values(data).sort((a, b) => a.order - b.order);
+                        // Sort DESCENDING: Kolom terbaru (order besar) di kiri (dekat Nama Tim)
+                        matches = Object.values(data).sort((a, b) => b.order - a.order);
                     }
                     
                     window.matchCount = matches.length;
@@ -316,7 +313,7 @@
             }
         }
 
-        // ===== TAMBAH KOLOM (Auto-save ke Firebase) =====
+        // ===== TAMBAH KOLOM (Auto-save + Auto Tanggal Hari Ini) =====
         window.addColumn = function() {
             if (!window.currentDbRef) {
                 showStatus('❌ Pilih market terlebih dahulu!');
@@ -327,16 +324,18 @@
                 const newOrder = window.matchCount + 1;
                 const matchId = `match_${newOrder}`;
                 
+                // Ambil tanggal hari ini (Format YYYY-MM-DD untuk input type="date")
+                const today = new Date().toISOString().split('T')[0];
+                
                 const matchData = {
                     order: newOrder,
-                    date: '',
+                    date: today, // Otomatis terisi tanggal hari ini
                     results: {}
                 };
                 for (let i = 1; i <= totalTeams; i++) {
                     matchData.results[i] = '';
                 }
                 
-                // Simpan ke Realtime Database
                 window.currentDbRef.child(matchId).set(matchData)
                     .then(() => showStatus('✅ Kolom berhasil ditambahkan!'))
                     .catch(error => showStatus('❌ Gagal menyimpan: ' + error.message));
@@ -356,7 +355,6 @@
             
             try {
                 if (cell.classList.contains('w-cell')) {
-                    // Reset hasil
                     const emptyResults = {};
                     for (let i = 1; i <= totalTeams; i++) emptyResults[i] = '';
                     
@@ -365,7 +363,6 @@
                     return;
                 }
                 
-                // Set W untuk tim ini, X untuk lainnya
                 const newResults = {};
                 for (let i = 1; i <= totalTeams; i++) {
                     newResults[i] = (i === rowNumber) ? 'W' : 'X';
@@ -404,7 +401,7 @@
             }
         };
 
-        // ===== RENDER TABEL (Logic Ori Dipertahankan) =====
+        // ===== RENDER TABEL =====
         function renderTableFromData(matches) {
             window.isSyncing = true;
             
@@ -424,7 +421,7 @@
                 const dateInput = document.createElement('input');
                 dateInput.type = 'date';
                 dateInput.className = 'date-input';
-                dateInput.value = match.date || '';
+                dateInput.value = match.date || ''; // Tampilkan tanggal (hari ini jika baru)
                 dateInput.onchange = function() { window.handleDateChange(this, matchId); };
                 newHeader.appendChild(dateInput);
                 headerRow.appendChild(newHeader);
@@ -436,7 +433,7 @@
                     
                     newCell.className = 'match-cell';
                     newCell.dataset.row = teamNumber;
-                    newCell.dataset.matchId = matchId; // Penting untuk referensi database
+                    newCell.dataset.matchId = matchId;
                     newCell.onclick = function() { window.handleCellClick(this); };
                     
                     if (result === 'W') {
@@ -456,7 +453,7 @@
             window.isSyncing = false;
         }
 
-        // ===== CEK STATUS TIM KUNING (Logic Ori Dipertahankan) =====
+        // ===== CEK STATUS TIM KUNING =====
         function checkTeamStatus() {
             const tbody = document.getElementById('tableBody');
             const rows = tbody.getElementsByTagName('tr');
