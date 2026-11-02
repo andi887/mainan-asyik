@@ -1,6 +1,292 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabel Hasil Pertandingan</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            padding: 20px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        .button-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #34495e;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 0 auto;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            min-width: 50px;
+        }
+        th {
+            background-color: #2c3e50;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .team-col {
+            text-align: left;
+            padding-left: 15px;
+            min-width: 100px;
+            background-color: #ecf0f1;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .date-input {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 12px;
+            text-align: center;
+            width: 100%;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .date-input::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+        .match-cell {
+            cursor: pointer;
+            user-select: none;
+        }
+        .match-cell:hover {
+            background-color: #e8f4f8;
+        }
+        .w-cell {
+            background-color: #27ae60;
+            color: white;
+            font-weight: bold;
+        }
+        .x-cell {
+            background-color: #e74c3c;
+            color: white;
+            font-weight: bold;
+        }
+        .empty-cell {
+            background-color: #fff;
+        }
+        .no-win {
+            background-color: #f1c40f !important;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Tabel Hasil Pertandingan</h2>
+
+    <div class="button-container">
+        <button onclick="addColumn()">+ Tambah Kolom Pertandingan</button>
+    </div>
+
+    <table id="matchTable">
+        <thead>
+            <tr id="headerRow">
+                <th class="team-col">Nama Tim</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+    </table>
+
+    <script>
+        const totalTeams = 12;
+        const yellowTeamCount = 4; // Jumlah tim yang selalu berwarna kuning
+        let matchCount = 0;
+
+        function initTable() {
+            const tbody = document.getElementById('tableBody');
+            for (let i = 1; i <= totalTeams; i++) {
+                const row = document.createElement('tr');
+                const teamCell = document.createElement('td');
+                teamCell.className = 'team-col';
+                teamCell.textContent = i;
+                row.appendChild(teamCell);
+                tbody.appendChild(row);
+            }
+        }
+
+        function addColumn() {
+            matchCount++;
+            const headerRow = document.getElementById('headerRow');
+            const tbody = document.getElementById('tableBody');
+            const rows = tbody.getElementsByTagName('tr');
+
+            const newHeader = document.createElement('th');
+            const dateInput = document.createElement('input');
+            dateInput.type = 'date';
+            dateInput.className = 'date-input';
+            dateInput.title = 'Klik untuk pilih tanggal';
+            newHeader.appendChild(dateInput);
+            headerRow.insertBefore(newHeader, headerRow.children[1]);
+
+            for (let i = 0; i < rows.length; i++) {
+                const newCell = document.createElement('td');
+                newCell.className = 'match-cell empty-cell';
+                newCell.dataset.row = i + 1;
+                newCell.onclick = function() { handleCellClick(this); };
+                rows[i].insertBefore(newCell, rows[i].children[1]);
+            }
+
+            updateColIndices();
+            checkTeamStatus();
+        }
+
+        function updateColIndices() {
+            const tbody = document.getElementById('tableBody');
+            const rows = tbody.getElementsByTagName('tr');
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                for (let j = 1; j < cells.length; j++) {
+                    cells[j].dataset.colIndex = j;
+                }
+            }
+        }
+
+        function handleCellClick(cell) {
+            const colIndex = parseInt(cell.dataset.colIndex);
+            const tbody = document.getElementById('tableBody');
+            const rows = tbody.getElementsByTagName('tr');
+
+            if (cell.classList.contains('w-cell')) {
+                for (let i = 0; i < rows.length; i++) {
+                    const cells = rows[i].getElementsByTagName('td');
+                    const matchCell = cells[colIndex];
+                    if (matchCell) {
+                        matchCell.className = 'match-cell empty-cell';
+                        matchCell.textContent = '';
+                    }
+                }
+                checkTeamStatus();
+                return;
+            }
+
+            cell.className = 'match-cell w-cell';
+            cell.textContent = 'W';
+
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                const matchCell = cells[colIndex];
+                if (matchCell && matchCell !== cell) {
+                    matchCell.className = 'match-cell x-cell';
+                    matchCell.textContent = 'X';
+                }
+            }
+
+            checkTeamStatus();
+        }
+
+        // LOGIKA BARU: 4 tim yang paling lama tidak W berwarna kuning
+        function checkTeamStatus() {
+            const tbody = document.getElementById('tableBody');
+            const rows = tbody.getElementsByTagName('tr');
+            const totalCols = document.getElementById('headerRow').children.length - 1;
+
+            // Jika belum ada kolom pertandingan, semua normal
+            if (totalCols === 0) {
+                for (let i = 0; i < rows.length; i++) {
+                    rows[i].cells[0].classList.remove('no-win');
+                }
+                return;
+            }
+
+            // Hitung "lama tidak W" untuk setiap tim
+            const teamStats = [];
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                let lastWinCol = -1;
+
+                // Cari kolom terakhir (paling kanan/terbaru) yang berisi W
+                for (let j = cells.length - 1; j >= 1; j--) {
+                    if (cells[j].classList.contains('w-cell')) {
+                        lastWinCol = j;
+                        break;
+                    }
+                }
+
+                // Hitung berapa kolom sejak terakhir W
+                let winlessCount;
+                if (lastWinCol === -1) {
+                    winlessCount = totalCols; // Belum pernah W = seluruh kolom
+                } else {
+                    // Kolom terakhir W ada di posisi lastWinCol
+                    // Jumlah kolom setelahnya = totalCols - (lastWinCol - 1)
+                    winlessCount = totalCols - (lastWinCol - 1);
+                }
+
+                teamStats.push({
+                    rowIndex: i,
+                    teamNumber: i + 1,
+                    winlessCount: winlessCount,
+                    lastWinCol: lastWinCol
+                });
+            }
+
+            // Urutkan berdasarkan winlessCount dari TERBESAR ke terkecil
+            // (tim yang paling lama tidak W di atas)
+            teamStats.sort((a, b) => {
+                if (b.winlessCount !== a.winlessCount) {
+                    return b.winlessCount - a.winlessCount;
+                }
+                // Jika sama, urutkan berdasarkan nomor tim (lebih kecil dulu)
+                return a.teamNumber - b.teamNumber;
+            });
+
+            // Ambil N tim teratas (paling lama tidak W) untuk diwarnai kuning
+            const yellowTeams = new Set();
+            const count = Math.min(yellowTeamCount, teamStats.length);
+            for (let i = 0; i < count; i++) {
+                yellowTeams.add(teamStats[i].rowIndex);
+            }
+
+            // Terapkan warna kuning
+            for (let i = 0; i < rows.length; i++) {
+                const teamCell = rows[i].cells[0];
+                if (yellowTeams.has(i)) {
+                    teamCell.classList.add('no-win');
+                } else {
+                    teamCell.classList.remove('no-win');
+                }
+            }
+
+            // Debug: tampilkan urutan tim kuning di console
+            const yellowList = teamStats.slice(0, count).map(t => `Tim ${t.teamNumber} (${t.winlessCount} kolom tanpa W)`);
+            console.log('Tim kuning (paling lama tidak W):', yellowList.join(', '));
+        }
+
+        initTable();
+    </script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="id">
+<head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>rumah23</title>
