@@ -90,13 +90,6 @@
             background-color: #bdc3c7;
             cursor: not-allowed;
         }
-        button.save-btn {
-            background-color: #27ae60;
-            font-weight: bold;
-        }
-        button.save-btn:hover {
-            background-color: #2ecc71;
-        }
         #status {
             text-align: center;
             margin: 10px;
@@ -204,7 +197,6 @@
 
     <div class="button-container">
         <button id="btnAdd" onclick="addColumn()" disabled>+ Tambah Kolom Pertandingan</button>
-        <button id="btnSave" onclick="forceSaveToFirebase()" class="save-btn" disabled>💾 Simpan ke Firebase</button>
         <button id="btnReset" onclick="resetAllData()" style="background-color: #e74c3c;" disabled>🗑️ Reset Semua Data</button>
     </div>
     
@@ -223,9 +215,11 @@
         </table>
     </div>
 
-    <!-- Load Firebase Config (sesuai config-firebase.js Anda) -->
+    <!-- Firebase SDK v8 (Sesuai config-firebase.js) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <!-- Load Config Anda -->
     <script src="config-firebase.js"></script>
 
     <script>
@@ -235,14 +229,13 @@
         window.isSyncing = false;
         window.currentMarket = null;
         window.currentDbRef = null;
-        window.localMatches = []; // Data lokal untuk force save
 
         // ===== FUNGSI GANTI MARKET =====
         window.changeMarket = function() {
             const select = document.getElementById('marketSelect');
             const market = select.value;
             
-            // Stop listener sebelumnya
+            // Matikan listener sebelumnya jika ada
             if (window.currentDbRef) {
                 window.currentDbRef.off();
             }
@@ -250,17 +243,15 @@
             if (!market) {
                 window.currentMarket = null;
                 window.currentDbRef = null;
-                window.localMatches = [];
                 document.getElementById('tableContainer').classList.remove('active');
                 document.getElementById('currentMarketLabel').style.display = 'none';
                 document.getElementById('btnAdd').disabled = true;
-                document.getElementById('btnSave').disabled = true;
                 document.getElementById('btnReset').disabled = true;
                 return;
             }
             
             window.currentMarket = market;
-            // Path: rumah25/{market}/matches
+            // Path database: rumah25/{market}/matches
             window.currentDbRef = firebase.database().ref(`rumah25/${market}/matches`);
             
             const marketNames = {
@@ -278,36 +269,30 @@
             document.getElementById('currentMarketLabel').style.display = 'block';
             document.getElementById('tableContainer').classList.add('active');
             document.getElementById('btnAdd').disabled = false;
-            document.getElementById('btnSave').disabled = false;
             document.getElementById('btnReset').disabled = false;
             
             loadMarketData();
         };
 
-        // ===== LOAD DATA MARKET (AUTO-SAVE REALTIME) =====
+        // ===== LOAD DATA MARKET (Realtime Listener) =====
         function loadMarketData() {
-            if (!window.currentDbRef) return;
-            
             try {
                 showStatus('Memuat data...');
                 initTable();
                 
-                // Listen to real-time changes
+                // Listener realtime (menggantikan onSnapshot)
                 window.currentDbRef.on('value', (snapshot) => {
                     const data = snapshot.val();
+                    let matches = [];
+                    
                     if (data) {
-                        // Convert object to array dan sort by order
-                        const matches = Object.values(data).sort((a, b) => a.order - b.order);
-                        window.localMatches = matches;
-                        window.matchCount = matches.length;
-                        renderTableFromData(matches);
-                        showStatus('✅ Data tersinkronisasi');
-                    } else {
-                        window.localMatches = [];
-                        window.matchCount = 0;
-                        renderTableFromData([]);
-                        showStatus('📭 Data kosong');
+                        // Convert object ke array dan urutkan berdasarkan 'order'
+                        matches = Object.values(data).sort((a, b) => a.order - b.order);
                     }
+                    
+                    window.matchCount = matches.length;
+                    renderTableFromData(matches);
+                    showStatus('✅ Data tersinkronisasi');
                 }, (error) => {
                     console.error(error);
                     showStatus('❌ Gagal memuat: ' + error.message);
@@ -331,229 +316,110 @@
             }
         }
 
-        // ===== TAMBAH KOLOM (AUTO-SAVE KE FIREBASE) =====
+        // ===== TAMBAH KOLOM (Auto-save ke Firebase) =====
         window.addColumn = function() {
-            if (!window.currentDbRef || !window.currentMarket) {
+            if (!window.currentDbRef) {
                 showStatus('❌ Pilih market terlebih dahulu!');
                 return;
             }
-            
             try {
-                showStatus('Menambah kolom...');
+                showStatus('Menyimpan kolom baru...');
                 const newOrder = window.matchCount + 1;
-                const matchId = `match_${Date.now()}`; // Unique ID
+                const matchId = `match_${newOrder}`;
                 
                 const matchData = {
                     order: newOrder,
                     date: '',
                     results: {}
                 };
-                
-                // Inisialisasi hasil kosong untuk semua tim
                 for (let i = 1; i <= totalTeams; i++) {
                     matchData.results[i] = '';
                 }
                 
-                // Simpan ke Firebase (auto-save)
-                window.currentDbRef.child(matchId).set(matchData, (error) => {
-                    if (error) {
-                        console.error(error);
-                        showStatus('❌ Gagal menyimpan: ' + error.message);
-                    } else {
-                        showStatus('✅ Kolom berhasil ditambahkan!');
-                    }
-                });
-            } catch (error) {
-                console.error(error);
-                showStatus('❌ Gagal menambahkan: ' + error.message);
-            }
-        };
-
-        // ===== HANDLE KLIK SEL (AUTO-SAVE KE FIREBASE) =====
-        window.handleCellClick = function(cell) {
-            if (window.isSyncing) return;
-            if (!window.currentDbRef) return;
-            
-            const matchId = cell.dataset.matchId;
-            const rowNumber = parseInt(cell.dataset.row);
-            const tbody = document.getElementById('tableBody');
-            const rows = tbody.getElementsByTagName('tr');
-            
-            try {
-                // Jika sel sudah W, reset semua di kolom ini
-                if (cell.classList.contains('w-cell')) {
-                    const emptyResults = {};
-                    for (let i = 1; i <= totalTeams; i++) {
-                        emptyResults[i] = '';
-                    }
-                    
-                    window.currentDbRef.child(matchId).child('results').update(emptyResults, (error) => {
-                        if (error) {
-                            console.error(error);
-                            showStatus('❌ Gagal mereset: ' + error.message);
-                        } else {
-                            showStatus('✅ Hasil direset');
-                        }
-                    });
-                    return;
-                }
-                
-                // Set tim ini W, lainnya X
-                const newResults = {};
-                for (let i = 1; i <= totalTeams; i++) {
-                    newResults[i] = (i === rowNumber) ? 'W' : 'X';
-                }
-                
-                window.currentDbRef.child(matchId).child('results').update(newResults, (error) => {
-                    if (error) {
-                        console.error(error);
-                        showStatus('❌ Gagal menyimpan: ' + error.message);
-                    } else {
-                        showStatus('✅ Hasil disimpan');
-                    }
-                });
-            } catch (error) {
-                console.error(error);
-                showStatus('❌ Gagal: ' + error.message);
-            }
-        };
-
-        // ===== HANDLE PERUBAHAN TANGGAL (AUTO-SAVE) =====
-        window.handleDateChange = function(input, matchId) {
-            if (!window.currentDbRef) return;
-            
-            window.currentDbRef.child(matchId).child('date').set(input.value, (error) => {
-                if (error) {
-                    console.error(error);
-                }
-            });
-        };
-
-        // ===== FUNGSI BARU: FORCE SAVE KE FIREBASE =====
-        window.forceSaveToFirebase = function() {
-            if (!window.currentDbRef || !window.currentMarket) {
-                showStatus('❌ Tidak ada market yang aktif!');
-                return;
-            }
-            
-            try {
-                showStatus('💾 Menyimpan paksa ke Firebase...');
-                
-                const tbody = document.getElementById('tableBody');
-                const headerRow = document.getElementById('headerRow');
-                const rows = tbody.getElementsByTagName('tr');
-                const totalCols = headerRow.children.length - 1;
-                
-                if (totalCols === 0) {
-                    showStatus('⚠️ Tidak ada data untuk disimpan');
-                    return;
-                }
-                
-                // Hapus semua data lama di path ini
-                window.currentDbRef.remove((error) => {
-                    if (error) {
-                        console.error(error);
-                        showStatus('❌ Gagal menghapus data lama: ' + error.message);
-                        return;
-                    }
-                    
-                    // Simpan ulang semua data dari tabel
-                    let savedCount = 0;
-                    const totalToSave = totalCols;
-                    
-                    for (let colIndex = 1; colIndex <= totalCols; colIndex++) {
-                        const dateInput = headerRow.children[colIndex].querySelector('.date-input');
-                        const dateValue = dateInput ? dateInput.value : '';
-                        const matchId = `match_force_${Date.now()}_${colIndex}`;
-                        
-                        const results = {};
-                        for (let i = 0; i < rows.length; i++) {
-                            const teamNumber = i + 1;
-                            const cells = rows[i].getElementsByTagName('td');
-                            const cell = cells[colIndex];
-                            
-                            if (cell.classList.contains('w-cell')) {
-                                results[teamNumber] = 'W';
-                            } else if (cell.classList.contains('x-cell')) {
-                                results[teamNumber] = 'X';
-                            } else {
-                                results[teamNumber] = '';
-                            }
-                        }
-                        
-                        const matchData = {
-                            order: colIndex,
-                            date: dateValue,
-                            results: results
-                        };
-                        
-                        window.currentDbRef.child(matchId).set(matchData, (error) => {
-                            if (error) {
-                                console.error(error);
-                            } else {
-                                savedCount++;
-                                if (savedCount === totalToSave) {
-                                    showStatus('✅ Semua data berhasil disimpan paksa ke Firebase!');
-                                    setTimeout(() => showStatus(''), 3000);
-                                }
-                            }
-                        });
-                    }
-                });
+                // Simpan ke Realtime Database
+                window.currentDbRef.child(matchId).set(matchData)
+                    .then(() => showStatus('✅ Kolom berhasil ditambahkan!'))
+                    .catch(error => showStatus('❌ Gagal menyimpan: ' + error.message));
             } catch (error) {
                 console.error(error);
                 showStatus('❌ Gagal menyimpan: ' + error.message);
             }
         };
 
-        // ===== RESET SEMUA DATA =====
-        window.resetAllData = function() {
-            if (!window.currentDbRef || !window.currentMarket) return;
-            if (!confirm(`Yakin ingin menghapus SEMUA data market "${window.currentMarket}"?`)) return;
+        // ===== HANDLE KLIK SEL (Auto-save ke Firebase) =====
+        window.handleCellClick = function(cell) {
+            if (window.isSyncing) return;
+            if (!window.currentDbRef) return;
+            
+            const matchId = cell.dataset.matchId;
+            const rowNumber = parseInt(cell.dataset.row);
             
             try {
+                if (cell.classList.contains('w-cell')) {
+                    // Reset hasil
+                    const emptyResults = {};
+                    for (let i = 1; i <= totalTeams; i++) emptyResults[i] = '';
+                    
+                    window.currentDbRef.child(matchId).child('results').update(emptyResults);
+                    showStatus('✅ Hasil direset');
+                    return;
+                }
+                
+                // Set W untuk tim ini, X untuk lainnya
+                const newResults = {};
+                for (let i = 1; i <= totalTeams; i++) {
+                    newResults[i] = (i === rowNumber) ? 'W' : 'X';
+                }
+                
+                window.currentDbRef.child(matchId).child('results').update(newResults);
+                showStatus('✅ Hasil disimpan');
+            } catch (error) {
+                console.error(error);
+                showStatus('❌ Gagal menyimpan: ' + error.message);
+            }
+        };
+
+        // ===== HANDLE PERUBAHAN TANGGAL (Auto-save) =====
+        window.handleDateChange = function(input, matchId) {
+            if (!window.currentDbRef) return;
+            try {
+                window.currentDbRef.child(matchId).child('date').set(input.value);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        // ===== RESET SEMUA DATA =====
+        window.resetAllData = function() {
+            if (!window.currentDbRef) return;
+            if (!confirm(`Yakin ingin menghapus SEMUA data market "${window.currentMarket}"?`)) return;
+            try {
                 showStatus('Menghapus semua data...');
-                window.currentDbRef.remove((error) => {
-                    if (error) {
-                        console.error(error);
-                        showStatus('❌ Gagal menghapus: ' + error.message);
-                    } else {
-                        showStatus('✅ Semua data dihapus');
-                        window.localMatches = [];
-                        window.matchCount = 0;
-                    }
-                });
+                window.currentDbRef.remove()
+                    .then(() => showStatus('✅ Semua data dihapus'))
+                    .catch(error => showStatus('❌ Gagal menghapus: ' + error.message));
             } catch (error) {
                 console.error(error);
                 showStatus('❌ Gagal menghapus: ' + error.message);
             }
         };
 
-        // ===== RENDER TABEL =====
+        // ===== RENDER TABEL (Logic Ori Dipertahankan) =====
         function renderTableFromData(matches) {
             window.isSyncing = true;
             
             const headerRow = document.getElementById('headerRow');
             const tbody = document.getElementById('tableBody');
             
-            // Reset header (sisakan "Nama Tim")
-            while (headerRow.children.length > 1) {
-                headerRow.removeChild(headerRow.lastChild);
-            }
-            
-            // Reset body (sisakan sel nama tim)
+            while (headerRow.children.length > 1) headerRow.removeChild(headerRow.lastChild);
             const rows = tbody.getElementsByTagName('tr');
             for (let i = 0; i < rows.length; i++) {
-                while (rows[i].children.length > 1) {
-                    rows[i].removeChild(rows[i].lastChild);
-                }
+                while (rows[i].children.length > 1) rows[i].removeChild(rows[i].lastChild);
             }
             
-            // Render kolom dari data
             matches.forEach(match => {
-                const matchId = match.id || `match_${match.order}`;
+                const matchId = `match_${match.order}`;
                 
-                // Header dengan input tanggal
                 const newHeader = document.createElement('th');
                 const dateInput = document.createElement('input');
                 dateInput.type = 'date';
@@ -563,15 +429,14 @@
                 newHeader.appendChild(dateInput);
                 headerRow.appendChild(newHeader);
                 
-                // Sel untuk setiap tim
                 for (let i = 0; i < rows.length; i++) {
                     const teamNumber = i + 1;
                     const newCell = document.createElement('td');
-                    const result = match.results[teamNumber] || '';
+                    const result = match.results ? match.results[teamNumber] : '';
                     
                     newCell.className = 'match-cell';
                     newCell.dataset.row = teamNumber;
-                    newCell.dataset.matchId = matchId;
+                    newCell.dataset.matchId = matchId; // Penting untuk referensi database
                     newCell.onclick = function() { window.handleCellClick(this); };
                     
                     if (result === 'W') {
@@ -583,7 +448,6 @@
                     } else {
                         newCell.classList.add('empty-cell');
                     }
-                    
                     rows[i].appendChild(newCell);
                 }
             });
@@ -592,17 +456,14 @@
             window.isSyncing = false;
         }
 
-        // ===== CEK STATUS TIM KUNING =====
+        // ===== CEK STATUS TIM KUNING (Logic Ori Dipertahankan) =====
         function checkTeamStatus() {
             const tbody = document.getElementById('tableBody');
             const rows = tbody.getElementsByTagName('tr');
-            const headerRow = document.getElementById('headerRow');
-            const totalCols = headerRow.children.length - 1;
+            const totalCols = document.getElementById('headerRow').children.length - 1;
             
             if (totalCols === 0) {
-                for (let i = 0; i < rows.length; i++) {
-                    rows[i].cells[0].classList.remove('no-win');
-                }
+                for (let i = 0; i < rows.length; i++) rows[i].cells[0].classList.remove('no-win');
                 return;
             }
             
@@ -639,25 +500,18 @@
             
             const yellowTeams = new Set();
             const count = Math.min(yellowTeamCount, teamStats.length);
-            for (let i = 0; i < count; i++) {
-                yellowTeams.add(teamStats[i].rowIndex);
-            }
+            for (let i = 0; i < count; i++) yellowTeams.add(teamStats[i].rowIndex);
             
             for (let i = 0; i < rows.length; i++) {
                 const teamCell = rows[i].cells[0];
-                if (yellowTeams.has(i)) {
-                    teamCell.classList.add('no-win');
-                } else {
-                    teamCell.classList.remove('no-win');
-                }
+                if (yellowTeams.has(i)) teamCell.classList.add('no-win');
+                else teamCell.classList.remove('no-win');
             }
         }
 
         function showStatus(msg) {
             document.getElementById('status').textContent = msg;
-            setTimeout(() => { 
-                document.getElementById('status').textContent = ''; 
-            }, 3000);
+            setTimeout(() => { document.getElementById('status').textContent = ''; }, 3000);
         }
     </script>
 
