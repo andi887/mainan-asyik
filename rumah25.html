@@ -27,7 +27,6 @@
             color: #333;
         }
         
-        /* ===== STYLE DROPDOWN MARKET ===== */
         .market-selector {
             text-align: center;
             margin-bottom: 20px;
@@ -176,7 +175,6 @@
 
     <h2>Rumah25 - Tabel Hasil Pertandingan</h2>
 
-    <!-- ===== DROPDOWN MARKET ===== -->
     <div class="market-selector">
         <select id="marketSelect" onchange="changeMarket()">
             <option value="">-- Pilih Market --</option>
@@ -202,7 +200,6 @@
     
     <div id="status"></div>
 
-    <!-- ===== TABEL (awalnya tersembunyi) ===== -->
     <div class="table-container" id="tableContainer">
         <table id="matchTable">
             <thead>
@@ -215,11 +212,8 @@
         </table>
     </div>
 
-    <!-- Firebase SDK v8 (Sesuai config-firebase.js) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    
-    <!-- Load Config Anda -->
     <script src="config-firebase.js"></script>
 
     <script>
@@ -272,7 +266,7 @@
             loadMarketData();
         };
 
-        // ===== LOAD DATA MARKET (Realtime Listener) =====
+        // ===== LOAD DATA MARKET =====
         function loadMarketData() {
             try {
                 showStatus('Memuat data...');
@@ -283,7 +277,6 @@
                     let matches = [];
                     
                     if (data) {
-                        // Sort DESCENDING: Kolom terbaru (order besar) di kiri (dekat Nama Tim)
                         matches = Object.values(data).sort((a, b) => b.order - a.order);
                     }
                     
@@ -313,7 +306,21 @@
             }
         }
 
-        // ===== TAMBAH KOLOM (Auto-save + Auto Tanggal Hari Ini) =====
+        // ===== FUNGSI BANTU: Hitung tanggal berdasarkan urutan =====
+        // order 1 = hari ini, order 2 = kemarin, order 3 = 2 hari lalu, dst
+        function getDateForOrder(order) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Reset waktu ke tengah malam
+            today.setDate(today.getDate() - (order - 1));
+            
+            // Format YYYY-MM-DD untuk input type="date"
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // ===== TAMBAH KOLOM (Auto-save + Tanggal Otomatis Mundur) =====
         window.addColumn = function() {
             if (!window.currentDbRef) {
                 showStatus('❌ Pilih market terlebih dahulu!');
@@ -324,12 +331,14 @@
                 const newOrder = window.matchCount + 1;
                 const matchId = `match_${newOrder}`;
                 
-                // Ambil tanggal hari ini (Format YYYY-MM-DD untuk input type="date")
-                const today = new Date().toISOString().split('T')[0];
+                // ⭐ PERUBAHAN: Tanggal dihitung berdasarkan urutan
+                // Kolom baru (order terbaru) = hari ini
+                // Kolom berikutnya = kemarin, 2 hari lalu, dst
+                const autoDate = getDateForOrder(newOrder);
                 
                 const matchData = {
                     order: newOrder,
-                    date: today, // Otomatis terisi tanggal hari ini
+                    date: autoDate,
                     results: {}
                 };
                 for (let i = 1; i <= totalTeams; i++) {
@@ -345,7 +354,7 @@
             }
         };
 
-        // ===== HANDLE KLIK SEL (Auto-save ke Firebase) =====
+        // ===== HANDLE KLIK SEL =====
         window.handleCellClick = function(cell) {
             if (window.isSyncing) return;
             if (!window.currentDbRef) return;
@@ -376,7 +385,7 @@
             }
         };
 
-        // ===== HANDLE PERUBAHAN TANGGAL (Auto-save) =====
+        // ===== HANDLE PERUBAHAN TANGGAL =====
         window.handleDateChange = function(input, matchId) {
             if (!window.currentDbRef) return;
             try {
@@ -421,7 +430,7 @@
                 const dateInput = document.createElement('input');
                 dateInput.type = 'date';
                 dateInput.className = 'date-input';
-                dateInput.value = match.date || ''; // Tampilkan tanggal (hari ini jika baru)
+                dateInput.value = match.date || '';
                 dateInput.onchange = function() { window.handleDateChange(this, matchId); };
                 newHeader.appendChild(dateInput);
                 headerRow.appendChild(newHeader);
