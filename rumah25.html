@@ -188,11 +188,11 @@
         <select id="marketSelect" onchange="changeMarket()">
             <option value="">-- Pilih Market --</option>
             <option value="cambodia">🇰🇭 Cambodia</option>
-            <option value="sidney">🇦 Sidney</option>
+            <option value="sidney">🇦🇺 Sidney</option>
             <option value="china">🇨🇳 China</option>
-            <option value="sgp">🇬 SGP</option>
-            <option value="japan">🇵 Japan</option>
-            <option value="taiwan">🇹 Taiwan</option>
+            <option value="sgp">🇸🇬 SGP</option>
+            <option value="japan">🇯🇵 Japan</option>
+            <option value="taiwan">🇹🇼 Taiwan</option>
             <option value="hongkong">🇭🇰 Hongkong</option>
             <option value="admin">🛡️ Control Centre (Admin)</option>
         </select>
@@ -204,7 +204,7 @@
 
     <div class="button-container">
         <button id="btnAdd" onclick="addColumn()" disabled>+ Tambah Kolom Pertandingan</button>
-        <button id="btnSave" onclick="saveToFirebase()" class="save-btn" disabled>💾 Simpan ke Firebase</button>
+        <button id="btnSave" onclick="forceSaveToFirebase()" class="save-btn" disabled>💾 Simpan ke Firebase</button>
         <button id="btnReset" onclick="resetAllData()" style="background-color: #e74c3c;" disabled>🗑️ Reset Semua Data</button>
     </div>
     
@@ -223,30 +223,56 @@
         </table>
     </div>
 
-    <!-- Load Firebase Config -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="config-firebase.js"></script>
+    <!-- Firebase SDK (Modular v10 - SAMA SEPERTI ORI) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { 
+            getFirestore, 
+            collection, 
+            doc, 
+            setDoc, 
+            getDocs, 
+            deleteDoc,
+            updateDoc,
+            onSnapshot,
+            orderBy,
+            query
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    <script>
+        // ⚠️ GANTI DENGAN KONFIGURASI FIREBASE ANDA (SAMA SEPERTI ORI)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCr5B0P0X_eqMNYbZonu40NXRxqCmx4t_o",
+            authDomain: "sabar-2e686.firebaseapp.com",
+            projectId: "sabar-2e686",
+            storageBucket: "sabar-2e686.firebasestorage.app",
+            messagingSenderId: "917602556667",
+            appId: "1:917602556667:web:cc087826739cf2d2cd2e5e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         const totalTeams = 12;
         const yellowTeamCount = 4;
         window.matchCount = 0;
         window.isSyncing = false;
         window.currentMarket = null;
-        window.currentDbRef = null;
-        window.tableData = {
-            matches: []
-        };
+        window.currentCollection = null;
+        window.unsubscribeSnapshot = null;
 
-        // ===== FUNGSI GANTI MARKET =====
+        // ===== FUNGSI GANTI MARKET (SAMA SEPERTI ORI) =====
         window.changeMarket = function() {
             const select = document.getElementById('marketSelect');
             const market = select.value;
             
+            if (window.unsubscribeSnapshot) {
+                window.unsubscribeSnapshot();
+                window.unsubscribeSnapshot = null;
+            }
+            
             if (!market) {
                 window.currentMarket = null;
-                window.currentDbRef = null;
+                window.currentCollection = null;
                 document.getElementById('tableContainer').classList.remove('active');
                 document.getElementById('currentMarketLabel').style.display = 'none';
                 document.getElementById('btnAdd').disabled = true;
@@ -256,16 +282,14 @@
             }
             
             window.currentMarket = market;
-            // Path ke Realtime Database: rumah25/{market}
-            window.currentDbRef = firebase.database().ref(`rumah25/${market}`);
+            window.currentCollection = collection(db, `rumah25_${market}`);
             
-            // Update UI
             const marketNames = {
-                cambodia: '🇭 Cambodia',
+                cambodia: '🇰🇭 Cambodia',
                 sidney: '🇦🇺 Sidney',
                 china: '🇨🇳 China',
                 sgp: '🇸🇬 SGP',
-                japan: '🇵 Japan',
+                japan: '🇯🇵 Japan',
                 taiwan: '🇹🇼 Taiwan',
                 hongkong: '🇭🇰 Hongkong',
                 admin: '🛡️ Control Centre (Admin)'
@@ -278,32 +302,20 @@
             document.getElementById('btnSave').disabled = false;
             document.getElementById('btnReset').disabled = false;
             
-            // Load data market ini dari Firebase
             loadMarketData();
         };
 
-        // ===== LOAD DATA MARKET dari Realtime Database =====
+        // ===== LOAD DATA MARKET (SAMA SEPERTI ORI - AUTO-SAVE REALTIME) =====
         function loadMarketData() {
-            if (!window.currentDbRef) return;
-            
             try {
                 showStatus('Memuat data...');
                 initTable();
                 
-                // Listen to real-time changes
-                window.currentDbRef.on('value', (snapshot) => {
-                    const data = snapshot.val();
-                    if (data && data.matches) {
-                        window.tableData = data;
-                        window.matchCount = data.matches.length;
-                        renderTableFromData(data.matches);
-                        showStatus('✅ Data tersinkronisasi');
-                    } else {
-                        window.tableData = { matches: [] };
-                        window.matchCount = 0;
-                        renderTableFromData([]);
-                        showStatus(' Data kosong');
-                    }
+                const q = query(window.currentCollection, orderBy("order"));
+                window.unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
+                    const matches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderTableFromData(matches);
+                    showStatus('✅ Data tersinkronisasi');
                 }, (error) => {
                     console.error(error);
                     showStatus('❌ Gagal memuat: ' + error.message);
@@ -327,47 +339,146 @@
             }
         }
 
-        // ===== TAMBAH KOLOM (hanya di memori lokal) =====
-        window.addColumn = function() {
-            if (!window.currentMarket) {
+        // ===== TAMBAH KOLOM (SAMA SEPERTI ORI - AUTO-SAVE) =====
+        window.addColumn = async function() {
+            if (!window.currentCollection) {
                 showStatus('❌ Pilih market terlebih dahulu!');
                 return;
             }
-            
-            window.matchCount++;
-            const newMatch = {
-                order: window.matchCount,
-                date: '',
-                results: {}
-            };
-            
-            // Inisialisasi hasil kosong untuk semua tim
-            for (let i = 1; i <= totalTeams; i++) {
-                newMatch.results[i] = '';
+            try {
+                showStatus('Menyimpan kolom baru...');
+                const newOrder = window.matchCount + 1;
+                const matchData = {
+                    order: newOrder,
+                    date: '',
+                    results: {}
+                };
+                for (let i = 1; i <= totalTeams; i++) {
+                    matchData.results[i] = '';
+                }
+                await setDoc(doc(window.currentCollection, `match_${newOrder}`), matchData);
+                showStatus('✅ Kolom berhasil ditambahkan!');
+            } catch (error) {
+                console.error(error);
+                showStatus('❌ Gagal menyimpan: ' + error.message);
             }
-            
-            window.tableData.matches.push(newMatch);
-            renderTableFromData(window.tableData.matches);
-            showStatus('📝 Kolom ditambahkan (belum tersimpan - klik tombol Simpan)');
         };
 
-        // ===== SIMPAN KE FIREBASE =====
-        window.saveToFirebase = async function() {
-            if (!window.currentDbRef || !window.currentMarket) {
+        // ===== HANDLE KLIK SEL (SAMA SEPERTI ORI - AUTO-SAVE) =====
+        window.handleCellClick = async function(cell) {
+            if (window.isSyncing) return;
+            if (!window.currentCollection) return;
+            
+            const colOrder = parseInt(cell.dataset.order);
+            const rowNumber = parseInt(cell.dataset.row);
+            
+            try {
+                const matchRef = doc(window.currentCollection, `match_${colOrder}`);
+                
+                if (cell.classList.contains('w-cell')) {
+                    const emptyResults = {};
+                    for (let i = 1; i <= totalTeams; i++) emptyResults[i] = '';
+                    await updateDoc(matchRef, { results: emptyResults });
+                    showStatus('✅ Hasil direset');
+                    return;
+                }
+                
+                const newResults = {};
+                for (let i = 1; i <= totalTeams; i++) {
+                    newResults[i] = (i === rowNumber) ? 'W' : 'X';
+                }
+                await updateDoc(matchRef, { results: newResults });
+                showStatus('✅ Hasil disimpan');
+            } catch (error) {
+                console.error(error);
+                showStatus('❌ Gagal menyimpan: ' + error.message);
+            }
+        };
+
+        // ===== HANDLE PERUBAHAN TANGGAL (SAMA SEPERTI ORI - AUTO-SAVE) =====
+        window.handleDateChange = async function(input, order) {
+            if (!window.currentCollection) return;
+            try {
+                const matchRef = doc(window.currentCollection, `match_${order}`);
+                await updateDoc(matchRef, { date: input.value });
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        // ===== RESET SEMUA DATA (SAMA SEPERTI ORI) =====
+        window.resetAllData = async function() {
+            if (!window.currentCollection) return;
+            if (!confirm(`Yakin ingin menghapus SEMUA data market "${window.currentMarket}"?`)) return;
+            try {
+                showStatus('Menghapus semua data...');
+                const snapshot = await getDocs(window.currentCollection);
+                const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+                await Promise.all(deletePromises);
+                showStatus('✅ Semua data dihapus');
+            } catch (error) {
+                console.error(error);
+                showStatus('❌ Gagal menghapus: ' + error.message);
+            }
+        };
+
+        // ===== FUNGSI BARU: FORCE SAVE KE FIREBASE =====
+        // Tombol ini memastikan semua data di tabel tersinkronisasi penuh ke Firestore
+        window.forceSaveToFirebase = async function() {
+            if (!window.currentCollection || !window.currentMarket) {
                 showStatus('❌ Tidak ada market yang aktif!');
                 return;
             }
             
             try {
-                showStatus('💾 Menyimpan ke Firebase...');
+                showStatus('💾 Menyimpan paksa ke Firebase...');
                 
-                // Update semua hasil dari tabel ke data object
-                updateDataFromTable();
+                const tbody = document.getElementById('tableBody');
+                const headerRow = document.getElementById('headerRow');
+                const rows = tbody.getElementsByTagName('tr');
+                const totalCols = headerRow.children.length - 1;
                 
-                // Simpan ke Realtime Database
-                await window.currentDbRef.set(window.tableData);
+                if (totalCols === 0) {
+                    showStatus('⚠️ Tidak ada data untuk disimpan');
+                    return;
+                }
                 
-                showStatus('✅ Berhasil disimpan ke Firebase!');
+                // Ambil semua data dari tabel dan simpan ulang ke Firestore
+                const savePromises = [];
+                
+                for (let colIndex = 1; colIndex <= totalCols; colIndex++) {
+                    const dateInput = headerRow.children[colIndex].querySelector('.date-input');
+                    const dateValue = dateInput ? dateInput.value : '';
+                    const order = colIndex;
+                    
+                    const results = {};
+                    for (let i = 0; i < rows.length; i++) {
+                        const teamNumber = i + 1;
+                        const cells = rows[i].getElementsByTagName('td');
+                        const cell = cells[colIndex];
+                        
+                        if (cell.classList.contains('w-cell')) {
+                            results[teamNumber] = 'W';
+                        } else if (cell.classList.contains('x-cell')) {
+                            results[teamNumber] = 'X';
+                        } else {
+                            results[teamNumber] = '';
+                        }
+                    }
+                    
+                    const matchData = {
+                        order: order,
+                        date: dateValue,
+                        results: results
+                    };
+                    
+                    savePromises.push(
+                        setDoc(doc(window.currentCollection, `match_${order}`), matchData)
+                    );
+                }
+                
+                await Promise.all(savePromises);
+                showStatus('✅ Semua data berhasil disimpan paksa ke Firebase!');
                 setTimeout(() => showStatus(''), 3000);
             } catch (error) {
                 console.error(error);
@@ -375,148 +486,31 @@
             }
         };
 
-        // ===== UPDATE DATA DARI TABEL =====
-        function updateDataFromTable() {
-            const tbody = document.getElementById('tableBody');
-            const rows = tbody.getElementsByTagName('tr');
-            const headerRow = document.getElementById('headerRow');
-            const totalCols = headerRow.children.length - 1;
-            
-            // Reset matches array
-            window.tableData.matches = [];
-            
-            // Ambil tanggal dari header
-            const dates = [];
-            for (let j = 1; j < headerRow.children.length; j++) {
-                const dateInput = headerRow.children[j].querySelector('.date-input');
-                dates.push(dateInput ? dateInput.value : '');
-            }
-            
-            // Bangun ulang matches dari data sel
-            for (let colIndex = 0; colIndex < totalCols; colIndex++) {
-                const match = {
-                    order: colIndex + 1,
-                    date: dates[colIndex] || '',
-                    results: {}
-                };
-                
-                for (let i = 0; i < rows.length; i++) {
-                    const teamNumber = i + 1;
-                    const cells = rows[i].getElementsByTagName('td');
-                    const cell = cells[colIndex + 1]; // +1 karena kolom 0 adalah nama tim
-                    
-                    if (cell) {
-                        if (cell.classList.contains('w-cell')) {
-                            match.results[teamNumber] = 'W';
-                        } else if (cell.classList.contains('x-cell')) {
-                            match.results[teamNumber] = 'X';
-                        } else {
-                            match.results[teamNumber] = '';
-                        }
-                    }
-                }
-                
-                window.tableData.matches.push(match);
-            }
-        }
-
-        // ===== HANDLE KLIK SEL =====
-        window.handleCellClick = function(cell) {
-            if (window.isSyncing) return;
-            
-            const colIndex = parseInt(cell.dataset.colIndex);
-            const rowNumber = parseInt(cell.dataset.row);
-            const tbody = document.getElementById('tableBody');
-            const rows = tbody.getElementsByTagName('tr');
-            
-            // Jika sel sudah W, reset semua di kolom ini
-            if (cell.classList.contains('w-cell')) {
-                for (let i = 0; i < rows.length; i++) {
-                    const cells = rows[i].getElementsByTagName('td');
-                    const matchCell = cells[colIndex];
-                    if (matchCell) {
-                        matchCell.className = 'match-cell empty-cell';
-                        matchCell.textContent = '';
-                    }
-                }
-                checkTeamStatus();
-                showStatus('📝 Hasil direset (klik Simpan untuk menyimpan)');
-                return;
-            }
-            
-            // Set tim ini W, lainnya X
-            cell.className = 'match-cell w-cell';
-            cell.textContent = 'W';
-            
-            for (let i = 0; i < rows.length; i++) {
-                const cells = rows[i].getElementsByTagName('td');
-                const matchCell = cells[colIndex];
-                if (matchCell && matchCell !== cell) {
-                    matchCell.className = 'match-cell x-cell';
-                    matchCell.textContent = 'X';
-                }
-            }
-            
-            checkTeamStatus();
-            showStatus('📝 Hasil diubah (klik Simpan untuk menyimpan)');
-        };
-
-        // ===== HANDLE PERUBAHAN TANGGAL =====
-        window.handleDateChange = function(input, colIndex) {
-            showStatus('📝 Tanggal diubah (klik Simpan untuk menyimpan)');
-        };
-
-        // ===== RESET SEMUA DATA =====
-        window.resetAllData = async function() {
-            if (!window.currentDbRef || !window.currentMarket) return;
-            if (!confirm(`Yakin ingin menghapus SEMUA data market "${window.currentMarket}"?`)) return;
-            
-            try {
-                showStatus('Menghapus semua data...');
-                await window.currentDbRef.remove();
-                showStatus('✅ Semua data dihapus');
-                window.tableData = { matches: [] };
-                window.matchCount = 0;
-                initTable();
-            } catch (error) {
-                console.error(error);
-                showStatus('❌ Gagal menghapus: ' + error.message);
-            }
-        };
-
-        // ===== RENDER TABEL =====
+        // ===== RENDER TABEL (SAMA SEPERTI ORI) =====
         function renderTableFromData(matches) {
             window.isSyncing = true;
+            matches.sort((a, b) => a.order - b.order);
+            window.matchCount = matches.length;
             
             const headerRow = document.getElementById('headerRow');
             const tbody = document.getElementById('tableBody');
             
-            // Reset header (sisakan "Nama Tim")
-            while (headerRow.children.length > 1) {
-                headerRow.removeChild(headerRow.lastChild);
-            }
-            
-            // Reset body (sisakan sel nama tim)
+            while (headerRow.children.length > 1) headerRow.removeChild(headerRow.lastChild);
             const rows = tbody.getElementsByTagName('tr');
             for (let i = 0; i < rows.length; i++) {
-                while (rows[i].children.length > 1) {
-                    rows[i].removeChild(rows[i].lastChild);
-                }
+                while (rows[i].children.length > 1) rows[i].removeChild(rows[i].lastChild);
             }
             
-            // Render kolom dari data
             matches.forEach(match => {
-                // Header dengan input tanggal
                 const newHeader = document.createElement('th');
                 const dateInput = document.createElement('input');
                 dateInput.type = 'date';
                 dateInput.className = 'date-input';
                 dateInput.value = match.date || '';
-                dateInput.onchange = function() { window.handleDateChange(this, matches.indexOf(match)); };
+                dateInput.onchange = function() { window.handleDateChange(this, match.order); };
                 newHeader.appendChild(dateInput);
                 headerRow.appendChild(newHeader);
                 
-                // Sel untuk setiap tim
                 for (let i = 0; i < rows.length; i++) {
                     const teamNumber = i + 1;
                     const newCell = document.createElement('td');
@@ -524,7 +518,7 @@
                     
                     newCell.className = 'match-cell';
                     newCell.dataset.row = teamNumber;
-                    newCell.dataset.colIndex = matches.indexOf(match);
+                    newCell.dataset.order = match.order;
                     newCell.onclick = function() { window.handleCellClick(this); };
                     
                     if (result === 'W') {
@@ -536,7 +530,6 @@
                     } else {
                         newCell.classList.add('empty-cell');
                     }
-                    
                     rows[i].appendChild(newCell);
                 }
             });
@@ -545,17 +538,14 @@
             window.isSyncing = false;
         }
 
-        // ===== CEK STATUS TIM KUNING =====
+        // ===== CEK STATUS TIM KUNING (SAMA SEPERTI ORI) =====
         function checkTeamStatus() {
             const tbody = document.getElementById('tableBody');
             const rows = tbody.getElementsByTagName('tr');
-            const headerRow = document.getElementById('headerRow');
-            const totalCols = headerRow.children.length - 1;
+            const totalCols = document.getElementById('headerRow').children.length - 1;
             
             if (totalCols === 0) {
-                for (let i = 0; i < rows.length; i++) {
-                    rows[i].cells[0].classList.remove('no-win');
-                }
+                for (let i = 0; i < rows.length; i++) rows[i].cells[0].classList.remove('no-win');
                 return;
             }
             
@@ -592,25 +582,18 @@
             
             const yellowTeams = new Set();
             const count = Math.min(yellowTeamCount, teamStats.length);
-            for (let i = 0; i < count; i++) {
-                yellowTeams.add(teamStats[i].rowIndex);
-            }
+            for (let i = 0; i < count; i++) yellowTeams.add(teamStats[i].rowIndex);
             
             for (let i = 0; i < rows.length; i++) {
                 const teamCell = rows[i].cells[0];
-                if (yellowTeams.has(i)) {
-                    teamCell.classList.add('no-win');
-                } else {
-                    teamCell.classList.remove('no-win');
-                }
+                if (yellowTeams.has(i)) teamCell.classList.add('no-win');
+                else teamCell.classList.remove('no-win');
             }
         }
 
         function showStatus(msg) {
             document.getElementById('status').textContent = msg;
-            setTimeout(() => { 
-                document.getElementById('status').textContent = ''; 
-            }, 3000);
+            setTimeout(() => { document.getElementById('status').textContent = ''; }, 3000);
         }
     </script>
 
