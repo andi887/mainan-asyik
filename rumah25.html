@@ -89,6 +89,13 @@
             background-color: #bdc3c7;
             cursor: not-allowed;
         }
+        button.save-btn {
+            background-color: #27ae60;
+            font-weight: bold;
+        }
+        button.save-btn:hover {
+            background-color: #2ecc71;
+        }
         #status {
             text-align: center;
             margin: 10px;
@@ -195,6 +202,7 @@
 
     <div class="button-container">
         <button id="btnAdd" onclick="addColumn()" disabled>+ Tambah Kolom Pertandingan</button>
+        <button id="btnSave" onclick="saveToFirebase()" class="save-btn" disabled>💾 Simpan ke Firebase</button>
         <button id="btnReset" onclick="resetAllData()" style="background-color: #e74c3c;" disabled>🗑️ Reset Semua Data</button>
     </div>
     
@@ -239,6 +247,7 @@
                 document.getElementById('tableContainer').classList.remove('active');
                 document.getElementById('currentMarketLabel').style.display = 'none';
                 document.getElementById('btnAdd').disabled = true;
+                document.getElementById('btnSave').disabled = true;
                 document.getElementById('btnReset').disabled = true;
                 return;
             }
@@ -261,12 +270,13 @@
             document.getElementById('currentMarketLabel').style.display = 'block';
             document.getElementById('tableContainer').classList.add('active');
             document.getElementById('btnAdd').disabled = false;
+            document.getElementById('btnSave').disabled = false;
             document.getElementById('btnReset').disabled = false;
             
             loadMarketData();
         };
 
-        // ===== LOAD DATA MARKET =====
+        // ===== LOAD DATA MARKET (DESCENDING: Terbaru di Kiri) =====
         function loadMarketData() {
             try {
                 showStatus('Memuat data...');
@@ -277,6 +287,7 @@
                     let matches = [];
                     
                     if (data) {
+                        // ⭐ DESCENDING: order besar (terbaru) di kiri, dekat Nama Tim
                         matches = Object.values(data).sort((a, b) => b.order - a.order);
                     }
                     
@@ -306,21 +317,19 @@
             }
         }
 
-        // ===== FUNGSI BANTU: Hitung tanggal berdasarkan urutan =====
-        // order 1 = hari ini, order 2 = kemarin, order 3 = 2 hari lalu, dst
+        // ===== FUNGSI BANTU: Hitung tanggal mundur =====
         function getDateForOrder(order) {
             const today = new Date();
-            today.setHours(0, 0, 0, 0); // Reset waktu ke tengah malam
+            today.setHours(0, 0, 0, 0);
             today.setDate(today.getDate() - (order - 1));
             
-            // Format YYYY-MM-DD untuk input type="date"
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
 
-        // ===== TAMBAH KOLOM (Auto-save + Tanggal Otomatis Mundur) =====
+        // ===== TAMBAH KOLOM =====
         window.addColumn = function() {
             if (!window.currentDbRef) {
                 showStatus('❌ Pilih market terlebih dahulu!');
@@ -331,9 +340,6 @@
                 const newOrder = window.matchCount + 1;
                 const matchId = `match_${newOrder}`;
                 
-                // ⭐ PERUBAHAN: Tanggal dihitung berdasarkan urutan
-                // Kolom baru (order terbaru) = hari ini
-                // Kolom berikutnya = kemarin, 2 hari lalu, dst
                 const autoDate = getDateForOrder(newOrder);
                 
                 const matchData = {
@@ -392,6 +398,86 @@
                 window.currentDbRef.child(matchId).child('date').set(input.value);
             } catch (error) {
                 console.error(error);
+            }
+        };
+
+        // ===== 💾 FUNGSI BARU: SIMPAN KE FIREBASE =====
+        // Membaca semua data dari tabel DOM dan menulis ulang ke Firebase
+        window.saveToFirebase = function() {
+            if (!window.currentDbRef || !window.currentMarket) {
+                showStatus('❌ Tidak ada market yang aktif!');
+                return;
+            }
+            
+            try {
+                showStatus('💾 Menyimpan ke Firebase...');
+                
+                const headerRow = document.getElementById('headerRow');
+                const tbody = document.getElementById('tableBody');
+                const rows = tbody.getElementsByTagName('tr');
+                const totalCols = headerRow.children.length - 1;
+                
+                if (totalCols === 0) {
+                    showStatus('⚠️ Tidak ada data untuk disimpan');
+                    return;
+                }
+                
+                // Kumpulkan semua data dari DOM
+                const allData = {};
+                let savedCount = 0;
+                
+                // Iterasi setiap kolom (dari kiri ke kanan = terbaru ke terlama)
+                for (let colIndex = 1; colIndex <= totalCols; colIndex++) {
+                    const th = headerRow.children[colIndex];
+                    const dateInput = th.querySelector('.date-input');
+                    const dateValue = dateInput ? dateInput.value : '';
+                    
+                    // Ambil order dari cell pertama di kolom ini
+                    const firstCell = rows[0].getElementsByTagName('td')[colIndex];
+                    const matchId = firstCell ? firstCell.dataset.matchId : `match_${colIndex}`;
+                    
+                    // Ekstrak order dari matchId
+                    const orderMatch = matchId.match(/match_(\d+)/);
+                    const order = orderMatch ? parseInt(orderMatch[1]) : colIndex;
+                    
+                    const results = {};
+                    for (let i = 0; i < rows.length; i++) {
+                        const teamNumber = i + 1;
+                        const cells = rows[i].getElementsByTagName('td');
+                        const cell = cells[colIndex];
+                        
+                        if (cell) {
+                            if (cell.classList.contains('w-cell')) {
+                                results[teamNumber] = 'W';
+                            } else if (cell.classList.contains('x-cell')) {
+                                results[teamNumber] = 'X';
+                            } else {
+                                results[teamNumber] = '';
+                            }
+                        }
+                    }
+                    
+                    allData[matchId] = {
+                        order: order,
+                        date: dateValue,
+                        results: results
+                    };
+                }
+                
+                // Tulis ulang SEMUA data ke Firebase sekaligus
+                window.currentDbRef.set(allData)
+                    .then(() => {
+                        showStatus('✅ Semua data berhasil disimpan ke Firebase!');
+                        setTimeout(() => showStatus(''), 3000);
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        showStatus('❌ Gagal menyimpan: ' + error.message);
+                    });
+                    
+            } catch (error) {
+                console.error(error);
+                showStatus('❌ Gagal menyimpan: ' + error.message);
             }
         };
 
