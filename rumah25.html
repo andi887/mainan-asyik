@@ -317,19 +317,16 @@
             }
         }
 
-        // ===== FUNGSI BANTU: Hitung tanggal mundur =====
-        function getDateForOrder(order) {
+        // ===== FUNGSI BANTU: Dapatkan tanggal hari ini (YYYY-MM-DD) =====
+        function getTodayDate() {
             const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            today.setDate(today.getDate() - (order - 1));
-            
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
 
-        // ===== TAMBAH KOLOM =====
+        // ===== TAMBAH KOLOM (Tanggal = Hari Ini Saat Dibuat) =====
         window.addColumn = function() {
             if (!window.currentDbRef) {
                 showStatus('❌ Pilih market terlebih dahulu!');
@@ -340,11 +337,12 @@
                 const newOrder = window.matchCount + 1;
                 const matchId = `match_${newOrder}`;
                 
-                const autoDate = getDateForOrder(newOrder);
+                // ⭐ PERUBAHAN: Tanggal = HARI INI (saat tombol diklik)
+                const todayDate = getTodayDate();
                 
                 const matchData = {
                     order: newOrder,
-                    date: autoDate,
+                    date: todayDate,
                     results: {}
                 };
                 for (let i = 1; i <= totalTeams; i++) {
@@ -391,18 +389,18 @@
             }
         };
 
-        // ===== HANDLE PERUBAHAN TANGGAL =====
+        // ===== HANDLE PERUBAHAN TANGGAL (Bisa Diedit Manual) =====
         window.handleDateChange = function(input, matchId) {
             if (!window.currentDbRef) return;
             try {
                 window.currentDbRef.child(matchId).child('date').set(input.value);
+                showStatus('📝 Tanggal diperbarui');
             } catch (error) {
                 console.error(error);
             }
         };
 
-        // ===== 💾 FUNGSI BARU: SIMPAN KE FIREBASE =====
-        // Membaca semua data dari tabel DOM dan menulis ulang ke Firebase
+        // ===== 💾 SIMPAN KE FIREBASE =====
         window.saveToFirebase = function() {
             if (!window.currentDbRef || !window.currentMarket) {
                 showStatus('❌ Tidak ada market yang aktif!');
@@ -422,21 +420,16 @@
                     return;
                 }
                 
-                // Kumpulkan semua data dari DOM
                 const allData = {};
-                let savedCount = 0;
                 
-                // Iterasi setiap kolom (dari kiri ke kanan = terbaru ke terlama)
                 for (let colIndex = 1; colIndex <= totalCols; colIndex++) {
                     const th = headerRow.children[colIndex];
                     const dateInput = th.querySelector('.date-input');
                     const dateValue = dateInput ? dateInput.value : '';
                     
-                    // Ambil order dari cell pertama di kolom ini
                     const firstCell = rows[0].getElementsByTagName('td')[colIndex];
                     const matchId = firstCell ? firstCell.dataset.matchId : `match_${colIndex}`;
                     
-                    // Ekstrak order dari matchId
                     const orderMatch = matchId.match(/match_(\d+)/);
                     const order = orderMatch ? parseInt(orderMatch[1]) : colIndex;
                     
@@ -464,7 +457,6 @@
                     };
                 }
                 
-                // Tulis ulang SEMUA data ke Firebase sekaligus
                 window.currentDbRef.set(allData)
                     .then(() => {
                         showStatus('✅ Semua data berhasil disimpan ke Firebase!');
