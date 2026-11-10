@@ -2,22 +2,19 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Rumah 29 - Data Market</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f0f2f5;
             padding: 20px;
             min-height: 100vh;
+            /* Cegah halaman ikut bergeser saat tabel digeser */
+            overflow-x: hidden;
+            overscroll-behavior-y: contain;
         }
-
         .container {
             max-width: 1100px;
             margin: 0 auto;
@@ -25,300 +22,141 @@
             border-radius: 12px;
             padding: 30px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            /* Jangan biarkan container ikut meluber */
+            overflow: hidden;
         }
-
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 25px;
-            font-size: 28px;
-        }
-
-        /* Tombol Kembali ke Beranda */
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 25px; font-size: 28px; }
         .btn-back-home {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            padding: 12px 20px;
+            position: fixed; top: 20px; left: 20px; padding: 12px 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            transition: all 0.3s;
-            z-index: 1000;
+            color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600;
+            cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); transition: all 0.3s; z-index: 1000;
         }
-
-        .btn-back-home:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-        }
-
-        .btn-back-home:active {
-            transform: translateY(0);
-        }
-
-        .control-bar {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .control-bar label {
-            font-weight: 600;
-            color: #333;
-            font-size: 15px;
-        }
-
+        .btn-back-home:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6); }
+        .btn-back-home:active { transform: translateY(0); }
+        .control-bar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; }
+        .control-bar label { font-weight: 600; color: #333; font-size: 15px; }
         select {
-            padding: 10px 14px;
-            font-size: 15px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            background: #fff;
-            cursor: pointer;
-            min-width: 200px;
-            outline: none;
-            transition: border-color 0.3s;
+            padding: 10px 14px; font-size: 15px; border: 2px solid #ddd; border-radius: 8px;
+            background: #fff; cursor: pointer; min-width: 200px; outline: none; transition: border-color 0.3s;
         }
-
-        select:focus {
-            border-color: #4a90d9;
-        }
-
+        select:focus { border-color: #4a90d9; }
         .btn {
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: 600;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+            padding: 10px 20px; font-size: 14px; font-weight: 600; border: none; border-radius: 8px;
+            cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 6px;
+            min-height: 44px;
         }
-
-        .btn-add {
-            background: #27ae60;
-            color: #fff;
-        }
-
-        .btn-add:hover {
-            background: #219a52;
-            transform: translateY(-1px);
-        }
-
-        .btn-save {
-            background: #2980b9;
-            color: #fff;
-        }
-
-        .btn-save:hover {
-            background: #2472a4;
-            transform: translateY(-1px);
-        }
-
-        .btn-delete {
-            background: #e74c3c;
-            color: #fff;
-            padding: 5px 10px;
-            font-size: 12px;
-        }
-
-        .btn-delete:hover {
-            background: #c0392b;
-        }
-
+        .btn-add { background: #27ae60; color: #fff; }
+        .btn-add:hover { background: #219a52; transform: translateY(-1px); }
+        .btn-save { background: #2980b9; color: #fff; }
+        .btn-save:hover { background: #2472a4; transform: translateY(-1px); }
+        .btn-delete { background: #e74c3c; color: #fff; padding: 5px 10px; font-size: 12px; min-height: 36px; }
+        .btn-delete:hover { background: #c0392b; }
+        /* ===== PERBAIKAN UTAMA: SCROLL TABLE ===== */
         .table-wrapper {
-            overflow-x: auto;
             margin-top: 10px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-
-        thead th {
-            background: #2c3e50;
-            color: #fff;
-            padding: 12px 10px;
-            text-align: center;
-            font-weight: 600;
-            border: 1px solid #1a252f;
-            position: sticky;
-            top: 0;
-            z-index: 2;
-        }
-
-        tbody td {
+            /* Kunci: scroll 2 arah di dalam wrapper saja, bukan halaman */
+            overflow: auto;
+            -webkit-overflow-scrolling: touch; /* scroll halus di iPhone */
+            touch-action: pan-x pan-y; /* izinkan geser horizontal + vertikal */
+            overscroll-behavior: contain; /* jangan tarik halaman saat mentok */
+            scrollbar-gutter: stable;
             border: 1px solid #ddd;
-            padding: 6px 8px;
-            text-align: center;
-            vertical-align: middle;
+            border-radius: 10px;
+            /* Tinggi maks supaya scroll vertikal nyaman, header tetap kelihatan */
+            max-height: 62vh;
+            /* Indikator bahwa tabel bisa digeser */
+            background:
+                linear-gradient(to right, #fff 30%, rgba(255,255,255,0)) 0 0 / 30px 100% no-repeat,
+                linear-gradient(to left, #fff 30%, rgba(255,255,255,0)) 100% 0 / 30px 100% no-repeat;
+            /* Scrollbar lebih mudah disentuh di HP */
+            scrollbar-width: thin;
+            scrollbar-color: #b0b8c1 transparent;
         }
-
-        tbody tr:hover {
-            background: #f8f9fa;
-        }
-
-        tbody tr:nth-child(even) {
-            background: #fafafa;
-        }
-
-        tbody tr:nth-child(even):hover {
-            background: #f0f0f0;
-        }
-
-        td input[type="text"],
-        td input[type="date"] {
-            width: 100%;
-            padding: 6px 8px;
-            border: 1px solid transparent;
-            border-radius: 4px;
+        .table-wrapper::-webkit-scrollbar { height: 10px; width: 10px; }
+        .table-wrapper::-webkit-scrollbar-thumb { background: #b0b8c1; border-radius: 10px; border: 2px solid #fff; }
+        .table-wrapper::-webkit-scrollbar-track { background: #f0f2f5; }
+        table {
+            /* Kunci: lebar minimum, jangan dipaksa 100% di HP */
+            width: max-content;
+            min-width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
             font-size: 14px;
-            text-align: center;
-            background: transparent;
-            outline: none;
-            transition: border-color 0.3s;
+            /* Lebar total sengaja > layar HP supaya horizontal scroll aktif */
+            /* Tgl 150 + Res 150 + Jlr 76*3 + Rujuk 120 + Ket 220 + Aksi 96 = 964px */
         }
-
-        td input[type="text"]:focus,
-        td input[type="date"]:focus {
-            border-color: #4a90d9;
+        thead th {
+            background: #2c3e50; color: #fff; padding: 12px 10px; text-align: center; font-weight: 600;
+            border: 1px solid #1a252f;
+            position: sticky; top: 0; z-index: 3;
+            white-space: nowrap;
+        }
+        tbody td {
+            border: 1px solid #ddd; padding: 6px 8px; text-align: center; vertical-align: middle;
             background: #fff;
         }
-
+        tbody tr:hover { background: #f8f9fa; }
+        tbody tr:nth-child(even) td { background: #fafafa; }
+        tbody tr:nth-child(even):hover td { background: #f0f0f0; }
+        /* Kolom Tgl & Res diperbesar + dikunci lebarnya */
+        col.col-tgl { width: 150px; min-width: 150px; }
+        col.col-res { width: 150px; min-width: 150px; }
+        td input[type="text"], td input[type="date"] {
+            width: 100%; min-width: 0;
+            padding: 6px 8px; border: 1px solid transparent; border-radius: 4px;
+            font-size: 16px; /* 16px = cegah iPhone auto-zoom saat ketik */
+            text-align: center; background: transparent; outline: none; transition: border-color 0.3s;
+            min-height: 42px; /* area sentuh nyaman */
+            touch-action: manipulation;
+        }
+        td input[type="text"]:focus, td input[type="date"]:focus { border-color: #4a90d9; background: #fff; }
+        /* Input Tgl & Res dibuat lebih lega */
+        td.col-tgl input, td.col-res input {
+            font-size: 16px; font-weight: 600; letter-spacing: .3px;
+            padding: 10px 10px; min-height: 44px;
+        }
         .jlr-toggle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 36px;
-            height: 36px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 18px;
-            font-weight: bold;
-            user-select: none;
-            transition: all 0.2s;
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 44px; height: 44px; border-radius: 8px; cursor: pointer;
+            font-size: 18px; font-weight: bold; user-select: none; transition: all 0.2s;
+            touch-action: manipulation;
         }
-
-        .jlr-toggle.check {
-            background: #27ae60;
-            color: #fff;
-        }
-
-        .jlr-toggle.cross {
-            background: #e74c3c;
-            color: #fff;
-        }
-
-        .jlr-toggle:hover {
-            transform: scale(1.1);
-        }
-
-        .status-msg {
-            margin-top: 15px;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            display: none;
-        }
-
-        .status-msg.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-            display: block;
-        }
-
-        .status-msg.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            display: block;
-        }
-
-        .info-box {
-            margin-top: 20px;
-            padding: 14px 18px;
-            background: #e8f4fd;
-            border-left: 4px solid #2980b9;
-            border-radius: 6px;
-            font-size: 13px;
-            color: #555;
-            line-height: 1.7;
-        }
-
-        .info-box strong {
-            color: #2c3e50;
-        }
-
+        .jlr-toggle.check { background: #27ae60; color: #fff; }
+        .jlr-toggle.cross { background: #e74c3c; color: #fff; }
+        .jlr-toggle:hover { transform: scale(1.05); }
+        .status-msg { margin-top: 15px; padding: 10px 16px; border-radius: 8px; font-size: 14px; display: none; }
+        .status-msg.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; display: block; }
+        .status-msg.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; display: block; }
+        .info-box { margin-top: 20px; padding: 14px 18px; background: #e8f4fd; border-left: 4px solid #2980b9; border-radius: 6px; font-size: 13px; color: #555; line-height: 1.7; }
+        .info-box strong { color: #2c3e50; }
+        .scroll-hint { display: none; text-align: center; font-size: 12px; color: #888; margin-top: 8px; }
         @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-                margin-top: 60px;
-            }
-
-            .btn-back-home {
-                top: 10px;
-                left: 10px;
-                padding: 10px 14px;
-                font-size: 13px;
-            }
-
-            .control-bar {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            select {
-                min-width: 100%;
-            }
-
-            .btn {
-                width: 100%;
-                justify-content: center;
-            }
-
-            table {
-                font-size: 12px;
-            }
-
-            thead th, tbody td {
-                padding: 6px 4px;
-            }
-
-            .jlr-toggle {
-                width: 30px;
-                height: 30px;
-                font-size: 14px;
-            }
+            body { padding: 10px; }
+            .container { padding: 15px; margin-top: 60px; }
+            .btn-back-home { top: 10px; left: 10px; padding: 10px 14px; font-size: 13px; }
+            .control-bar { flex-direction: column; align-items: stretch; }
+            select { min-width: 100%; }
+            .btn { width: 100%; justify-content: center; }
+            /* Di HP: Tgl & Res tetap besar, tabel tetap bisa digeser */
+            table { font-size: 14px; }
+            thead th, tbody td { padding: 10px 8px; }
+            /* Tgl & Res di HP dibuat 160px supaya benar-benar nyaman disentuh */
+            col.col-tgl { width: 160px; min-width: 160px; }
+            col.col-res { width: 160px; min-width: 160px; }
+            .jlr-toggle { width: 44px; height: 44px; font-size: 18px; }
+            .table-wrapper { max-height: 58vh; }
+            .scroll-hint { display: block; }
+            /* Tombol hapus jangan terlalu kecil */
+            .btn-delete { padding: 8px 10px; font-size: 12px; white-space: nowrap; }
         }
     </style>
 </head>
 <body>
-
-<!-- Tombol Kembali ke Beranda -->
-<a href="https://andi887.github.io/mainan-asyik/index.html" class="btn-back-home">
-    🏠 Kembali ke Beranda
-</a>
-
+<a href="https://andi887.github.io/mainan-asyik/index.html" class="btn-back-home">🏠 Kembali ke Beranda</a>
 <div class="container">
     <h1>🏠 Rumah 29</h1>
-
-    <!-- Control Bar -->
     <div class="control-bar">
         <label for="marketSelect">Pilih Market:</label>
         <select id="marketSelect">
@@ -332,36 +170,32 @@
             <option value="hongkong">Hongkong</option>
             <option value="admin">📍 Control Centre (Admin)</option>
         </select>
-
         <button class="btn btn-add" onclick="tambahBaris()">➕ Tambah Baris</button>
         <button class="btn btn-save" onclick="simpanKeFirebase()">💾 Simpan ke Firebase</button>
     </div>
-
-    <!-- Table -->
-    <div class="table-wrapper">
+    <div class="table-wrapper" id="tableWrapper">
         <table id="dataTable">
+            <colgroup>
+                <col class="col-tgl"><col class="col-res">
+                <col><col><col><col><col><col>
+            </colgroup>
             <thead>
                 <tr>
-                    <th style="width:100px;">Tgl</th>
-                    <th style="width:80px;">Res</th>
-                    <th style="width:70px;">Jlr 1</th>
-                    <th style="width:70px;">Jlr 2</th>
-                    <th style="width:70px;">Jlr 3</th>
-                    <th style="width:80px;">Rujuk</th>
+                    <th>Tgl</th>
+                    <th>Res</th>
+                    <th>Jlr 1</th>
+                    <th>Jlr 2</th>
+                    <th>Jlr 3</th>
+                    <th>Rujuk</th>
                     <th>Keterangan</th>
-                    <th style="width:70px;">Aksi</th>
+                    <th>Aksi</th>
                 </tr>
             </thead>
-            <tbody id="tableBody">
-                <!-- Baris data akan ditambahkan di sini (terbaru di atas) -->
-            </tbody>
+            <tbody id="tableBody"></tbody>
         </table>
     </div>
-
-    <!-- Status Message -->
+    <div class="scroll-hint">👈 Geser tabel ke kiri / kanan &nbsp;•&nbsp; 👆 Geser ke atas / bawah</div>
     <div id="statusMsg" class="status-msg"></div>
-
-    <!-- Info -->
     <div class="info-box">
         <strong>Petunjuk:</strong><br>
         • Kolom <strong>Tgl, Res, Rujuk, Keterangan</strong> bisa diinput manual dan diedit langsung.<br>
@@ -370,15 +204,9 @@
         • Pilih market terlebih dahulu sebelum menyimpan data.
     </div>
 </div>
-
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
 <script>
-    // =============================================
-    // KONFIGURASI FIREBASE (Sudah Disinkronisasi)
-    // =============================================
     if (typeof firebase !== 'undefined' && !firebase.apps.length) {
         const firebaseConfig = {
             apiKey: "AIzaSyCr5B0P0X_eqMNYbZonu40NXRxqCmx4t_o",
@@ -390,46 +218,25 @@
             appId: "1:917602556667:web:cc087826739cf2d2cd2e5e",
             measurementId: "G-9DMC1YKZP7"
         };
-
-        // Inisialisasi Firebase
         firebase.initializeApp(firebaseConfig);
     }
-
     const db = firebase.database();
-
-    // =============================================
-    // FUNGSI TOGGLE JLR (✓ / ✗)
-    // =============================================
     function toggleJlr(el) {
-        if (el.classList.contains('check')) {
-            el.classList.remove('check');
-            el.classList.add('cross');
-            el.textContent = '✗';
-        } else {
-            el.classList.remove('cross');
-            el.classList.add('check');
-            el.textContent = '✓';
-        }
+        if (el.classList.contains('check')) { el.classList.remove('check'); el.classList.add('cross'); el.textContent = '✗'; }
+        else { el.classList.remove('cross'); el.classList.add('check'); el.textContent = '✓'; }
     }
-
-    // =============================================
-    // FUNGSI TAMBAH BARIS (selalu di bawah header)
-    // =============================================
     function tambahBaris(tgl = '', res = '', jlr1 = 'check', jlr2 = 'check', jlr3 = 'check', rujuk = '', ket = '') {
         const tbody = document.getElementById('tableBody');
         const tr = document.createElement('tr');
-
-        // Default jlr state
         const j1Class = jlr1 === 'cross' ? 'cross' : 'check';
         const j2Class = jlr2 === 'cross' ? 'cross' : 'check';
         const j3Class = jlr3 === 'cross' ? 'cross' : 'check';
         const j1Text = j1Class === 'check' ? '✓' : '✗';
         const j2Text = j2Class === 'check' ? '✓' : '✗';
         const j3Text = j3Class === 'check' ? '✓' : '✗';
-
         tr.innerHTML = `
-            <td><input type="text" value="${tgl}" placeholder="dd/mm"></td>
-            <td><input type="text" value="${res}" placeholder="res"></td>
+            <td class="col-tgl"><input type="text" value="${tgl}" placeholder="dd/mm"></td>
+            <td class="col-res"><input type="text" value="${res}" placeholder="res"></td>
             <td><span class="jlr-toggle ${j1Class}" onclick="toggleJlr(this)">${j1Text}</span></td>
             <td><span class="jlr-toggle ${j2Class}" onclick="toggleJlr(this)">${j2Text}</span></td>
             <td><span class="jlr-toggle ${j3Class}" onclick="toggleJlr(this)">${j3Text}</span></td>
@@ -437,47 +244,23 @@
             <td><input type="text" value="${ket}" placeholder="keterangan"></td>
             <td><button class="btn btn-delete" onclick="hapusBaris(this)">🗑 Hapus</button></td>
         `;
-
-        // Insert di posisi pertama (paling atas, tepat di bawah header)
         tbody.insertBefore(tr, tbody.firstChild);
     }
-
-    // =============================================
-    // FUNGSI HAPUS BARIS
-    // =============================================
     function hapusBaris(btn) {
-        if (confirm('Yakin ingin menghapus baris ini?')) {
-            const tr = btn.closest('tr');
-            tr.remove();
-        }
+        if (confirm('Yakin ingin menghapus baris ini?')) { const tr = btn.closest('tr'); tr.remove(); }
     }
-
-    // =============================================
-    // FUNGSI SIMPAN KE FIREBASE
-    // =============================================
     function simpanKeFirebase() {
         const market = document.getElementById('marketSelect').value;
-
-        if (!market) {
-            showStatus('⚠️ Pilih market terlebih dahulu!', 'error');
-            return;
-        }
-
+        if (!market) { showStatus('⚠ Pilih market terlebih dahulu!', 'error'); return; }
         const tbody = document.getElementById('tableBody');
         const rows = tbody.querySelectorAll('tr');
-
-        if (rows.length === 0) {
-            showStatus('⚠️ Tidak ada data untuk disimpan!', 'error');
-            return;
-        }
-
+        if (rows.length === 0) { showStatus('⚠ Tidak ada data untuk disimpan!', 'error'); return; }
         const data = [];
         rows.forEach(row => {
             const cells = row.querySelectorAll('td');
             const jlr1El = cells[2].querySelector('.jlr-toggle');
             const jlr2El = cells[3].querySelector('.jlr-toggle');
             const jlr3El = cells[4].querySelector('.jlr-toggle');
-
             data.push({
                 tgl: cells[0].querySelector('input').value,
                 res: cells[1].querySelector('input').value,
@@ -488,81 +271,35 @@
                 keterangan: cells[6].querySelector('input').value
             });
         });
-
-        // Simpan ke Firebase: rumah29/{market}/data
         const ref = db.ref('rumah29/' + market);
-        ref.set({
-            data: data,
-            lastUpdated: new Date().toISOString()
-        }).then(() => {
+        ref.set({ data: data, lastUpdated: new Date().toISOString() }).then(() => {
             showStatus('✅ Data berhasil disimpan ke Firebase untuk market: ' + market.toUpperCase(), 'success');
-        }).catch(err => {
-            showStatus('❌ Gagal menyimpan: ' + err.message, 'error');
-        });
+        }).catch(err => { showStatus('❌ Gagal menyimpan: ' + err.message, 'error'); });
     }
-
-    // =============================================
-    // FUNGSI LOAD DATA DARI FIREBASE (Realtime)
-    // =============================================
     function loadDataDariFirebase(market) {
-        if (!market) {
-            document.getElementById('tableBody').innerHTML = '';
-            return;
-        }
-
+        if (!market) { document.getElementById('tableBody').innerHTML = ''; return; }
         const ref = db.ref('rumah29/' + market + '/data');
         ref.on('value', (snapshot) => {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
-
             const data = snapshot.val();
             if (data && Array.isArray(data)) {
-                // Data sudah urut dari terbaru (index 0) ke terlama
-                data.forEach(item => {
-                    tambahBaris(
-                        item.tgl || '',
-                        item.res || '',
-                        item.jlr1 || 'check',
-                        item.jlr2 || 'check',
-                        item.jlr3 || 'check',
-                        item.rujuk || '',
-                        item.keterangan || ''
-                    );
-                });
+                data.forEach(item => { tambahBaris(item.tgl || '', item.res || '', item.jlr1 || 'check', item.jlr2 || 'check', item.jlr3 || 'check', item.rujuk || '', item.keterangan || ''); });
             }
         });
     }
-
-    // =============================================
-    // EVENT LISTENER: GANTI MARKET
-    // =============================================
-    document.getElementById('marketSelect').addEventListener('change', function() {
-        loadDataDariFirebase(this.value);
-    });
-
-    // =============================================
-    // FUNGSI TAMPILKAN STATUS
-    // =============================================
+    document.getElementById('marketSelect').addEventListener('change', function() { loadDataDariFirebase(this.value); });
     function showStatus(msg, type) {
         const el = document.getElementById('statusMsg');
-        el.textContent = msg;
-        el.className = 'status-msg ' + type;
-        setTimeout(() => {
-            el.className = 'status-msg';
-        }, 4000);
+        el.textContent = msg; el.className = 'status-msg ' + type;
+        setTimeout(() => { el.className = 'status-msg'; }, 4000);
     }
-
-    // =============================================
-    // TAMBAH BEBERAPA BARIS CONTOH SAAT LOAD
-    // =============================================
     window.addEventListener('DOMContentLoaded', () => {
-        // Tambah 4 baris contoh sesuai gambar
         tambahBaris('04/11', '', 'check', 'check', 'check', '', '');
         tambahBaris('03/11', '', 'check', 'check', 'check', '', '');
         tambahBaris('02/11', '', 'check', 'check', 'check', '', '');
         tambahBaris('01/11', '', 'check', 'check', 'check', '', '');
     });
 </script>
-
 </body>
 </html>
